@@ -1,4 +1,4 @@
 package dutchiepay.backend.domain.image.repository;
 
-public class ImageRepository {
+public interface ImageRepository {
 }
