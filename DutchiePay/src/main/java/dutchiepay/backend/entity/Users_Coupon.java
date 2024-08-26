@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Users_Coupon extends Auditing {
 
     @Id
-    @GenerateValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userCouponId;
 
     @ManyToOne

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class Ask extends Auditing {
 
     @Id
-    @GenerateValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long askId;
 
     //작성자 ID

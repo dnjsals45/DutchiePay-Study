@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Score extends Auditing {
 
     @Id
-    @GenerateValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long scoreId;
 
     //공구게시글 ID

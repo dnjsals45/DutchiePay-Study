@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 public class Users extends Auditing {
 
     @Id
-    @GenerateValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
     //이메일
     @Column(nullable = false, length = 255)
-    private String emaill;
+    private String email;
 
     //성함
     @Column(length = 5)

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Purchase extends Auditing {
 
     @Id
-    @GenerateValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long purchaseId;
 
     //작성자 Id

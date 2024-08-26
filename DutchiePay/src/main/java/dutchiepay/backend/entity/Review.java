@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Review extends Auditing {
 
     @Id
-    @GenerateValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
 
     //작성자 ID
