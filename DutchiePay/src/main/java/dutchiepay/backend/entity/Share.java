@@ -2,19 +2,16 @@ package dutchiepay.backend.entity;
 
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Builder
 @Table(name = "Share")
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-// TODO : 위도와 경도의 경우 Text 형태로 되어 있는데, String 으로 하지 않는 이유가 따로 있을까요?
 public class Share extends Auditing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

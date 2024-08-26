@@ -2,14 +2,12 @@ package dutchiepay.backend.entity;
 
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Builder
 @Table(name = "Users")
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Users extends Auditing {

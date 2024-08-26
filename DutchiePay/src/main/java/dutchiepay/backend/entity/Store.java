@@ -2,10 +2,7 @@ package dutchiepay.backend.entity;
 
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -13,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Table(name = "Store")
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store extends Auditing {

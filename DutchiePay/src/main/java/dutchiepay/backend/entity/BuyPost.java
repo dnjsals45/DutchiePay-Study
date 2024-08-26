@@ -2,16 +2,14 @@ package dutchiepay.backend.entity;
 
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Builder
 @Table(name = "BuyPost")
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BuyPost extends Auditing {
