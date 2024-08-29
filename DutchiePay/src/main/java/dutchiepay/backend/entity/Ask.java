@@ -20,17 +20,17 @@ public class Ask extends Auditing {
 
     //작성자 ID
     @ManyToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     //공구게시글 ID
     @ManyToOne
-    @JoinColumn(name = "buyPostId")
+    @JoinColumn(name = "buy_post_id")
     private BuyPost buyPost;
 
     //상품 ID
     @ManyToOne
-    @JoinColumn(name = "productId")
+    @JoinColumn(name = "product_id")
     private Product product;
 
     //주문번호
