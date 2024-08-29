@@ -6,11 +6,11 @@ import lombok.*;
 
 @Entity
 @Builder
-@Table(name = "Users")
+@Table(name = "User")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Users extends Auditing {
+public class User extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
