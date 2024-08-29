@@ -14,22 +14,23 @@ public class Refund extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
     private Long refundId;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "users_id")
+    private User user;
 
-    @Column(nullable = false)
-    private Long storeId;
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
 
-    @Column(nullable = false)
-    private Long orderId;
+    @OneToOne
+    @JoinColumn(name = "order_id")
+    private Orders orders;
 
     @Column(length = 500, nullable = false)
     private String reason;
 
-    @Column
     private String detail;
 
     @Column(length = 10, nullable = false)
