@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.sms;
 
+import dutchiepay.backend.domain.user.dto.SmsAuthResponseDto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.NurigoApp;
@@ -33,7 +34,7 @@ public class SmsService {
         messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, provider);
     }
 
-    public String sendVerificationMessage(String to) {
+    public SmsAuthResponseDto sendVerificationMessage(String to) {
         Message message = new Message();
         message.setFrom(sender);
         message.setTo(to);
@@ -44,7 +45,7 @@ public class SmsService {
 
         messageService.sendOne(new SingleMessageSendingRequest(message));
 
-        return verificationCode;
+        return SmsAuthResponseDto.of(verificationCode);
     }
 
     private String generateVerificationCode() {
