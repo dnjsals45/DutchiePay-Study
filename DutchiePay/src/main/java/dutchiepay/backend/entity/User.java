@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
-@Table(name = "User")
+@Table(name = "Users")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,7 +26,7 @@ public class User extends Auditing {
     private Long userId;
 
     //이메일
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String email;
 
     //성함
@@ -38,7 +38,6 @@ public class User extends Auditing {
     private String phone;
 
     //비밀번호
-    @Column(length = 255)
     private String password;
 
     //닉네임
@@ -50,11 +49,9 @@ public class User extends Auditing {
     private String location;
 
     //주소
-    @Column(length = 255)
     private String address;
 
     //상세 주소
-    @Column(length = 255)
     private String detail;
 
     //리프레쉬 토큰
@@ -62,7 +59,6 @@ public class User extends Auditing {
     private String refreshToken;
 
     //프로필 이미지
-    @Column(length = 255)
     private String profileImg;
 
     //탈퇴&정지 여부
@@ -72,11 +68,11 @@ public class User extends Auditing {
 
     //소셜 ID
     @Column(length = 20)
-    private String oauth_id;
+    private String oauthId;
 
     //소셜 종류
     @Column(length = 10)
-    private String oauth_provider;
+    private String oauthProvider;
 
     public User(String email, String name, String phone, String encodedPassword, String nickname,
         String Location) {
@@ -87,5 +83,8 @@ public class User extends Auditing {
         this.nickname = nickname;
         this.location = Location;
         this.state = 0;
+    }
+    public void changePassword(String password) {
+        this.password = password;
     }
 }

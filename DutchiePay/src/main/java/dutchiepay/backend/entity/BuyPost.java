@@ -18,7 +18,9 @@ public class BuyPost extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long buyPostId;
 
-    private Long productId;
+    @OneToOne
+    @JoinColumn(name = "product_id")
+    private Product productId;
 
     // 제목
     @Column(nullable = false, length = 50)

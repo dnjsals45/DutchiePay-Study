@@ -16,9 +16,13 @@ public class Comment extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
-    private Long freePostId;
+    @ManyToOne
+    @JoinColumn(name = "free_post_id")
+    private FreePost freePostId;
 
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userId;
 
     // 상위 댓글 Id
     private Long parentId;

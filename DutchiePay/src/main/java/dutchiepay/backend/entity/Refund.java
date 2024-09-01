@@ -17,7 +17,7 @@ public class Refund extends Auditing {
     private Long refundId;
 
     @ManyToOne
-    @JoinColumn(name = "users_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne

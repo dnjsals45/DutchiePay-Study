@@ -19,7 +19,7 @@ public class Orders extends Auditing {
     private Long orderId;
 
     @ManyToOne
-    @JoinColumn(name = "users_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
@@ -31,7 +31,7 @@ public class Orders extends Auditing {
     private BuyPost buyPost;
 
     @ManyToOne
-    @JoinColumn(name = "counpon_id")
+    @JoinColumn(name = "coupon_id")
     private Coupon coupon;
 
     @Column(nullable = false)

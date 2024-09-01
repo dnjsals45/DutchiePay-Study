@@ -15,7 +15,9 @@ public class Product extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
-    private Long storeId;
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store storeId;
 
     // 상품 이름
     @Column(nullable = false, length = 50)

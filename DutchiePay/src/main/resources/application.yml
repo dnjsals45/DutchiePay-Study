@@ -1,1 +1,22 @@
-spring.application.name=DutchiePay
+spring:
+  sms:
+    api-key: ${SMS_API_KEY}
+    api-secret: ${SMS_API_SECRET}
+    provider: https://api.coolsms.co.kr
+    sender: ${SMS_SENDER}
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:tcp://localhost/~/test
+    username: sa
+
+springdoc:
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /swagger
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
+  api-docs:
+    groups:
+      enabled: true

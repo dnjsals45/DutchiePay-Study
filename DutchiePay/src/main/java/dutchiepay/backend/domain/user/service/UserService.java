@@ -1,6 +1,8 @@
 package dutchiepay.backend.domain.user.service;
 
-import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
+import dutchiepay.backend.domain.user.dto.*;
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +39,54 @@ public class UserService {
         if (userRepository.existsByNickname(nickname)) {
             throw new IllegalArgumentException("이미 사용중인 닉네임입니다.");
         }
+    }
+
+    public FindEmailResponseDto findEmail(FindEmailRequestDto req) {
+        User user = userRepository.findByPhone(req.getPhone())
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+
+        return FindEmailResponseDto.of(maskEmail(user.getEmail()));
+    }
+
+    public void findPassword(FindPasswordRequestDto req) {
+        userRepository.findByPhone(req.getPhone())
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional
+    public void changeNonUserPassword(NonUserChangePasswordRequestDto req) {
+        // TODO entity save만으로 PasswordEncoder가 동작하는지 확인 필요
+        User user = userRepository.findByEmail(req.getEmail())
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+
+        user.changePassword(req.getPassword());
+    }
+
+    @Transactional
+    public String changeUserPassword(UserChangePasswordRequestDto req) {
+        // TODO 유저 비밀번호 재설정의 경우에는 토큰으로 유저를 파악해서 진행. 추후 구현 필요
+        return null;
+    }
+
+    private String maskEmail(String email) {
+        int index = email.indexOf("@");
+
+        String id = email.substring(0, index);
+        String domain = email.substring(index);
+
+        if (id.length() <= 2) {
+            return email;
+        }
+
+        StringBuilder result = new StringBuilder();
+        result.append(id.charAt(0));
+
+        for (int i = 1; i < id.length() - 1; i++) {
+            result.append("*");
+        }
+
+        result.append(id.charAt(id.length() - 1));
+
+        return result.append(domain).toString();
     }
 }

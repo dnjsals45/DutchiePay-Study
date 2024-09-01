@@ -18,7 +18,9 @@ public class Ad extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long adId;
 
-    private Long buyPostId;
+    @OneToOne
+    @JoinColumn(name = "buy_post_id")
+    private BuyPost buyPostId;
 
     // 만료 시간
     @Column(nullable = false)
