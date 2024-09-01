@@ -1,11 +1,11 @@
 package dutchiepay.backend.domain.user.controller;
 
-import dutchiepay.backend.domain.user.dto.FindEmailReq;
+import dutchiepay.backend.domain.user.dto.*;
 import dutchiepay.backend.domain.user.service.UserService;
-import dutchiepay.backend.entity.Users;
+import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.sms.SmsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final SmsService smsService;
 
     @GetMapping("/test")
     public ResponseEntity<?> test() {
-        Users testUser = Users.builder()
+        User testUser = User.builder()
                 .email("test@example.com")
                 .username("테스트")
                 .phone("01012345678")
@@ -31,27 +32,28 @@ public class UserController {
 
 
     @PostMapping("/email")
-    public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailReq req) {
+    public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto req) {
         return ResponseEntity.ok().body(userService.findEmail(req));
     }
 
     @PostMapping("/pwd")
-    public ResponseEntity<?> findPassword() {
-        return null;
+    public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto req) {
+        return ResponseEntity.ok().body(userService.findPassword(req));
     }
 
     @PatchMapping("/pwd-nonuser")
-    public ResponseEntity<?> changePasswordNonUser() {
-        return null;
+    public ResponseEntity<?> changePasswordNonUser(@Valid @RequestBody NonUserChangePasswordRequestDto req) {
+        userService.changeNonUserPassword(req);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/pwd-user")
-    public ResponseEntity<?> changePasswordUser() {
-        return null;
+    public ResponseEntity<?> changePasswordUser(@Valid @RequestBody UserChangePasswordRequestDto req) {
+        return ResponseEntity.ok().body(userService.changeUserPassword(req));
     }
 
     @PostMapping("/auth")
-    public ResponseEntity<?> phoneAuth() {
-        return null;
+    public ResponseEntity<?> phoneAuth(@Valid @RequestBody PhoneAuthRequestDto req) {
+        return ResponseEntity.ok().body(smsService.sendVerificationMessage(req.getPhone()));
     }
 }
