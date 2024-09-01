@@ -1,9 +1,9 @@
 package dutchiepay.backend;
 
-import dutchiepay.backend.domain.user.dto.FindEmailReq;
+import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.domain.user.service.UserService;
-import dutchiepay.backend.entity.Users;
+import dutchiepay.backend.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +27,11 @@ class UserFoundTest {
     @InjectMocks
     private UserService userService;
 
-    private Users mockUser;
+    private User mockUser;
 
     @BeforeEach
     public void setUpUser() {
-        mockUser = Users.builder()
+        mockUser = User.builder()
                 .email("test@example.com")
                 .username("테스트")
                 .phone("01012345678")
@@ -44,7 +44,7 @@ class UserFoundTest {
     @Test
     void 이메일찾기_유저존재() {
         // given
-        FindEmailReq req = new FindEmailReq("01012345678");
+        FindEmailRequestDto req = new FindEmailRequestDto("01012345678");
         when(userRepository.findByPhone(req.getPhone())).thenReturn(Optional.of(mockUser));
 
         // when
@@ -58,7 +58,7 @@ class UserFoundTest {
     @Test
     void 이메일찾기_유저없음() {
         // given
-        FindEmailReq req = new FindEmailReq("01012345678");
+        FindEmailRequestDto req = new FindEmailRequestDto("01012345678");
         when(userRepository.findByPhone(req.getPhone())).thenReturn(Optional.empty());
 
         // when & then
