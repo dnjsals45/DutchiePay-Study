@@ -41,11 +41,11 @@ public class UserService {
         }
     }
 
-    public String findEmail(FindEmailRequestDto req) {
+    public FindEmailResponseDto findEmail(FindEmailRequestDto req) {
         User user = userRepository.findByPhone(req.getPhone())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        return maskEmail(user.getEmail());
+        return FindEmailResponseDto.of(maskEmail(user.getEmail()));
     }
 
     public void findPassword(FindPasswordRequestDto req) {

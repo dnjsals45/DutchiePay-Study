@@ -1,6 +1,7 @@
 package dutchiepay.backend;
 
 import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
+import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.entity.User;
@@ -48,10 +49,10 @@ class UserFoundTest {
         when(userRepository.findByPhone(req.getPhone())).thenReturn(Optional.of(mockUser));
 
         // when
-        String result = userService.findEmail(req);
+        FindEmailResponseDto result = userService.findEmail(req);
 
         // then
-        assertThat(result).isEqualTo("t**t@example.com");
+        assertThat(result.getEmail()).isEqualTo("t**t@example.com");
         verify(userRepository).findByPhone(req.getPhone());
     }
 
