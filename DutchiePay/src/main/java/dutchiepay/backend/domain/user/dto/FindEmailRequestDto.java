@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Schema(description = "이메일 찾기 요청 DTO")
-public class FindEmailReq {
+public class FindEmailRequestDto {
 
     @NotBlank
     @Pattern(regexp = "^\\d{11}$", message = "전화번호는 11자리 숫자여야 합니다.")
