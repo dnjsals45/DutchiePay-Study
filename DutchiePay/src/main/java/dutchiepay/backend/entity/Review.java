@@ -19,7 +19,7 @@ public class Review extends Auditing {
     //작성자 ID
     @ManyToOne
     @JoinColumn(name = "userId")
-    private Users users;
+    private User users;
 
     //공구게시글 ID
     @ManyToOne

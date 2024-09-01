@@ -17,7 +17,9 @@ public class Share extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long shareId;
 
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userId;
 
     // 제목
     @Column(nullable = false, length = 30)

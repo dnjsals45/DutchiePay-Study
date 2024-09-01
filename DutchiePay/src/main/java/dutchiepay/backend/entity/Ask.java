@@ -21,7 +21,7 @@ public class Ask extends Auditing {
     //작성자 ID
     @ManyToOne
     @JoinColumn(name = "userId")
-    private Users users;
+    private User users;
 
     //공구게시글 ID
     @ManyToOne
@@ -34,7 +34,6 @@ public class Ask extends Auditing {
     private Product product;
 
     //주문번호
-    @Column
     private Long orderNum;
 
     //문의내용
@@ -46,11 +45,9 @@ public class Ask extends Auditing {
     private boolean secret;
 
     //답변
-    @Column(length = 255)
     private String answer;
 
     //답변 날짜
-    @Column
     private LocalDateTime answeredAt;
 
 }
