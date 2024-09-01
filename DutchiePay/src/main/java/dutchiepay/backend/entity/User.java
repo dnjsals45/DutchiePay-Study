@@ -1,8 +1,17 @@
 package dutchiepay.backend.entity;
 
 import dutchiepay.backend.global.config.Auditing;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
@@ -65,6 +74,16 @@ public class User extends Auditing {
     @Column(length = 10)
     private String oauthProvider;
 
+    public User(String email, String name, String phone, String encodedPassword, String nickname,
+        String Location) {
+        this.email = email;
+        this.username = name;
+        this.phone = phone;
+        this.password = encodedPassword;
+        this.nickname = nickname;
+        this.location = Location;
+        this.state = 0;
+    }
     public void changePassword(String password) {
         this.password = password;
     }

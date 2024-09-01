@@ -18,8 +18,8 @@ public class Purchase extends Auditing {
 
     //작성자 Id
     @ManyToOne
-    @JoinColumn(name = "userId")
-    private User users;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     //게시글(상품)명
     @Column(nullable = false, length = 60)

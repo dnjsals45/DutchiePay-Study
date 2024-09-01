@@ -1,13 +1,19 @@
 package dutchiepay.backend.domain.user.controller;
 
-import dutchiepay.backend.domain.user.dto.*;
+import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
 import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.entity.User;
-import dutchiepay.backend.global.sms.SmsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import dutchiepay.backend.domain.user.dto.*;
+import dutchiepay.backend.global.sms.SmsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,4 +63,15 @@ public class UserController {
     public ResponseEntity<?> phoneAuth(@Valid @RequestBody PhoneAuthRequestDto req) {
         return ResponseEntity.ok().body(smsService.sendVerificationMessage(req.getPhone()));
     }
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
+        try {
+            userService.signup(requestDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok().body(null);
+    }
+
+
 }

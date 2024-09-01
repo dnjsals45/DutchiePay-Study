@@ -18,7 +18,7 @@ public class Score extends Auditing {
 
     //공구게시글 ID
     @OneToOne
-    @JoinColumn(name = "buyPostId")
+    @JoinColumn(name = "buy_post_id")
     private BuyPost buyPost;
 
     //1점 개수, 0부터 시작

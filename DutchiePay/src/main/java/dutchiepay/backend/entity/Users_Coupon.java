@@ -17,11 +17,11 @@ public class Users_Coupon extends Auditing {
     private Long userCouponId;
 
     @ManyToOne
-    @JoinColumn(name = "userId")
-    private User users;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
-    @JoinColumn(name = "couponId")
+    @JoinColumn(name = "coupon_id")
     private Coupon coupon;
 
 }

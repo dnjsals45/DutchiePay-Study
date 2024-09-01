@@ -14,13 +14,14 @@ public class Likes extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
     private Long likeId;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(nullable = false)
-    private Long buyPostId;
+    @ManyToOne
+    @JoinColumn(name = "buy_post_id")
+    private BuyPost buyPost;
 
 }

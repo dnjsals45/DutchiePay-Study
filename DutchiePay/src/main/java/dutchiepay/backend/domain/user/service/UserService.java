@@ -1,22 +1,45 @@
 package dutchiepay.backend.domain.user.service;
 
-import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
-import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
-import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
-import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
+import dutchiepay.backend.domain.user.dto.*;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public void signup(UserSignupRequestDto requestDto) {
+        String nickname = requestDto.getNickname();
+        existsNickname(nickname);
+
+        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
+        userRepository.save(new User(
+            requestDto.getEmail(),
+            requestDto.getName(),
+            requestDto.getPhone(),
+            encodedPassword,
+            nickname,
+            requestDto.getLocation()
+        ));
+    }
+
+    public void existsNickname(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new IllegalArgumentException("이미 사용중인 닉네임입니다.");
+        }
+    }
 
     public String findEmail(FindEmailRequestDto req) {
         User user = userRepository.findByPhone(req.getPhone())

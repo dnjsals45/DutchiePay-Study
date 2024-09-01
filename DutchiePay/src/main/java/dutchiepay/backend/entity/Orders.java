@@ -16,25 +16,27 @@ public class Orders extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
     private Long orderId;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(nullable = false)
-    private Long productId;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    @Column(nullable = false)
-    private Long buyPostId;
+    @ManyToOne
+    @JoinColumn(name = "buy_post_id")
+    private BuyPost buyPost;
 
-    @Column(nullable = false)
-    private Long couponId;
+    @ManyToOne
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
 
     @Column(nullable = false)
     private String address;
 
-    @Column
     private String detail;
 
     @Column(nullable = false)
