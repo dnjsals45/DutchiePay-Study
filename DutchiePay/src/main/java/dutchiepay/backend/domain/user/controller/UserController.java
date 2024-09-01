@@ -38,7 +38,8 @@ public class UserController {
 
     @PostMapping("/pwd")
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto req) {
-        return ResponseEntity.ok().body(userService.findPassword(req));
+        userService.findPassword(req);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/pwd-nonuser")
