@@ -9,6 +9,8 @@ import net.nurigo.sdk.message.service.DefaultMessageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Random;
+
 @Service
 @RequiredArgsConstructor
 public class SmsService {
@@ -35,15 +37,19 @@ public class SmsService {
         Message message = new Message();
         message.setFrom(sender);
         message.setTo(to);
-        message.setText("인증번호 전송 테스트");
 
-        // TODO 인증번호 저장해두고 나중에 검증하는 api 추가 필요
+        String verificationCode = generateVerificationCode();
+
+        message.setText("[더취페이] 인증번호는 " + verificationCode + "입니다.");
+
         messageService.sendOne(new SingleMessageSendingRequest(message));
 
-        return "1234";
+        return verificationCode;
     }
 
     private String generateVerificationCode() {
-        return "1234";
+        Random random = new Random();
+        int number = random.nextInt(10000);
+        return String.format("%04d", number);
     }
 }
