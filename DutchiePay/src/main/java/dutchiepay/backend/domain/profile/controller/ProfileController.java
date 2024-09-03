@@ -1,8 +1,12 @@
 package dutchiepay.backend.domain.profile.controller;
 
+import dutchiepay.backend.domain.profile.dto.ChangeAddressRequestDto;
+import dutchiepay.backend.domain.profile.dto.CreateAskRequestDto;
 import dutchiepay.backend.domain.profile.dto.CreateReviewRequestDto;
 import dutchiepay.backend.domain.profile.service.ProfileService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/profile")
-// TODO 아직 UserDetailsService 구현 전이라 임시로 Long userId로 사용
+// TODO 아직 UserDetailsService 구현 전이라 임시로 Long userId로 사용. 구현 완료 시 UserDetails 사용
 public class ProfileController {
 
     private final ProfileService profileService;
@@ -64,35 +68,44 @@ public class ProfileController {
     }
 
     @PostMapping("/asks")
-    public ResponseEntity<?> createAsk() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> createAsk(Long userId,
+                                       @Valid @RequestBody CreateAskRequestDto req) {
+        return ResponseEntity.ok().body(profileService.createAsk(userId, req));
     }
 
     /**
      * PATCH
      */
     @PatchMapping("/nickname")
-    public ResponseEntity<?> changeNickname() {
+    public ResponseEntity<?> changeNickname(Long userId, @RequestBody String nickname) {
+        profileService.changeNickname(userId, nickname);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/image")
-    public ResponseEntity<?> changeProfileImage() {
+    public ResponseEntity<?> changeProfileImage(Long userId, @RequestBody String profileImg) {
+        profileService.changeProfileImage(userId, profileImg);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/location")
-    public ResponseEntity<?> changeLocation() {
+    public ResponseEntity<?> changeLocation(Long userId, @RequestBody String location) {
+        profileService.changeLocation(userId, location);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/address")
-    public ResponseEntity<?> changeAddress() {
+    public ResponseEntity<?> changeAddress(Long userId, @Valid @RequestBody ChangeAddressRequestDto req) {
+        profileService.changeAddress(userId, req);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/phone")
-    public ResponseEntity<?> changePhone() {
+    public ResponseEntity<?> changePhone(Long userId,
+                                         @NotBlank
+                                         @Pattern(regexp = "^\\d{11}$", message = "전화번호는 11자리 숫자여야 합니다.")
+                                         @RequestBody String phone) {
+        profileService.changePhone(userId, phone);
         return ResponseEntity.ok().build();
     }
 
@@ -100,7 +113,7 @@ public class ProfileController {
      * DELETE
      */
     @DeleteMapping("/asks")
-    public ResponseEntity<?> deleteAsk() {
+    public ResponseEntity<?> deleteAsk(Long userId, @RequestBody Long reviewId) {
         return ResponseEntity.ok().build();
     }
 }

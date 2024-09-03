@@ -87,4 +87,25 @@ public class User extends Auditing {
     public void changePassword(String password) {
         this.password = password;
     }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void changeProfileImg(String profileImg) {
+        this.profileImg = profileImg;
+    }
+
+    public void changeLocation(String location) {
+        this.location = location;
+    }
+
+    public void changeAddress(String address, String detail) {
+        this.address = address;
+        this.detail = detail;
+    }
+
+    public void changePhone(String phone) {
+        this.phone = phone;
+    }
 }
