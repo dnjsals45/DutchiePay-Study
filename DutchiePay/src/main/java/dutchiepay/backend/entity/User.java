@@ -6,7 +6,7 @@ import lombok.*;
 
 @Entity
 @Builder
-@Table(name = "User")
+@Table(name = "Users")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,7 +25,7 @@ public class User extends Auditing {
     private String username;
 
     //휴대폰 번호
-    @Column(nullable = false, length = 11)
+    @Column(length = 11)
     private String phone;
 
     //비밀번호
@@ -63,10 +63,10 @@ public class User extends Auditing {
 
     //소셜 ID
     @Column(length = 20)
-    private String oauth_id;
+    private String oauthId;
 
     //소셜 종류
     @Column(length = 10)
-    private String oauth_provider;
+    private String oauthProvider;
 
 }
