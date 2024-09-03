@@ -27,6 +27,6 @@ public class Report extends Auditing {
     private String reason;
 
     @Column(nullable = false)
-    private boolean check;
+    private boolean isChecked;
 
 }
