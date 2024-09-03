@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/orders")
 public class OrdersController {
+
     @PostMapping("/exchange")
     public ResponseEntity<?> applyExchange() {
         return ResponseEntity.ok().body(null);
