@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService {
 
+    private final UserUtilService userUtilService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -42,10 +43,9 @@ public class UserService {
     }
 
     public FindEmailResponseDto findEmail(FindEmailRequestDto req) {
-        User user = userRepository.findByPhone(req.getPhone())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        User user = userUtilService.findByPhone(req.getPhone());
 
-        return FindEmailResponseDto.of(maskEmail(user.getEmail()));
+        return FindEmailResponseDto.of(userUtilService.maskEmail(user.getEmail()));
     }
 
     public void findPassword(FindPasswordRequestDto req) {
@@ -66,27 +66,5 @@ public class UserService {
     public String changeUserPassword(UserChangePasswordRequestDto req) {
         // TODO 유저 비밀번호 재설정의 경우에는 토큰으로 유저를 파악해서 진행. 추후 구현 필요
         return null;
-    }
-
-    private String maskEmail(String email) {
-        int index = email.indexOf("@");
-
-        String id = email.substring(0, index);
-        String domain = email.substring(index);
-
-        if (id.length() <= 2) {
-            return email;
-        }
-
-        StringBuilder result = new StringBuilder();
-        result.append(id.charAt(0));
-
-        for (int i = 1; i < id.length() - 1; i++) {
-            result.append("*");
-        }
-
-        result.append(id.charAt(id.length() - 1));
-
-        return result.append(domain).toString();
     }
 }
