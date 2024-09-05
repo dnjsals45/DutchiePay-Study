@@ -1,9 +1,12 @@
 package dutchiepay.backend.domain.profile.service;
 
 import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
+import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
+import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
+import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.user.service.UserUtilService;
-import dutchiepay.backend.entity.User;
+import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,10 @@ import java.util.List;
 public class ProfileService {
     private final UserUtilService userUtilService;
     private final UsersCouponRepository usersCouponRepository;
+    private final OrdersRepository ordersRepository;
+    private final ReviewRepository reviewRepository;
+    private final AskRepository askRepository;
+    private final LikesRepository likesRepository;
 
     public MyPageResponseDto myPage(Long userId) {
         User user = userUtilService.findById(userId);
@@ -43,31 +50,64 @@ public class ProfileService {
 
     public Object getMyLike(Long userId, String category) {
         User user = userUtilService.findById(userId);
+
+        List<Likes> likes = likesRepository.findAllByUser(user);
+
+
         return null;
     }
 
-    public Object getMyReviews(Long userId) {
+    public List<GetMyReviewResponseDto> getMyReviews(Long userId) {
         User user = userUtilService.findById(userId);
 
-        return null;
+        List<Review> reviews = reviewRepository.findAllByUser(user);
+
+        return GetMyReviewResponseDto.from(reviews);
     }
 
 
-    public Object getMyAsks(Long userId) {
+    public List<GetMyAskResponseDto> getMyAsks(Long userId) {
         User user = userUtilService.findById(userId);
-        return null;
+
+        List<Ask> asks = askRepository.findAllByUser(user);
+
+        return GetMyAskResponseDto.from(asks);
     }
 
-    public Object createReview(Long userId, @Valid CreateReviewRequestDto req) {
+    @Transactional
+    public void createReview(Long userId, @Valid CreateReviewRequestDto req) {
         userUtilService.findById(userId);
 
-        // TODO orderId 검증 필요
+        Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
-        return null;
+        Review newReview = Review.builder()
+                .user(order.getUser())
+                .buyPost(order.getBuyPost())
+                .contents(req.getContent())
+                .rating(req.getRating())
+                .build();
+
+        reviewRepository.save(newReview);
     }
 
-    public Object createAsk(Long userId, @Valid CreateAskRequestDto req) {
-        return null;
+    @Transactional
+    public void createAsk(Long userId, @Valid CreateAskRequestDto req) {
+        User user = userUtilService.findById(userId);
+
+        Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
+
+        Ask newAsk = Ask.builder()
+                .user(user)
+                .buyPost(order.getBuyPost())
+                .product(order.getProduct())
+                .orderNum(order.getOrderNum())
+                .contents(req.getContent())
+                .secret(req.getIsSecret())
+                .answer(null)
+                .answeredAt(null)
+                .build();
+
+        askRepository.save(newAsk);
     }
 
     @Transactional
@@ -103,5 +143,18 @@ public class ProfileService {
         User user = userUtilService.findById(userId);
 
         user.changePhone(phone);
+    }
+
+    @Transactional
+    public void deleteAsk(Long userId, Long askId) {
+        User user = userUtilService.findById(userId);
+
+        Ask ask = askRepository.findById(askId).orElseThrow(() -> new IllegalArgumentException("문의 정보가 없습니다."));
+
+        if (ask.getUser() != user) {
+            throw new ProfileErrorException(ProfileErrorCode.DELETE_USER_MISSMATCH);
+        }
+
+        askRepository.softDelete(ask);
     }
 }

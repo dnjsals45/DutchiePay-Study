@@ -64,13 +64,15 @@ public class ProfileController {
     @PostMapping("/reviews")
     public ResponseEntity<?> createReview(Long userId,
                                           @Valid @RequestBody CreateReviewRequestDto req) {
-        return ResponseEntity.ok().body(profileService.createReview(userId, req));
+        profileService.createReview(userId, req);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/asks")
     public ResponseEntity<?> createAsk(Long userId,
                                        @Valid @RequestBody CreateAskRequestDto req) {
-        return ResponseEntity.ok().body(profileService.createAsk(userId, req));
+        profileService.createAsk(userId, req);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -113,7 +115,8 @@ public class ProfileController {
      * DELETE
      */
     @DeleteMapping("/asks")
-    public ResponseEntity<?> deleteAsk(Long userId, @RequestBody Long reviewId) {
+    public ResponseEntity<?> deleteAsk(Long userId, @RequestBody Long askId) {
+        profileService.deleteAsk(userId, askId);
         return ResponseEntity.ok().build();
     }
 }
