@@ -9,6 +9,6 @@ import lombok.*;
 public class CreateReviewRequestDto {
     private Long orderId;
     private String content;
-    private Long rating;
+    private Integer rating;
     private String reviewImg;
 }
