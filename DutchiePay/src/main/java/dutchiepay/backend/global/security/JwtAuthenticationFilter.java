@@ -93,6 +93,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.addHeader("Authorization", "Bearer " + accessToken);
         response.addHeader("Authorization", "Bearer " + refreshToken);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        new UserDetailsImpl(user), null, null
+                )
+        );
     }
 
     //로그인 실패
