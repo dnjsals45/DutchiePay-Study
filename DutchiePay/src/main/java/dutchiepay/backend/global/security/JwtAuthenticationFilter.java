@@ -1,35 +1,47 @@
 package dutchiepay.backend.global.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import dutchiepay.backend.domain.user.dto.UserLoginRequestDto;
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.jwt.RefreshToken;
+import dutchiepay.backend.global.jwt.RefreshTokenRepository;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Slf4j(topic = "로그인 & JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository,
+        RefreshTokenRepository refreshTokenRepository,
         PasswordEncoder passwordEncoder) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
-        //setFilterProcessUrl("/users/login");
+        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/users/login", "POST"));
     }
 
+    //로그인 시도
     @Override
     public Authentication attemptAuthentication(
         HttpServletRequest request,
@@ -42,17 +54,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             );
 
             User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(
-                () -> new BadCredentialsException("존재하지 않는 이메일입니다.")
+                () -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)
             );
 
             if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-                throw new BadCredentialsException("비밀번호가 올바르지 않습니다.");
-            }
-
-            return new CustomAuthenticationToken(
-                user,
-                requestDto.getPassword()
-            );
+                throw new UserErrorException(UserErrorCode.USER_INVALID_PASSWORD);
+            }          
 
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -63,6 +70,48 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         AccountExpiredException: 계정이 만료된 경우
         LockedException: 계정이 잠겨 있는 경우
         DisabledException: 계정이 비활성화된 경우
-         */
+        */
+    }
+
+    //로그인 성공
+    @Override
+    protected void successfulAuthentication(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain chain,
+        Authentication authResult
+    ) {
+        User user = (User) authResult.getPrincipal();
+        String accessToken = jwtUtil.createAccessToken(user.getUserId());
+        String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
+
+        RefreshToken refreshEntity = RefreshToken.builder()
+            .userId(user.getUserId())
+            .tokenString(refreshToken)
+            .build();
+        refreshTokenRepository.save(refreshEntity);
+
+        response.addHeader("Authorization", "Bearer " + accessToken);
+        response.addHeader("Authorization", "Bearer " + refreshToken);
+    }
+
+    //로그인 실패
+    @Override
+    protected void unsuccessfulAuthentication(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        AuthenticationException failed
+    ) throws IOException {
+
+        log.error(failed.getMessage());
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        ObjectNode json = new ObjectMapper().createObjectNode();
+        json.put("message", failed.getMessage());
+        String newResponse = new ObjectMapper().writeValueAsString(json);
+
+        response.setContentType("application/json");
+        response.setContentLength(newResponse.getBytes(StandardCharsets.UTF_8).length);
+        response.getOutputStream().write(newResponse.getBytes(StandardCharsets.UTF_8));
     }
 }
