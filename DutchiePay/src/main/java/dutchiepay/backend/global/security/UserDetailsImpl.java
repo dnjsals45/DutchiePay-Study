@@ -1,6 +1,6 @@
 package dutchiepay.backend.global.security;
 
-import com.ip.ddangddangddang.domain.user.entity.User;
+import dutchiepay.backend.entity.User;
 import java.util.Collection;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
