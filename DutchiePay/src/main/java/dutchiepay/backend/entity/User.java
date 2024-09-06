@@ -74,16 +74,6 @@ public class User extends Auditing {
     @Column(length = 10)
     private String oauthProvider;
 
-    public User(String email, String name, String phone, String encodedPassword, String nickname,
-        String Location) {
-        this.email = email;
-        this.username = name;
-        this.phone = phone;
-        this.password = encodedPassword;
-        this.nickname = nickname;
-        this.location = Location;
-        this.state = 0;
-    }
     public void changePassword(String password) {
         this.password = password;
     }
