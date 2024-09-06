@@ -25,14 +25,15 @@ public class UserService {
 
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
-        userRepository.save(new User(
-            requestDto.getEmail(),
-            requestDto.getName(),
-            requestDto.getPhone(),
-            encodedPassword,
-            nickname,
-            requestDto.getLocation()
-        ));
+        User user = User.builder()
+            .email(requestDto.getEmail())
+            .password(requestDto.getPassword())
+            .phone(requestDto.getPhone())
+            .nickname(requestDto.getNickname())
+            .username(requestDto.getName())
+            .location(requestDto.getLocation())
+            .build();
+        userRepository.save(user);
     }
 
     public void existsNickname(String nickname) {
