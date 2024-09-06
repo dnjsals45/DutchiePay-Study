@@ -37,10 +37,6 @@ public class JwtUtil {
 
     public static final String BEARER_PREFIX = "Bearer ";
 
-    public final long ACCESS_TOKEN_EXPIRATION_TIME = 30 * 60 * 1000L;
-
-    public final long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L;
-
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     //키 초기화
@@ -62,7 +58,7 @@ public class JwtUtil {
         return Jwts.builder()
             .claim("userId", userId)
             .claim("tokenType", "access")
-            .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION_TIME))
+            .setExpiration(new Date(now.getTime() + accessTokenExpiration))
             .signWith(accessKey, signatureAlgorithm)
             .compact();
     }
@@ -75,7 +71,7 @@ public class JwtUtil {
         return Jwts.builder()
             .claim("userId", userId)
             .claim("tokenType", "refresh")
-            .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION_TIME))
+            .setExpiration(new Date(now.getTime() + refreshTokenExpiration))
             .signWith(refreshKey, signatureAlgorithm)
             .compact();
     }
