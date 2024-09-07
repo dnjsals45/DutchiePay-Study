@@ -29,15 +29,15 @@ public class Product extends Auditing {
 
     // 원가격
     @Column(nullable = false)
-    private Integer originalPrice;
+    private int originalPrice;
 
     // 판매가격
     @Column(nullable = false)
-    private Integer salePrice;
+    private int salePrice;
 
     // 원가대비 할인율
     @Column(nullable = false)
-    private Integer discountPercent;
+    private int discountPercent;
 
     // 상품 이미지
     @Column(nullable = false, length = 500)

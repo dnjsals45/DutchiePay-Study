@@ -17,8 +17,8 @@ public class Comment extends Auditing {
     private Long commentId;
 
     @ManyToOne
-    @JoinColumn(name = "free_post_id")
-    private FreePost freePostId;
+    @JoinColumn(name = "free_id")
+    private Free freeId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

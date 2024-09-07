@@ -23,8 +23,8 @@ public class Review extends Auditing {
 
     //공구게시글 ID
     @ManyToOne
-    @JoinColumn(name = "buy_post_id")
-    private BuyPost buyPost;
+    @JoinColumn(name = "buy_id")
+    private Buy buy;
 
     //내용
     @Column(nullable = false, length = 1000)
@@ -32,7 +32,7 @@ public class Review extends Auditing {
 
     //별점
     @Column(nullable = false)
-    private Integer rating;
+    private int rating;
 
     //후기 사진
     @Column(length = 500)
@@ -40,5 +40,5 @@ public class Review extends Auditing {
 
     //수정 횟수, 최대 2번 가능
     @Column(nullable = false)
-    private Integer updateCount;
+    private int updateCount;
 }

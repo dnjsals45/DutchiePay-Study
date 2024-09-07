@@ -64,7 +64,7 @@ public class User extends Auditing {
     //탈퇴&정지 여부
     //0 : 정상, 1 : 정지, 2 : 탈퇴
     @Column(nullable = false)
-    private Integer state;
+    private int state;
 
     //소셜 ID
     @Column(length = 20)

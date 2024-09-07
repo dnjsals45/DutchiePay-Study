@@ -27,8 +27,8 @@ public class Orders extends Auditing {
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "buy_post_id")
-    private BuyPost buyPost;
+    @JoinColumn(name = "buy_id")
+    private Buy buy;
 
     @ManyToOne
     @JoinColumn(name = "coupon_id")

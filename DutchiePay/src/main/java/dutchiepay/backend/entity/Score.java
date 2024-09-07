@@ -18,31 +18,31 @@ public class Score extends Auditing {
 
     //공구게시글 ID
     @OneToOne
-    @JoinColumn(name = "buy_post_id")
-    private BuyPost buyPost;
+    @JoinColumn(name = "buy_id")
+    private Buy buy;
 
     //1점 개수, 0부터 시작
     @Column(nullable = false)
-    private Integer one;
+    private int one;
 
     //2점 개수
     @Column(nullable = false)
-    private Integer two;
+    private int two;
 
     //3점 개수
     @Column(nullable = false)
-    private Integer three;
+    private int three;
 
     //4점 개수
     @Column(nullable = false)
-    private Integer four;
+    private int four;
 
     //5점 개수
     @Column(nullable = false)
-    private Integer five;
+    private int five;
 
     //후기 개수
     @Column(nullable = false)
-    private Integer count;
+    private int count;
 
 }

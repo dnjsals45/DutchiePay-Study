@@ -8,15 +8,15 @@ import java.time.LocalDate;
 
 @Entity
 @Builder
-@Table(name = "BuyPost")
+@Table(name = "Buy")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BuyPost extends Auditing {
+public class Buy extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long buyPostId;
+    private Long buyId;
 
     @OneToOne
     @JoinColumn(name = "product_id")
@@ -32,13 +32,13 @@ public class BuyPost extends Auditing {
 
     // 최소 충족 수량
     @Column(nullable = false)
-    private Integer skeleton;
+    private int skeleton;
 
     // 현재 수량
     @Column(nullable = false)
-    private Integer nowCount;
+    private int nowCount;
 
     // 카테고리
     @Column(nullable = false)
-    private Integer category;
+    private int category;
 }
