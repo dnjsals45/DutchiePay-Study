@@ -41,8 +41,8 @@ dependencies {
     // cool sms
     implementation 'net.nurigo:sdk:4.3.0'
 
-    // h2
-    runtimeOnly 'com.h2database:h2'
+    // mariadb
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.4.1'
 }
 
 tasks.named('test') {
