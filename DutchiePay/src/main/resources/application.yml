@@ -16,6 +16,8 @@ spring:
     hibernate:
       ddl-auto: none # 필요 시 create으로 변경 (컬럼 타입명 변경 등)
     show-sql: true
+  cors:
+    allowed-origins: ${CORS_ORIGIN}
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
