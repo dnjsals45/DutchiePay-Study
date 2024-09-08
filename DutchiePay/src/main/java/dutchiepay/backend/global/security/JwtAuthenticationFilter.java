@@ -8,17 +8,20 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
-import dutchiepay.backend.global.jwt.RefreshToken;
-import dutchiepay.backend.global.jwt.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -26,19 +29,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @Slf4j(topic = "로그인 & JWT 생성")
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository,
-        RefreshTokenRepository refreshTokenRepository,
         PasswordEncoder passwordEncoder) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/users/login", "POST"));
     }
@@ -61,7 +61,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
                 throw new UserErrorException(UserErrorCode.USER_INVALID_PASSWORD);
-            }          
+            }
+
+            // 인증 성공 시 UsernamePasswordAuthenticationToken 생성 및 반환
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 예시로 ROLE_USER 권한 추가
+
+            return new UsernamePasswordAuthenticationToken(
+                    new UserDetailsImpl(user), // principal
+                    user.getPassword(), // credentials
+                    authorities // authorities
+            );
 
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -82,24 +92,32 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         HttpServletResponse response,
         FilterChain chain,
         Authentication authResult
-    ) {
-        User user = (User) authResult.getPrincipal();
+    ) throws IOException {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
+        User user = userDetails.getUser();
+
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
         String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
 
-        RefreshToken refreshEntity = RefreshToken.builder()
-            .userId(user.getUserId())
-            .tokenString(refreshToken)
-            .build();
-        refreshTokenRepository.save(refreshEntity);
+        user.createRefreshToken(refreshToken);
+        userRepository.save(user);
 
-        response.addHeader("Authorization", "Bearer " + accessToken);
-        response.addHeader("Authorization", "Bearer " + refreshToken);
+        sendResponse(response, accessToken, refreshToken);
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
-                        new UserDetailsImpl(user), null, null
+                        userDetails, null, null
                 )
+        );
+    }
+
+    private void sendResponse(HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        new ObjectMapper().writeValue(response.getWriter(), new ObjectNode(new ObjectMapper().getNodeFactory())
+            .put("accessToken", accessToken)
+            .put("refreshToken", refreshToken)
         );
     }
 

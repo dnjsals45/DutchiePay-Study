@@ -2,7 +2,6 @@ package dutchiepay.backend.global.config;
 
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.global.jwt.JwtUtil;
-import dutchiepay.backend.global.jwt.RefreshTokenRepository;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
 import dutchiepay.backend.global.security.NicknameQueryParamFilter;
@@ -11,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -34,14 +35,26 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
-    private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final UserDetailsServiceImpl userDetailsService;
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
+
+    private final String[] permitAllUrl = {
+            "/users/login",
+            "/users/signup",
+            "/users?nickname",
+            "/users/email",
+            "/users/pwd-nonuser",
+            "/users/auth",
+            "/users/test"
+    };
+
+    private final String[] readOnlyUrl = {
+            "/favicon.ico",
+            "/api-docs/**",
+            "/v3/api-docs/**", "/swagger-ui/**", "/swagger",
+    };
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -58,20 +71,11 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         return new UserDetailsServiceImpl(userRepository);
     }
-    
-    //로그인 및 jwt 생성
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository,
-            refreshTokenRepository, passwordEncoder);
-        filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
-        return filter;
-    }
 
     //jwt 검증
     @Bean
     public JwtVerificationFilter jwtVerificationFilter() {
-        return new JwtVerificationFilter(jwtUtil);
+        return new JwtVerificationFilter(jwtUtil, userRepository);
     }
 
     @Bean
@@ -80,27 +84,21 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests((authorizeHttpRequests) ->
+            .cors(cors -> corsConfigurationSource())
+            .sessionManagement(sessionManagement ->
+                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
-                    .requestMatchers("/users/login").permitAll()
-                    .requestMatchers("/user/signup").permitAll()
-                    .requestMatchers("/users?nickname").permitAll()
-                    .requestMatchers("/users/email").permitAll()
-                    .requestMatchers("/users/pwd").permitAll()
-                    .requestMatchers("/users/pwd-nonuser").permitAll()
-                    .requestMatchers("/users/auth").permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
+                    .requestMatchers(permitAllUrl).permitAll()
                     .anyRequest().authenticated())
-            //TODO 주석제거 corsFilter 작성 후
-            //.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new NicknameQueryParamFilter(),
                 UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthenticationFilter(),
+            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder()),
                 UsernamePasswordAuthenticationFilter.class);
-            .cors(cors -> corsConfigurationSource())
-            .sessionManagement(sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-                
+
         return http.build();
     }
 

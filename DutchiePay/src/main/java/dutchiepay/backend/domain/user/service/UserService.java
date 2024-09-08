@@ -27,12 +27,13 @@ public class UserService {
 
         User user = User.builder()
             .email(requestDto.getEmail())
-            .password(requestDto.getPassword())
+            .password(encodedPassword)
             .phone(requestDto.getPhone())
             .nickname(requestDto.getNickname())
             .username(requestDto.getName())
             .location(requestDto.getLocation())
             .build();
+
         userRepository.save(user);
     }
 
