@@ -5,9 +5,19 @@ spring:
     provider: https://api.coolsms.co.kr
     sender: ${SMS_SENDER}
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:tcp://localhost/~/test
-    username: sa
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    database: mysql
+    open-in-view: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none # 필요 시 create으로 변경 (컬럼 타입명 변경 등)
+    show-sql: true
+  cors:
+    allowed-origins: ${CORS_ORIGIN}
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8

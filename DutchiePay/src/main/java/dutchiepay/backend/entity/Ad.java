@@ -19,8 +19,8 @@ public class Ad extends Auditing {
     private Long adId;
 
     @OneToOne
-    @JoinColumn(name = "buy_post_id")
-    private BuyPost buyPostId;
+    @JoinColumn(name = "buy_id")
+    private Buy buyId;
 
     // 만료 시간
     @Column(nullable = false)

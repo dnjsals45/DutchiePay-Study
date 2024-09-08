@@ -21,7 +21,7 @@ public class Likes extends Auditing {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "buy_post_id")
-    private BuyPost buyPost;
+    @JoinColumn(name = "buy_id")
+    private Buy buy;
 
 }

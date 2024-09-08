@@ -31,7 +31,7 @@ public class Purchase extends Auditing {
 
     //가격
     @Column(nullable = false)
-    private Integer price;
+    private int price;
 
     //썸네일
     @Column(length = 500)
@@ -47,7 +47,7 @@ public class Purchase extends Auditing {
 
     //조회수
     @Column(nullable = false)
-    private Integer hits;
+    private int hits;
 
     //약속 장소
     @Column(nullable = false, length = 50)
