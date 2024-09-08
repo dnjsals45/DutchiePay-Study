@@ -46,7 +46,8 @@ public class SecurityConfig {
             "/users?nickname",
             "/users/email",
             "/users/pwd-nonuser",
-            "/users/auth"
+            "/users/auth",
+            "/users/test"
     };
 
     private final String[] readOnlyUrl = {
@@ -83,9 +84,12 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests((authorizeHttpRequests) ->
+            .cors(cors -> corsConfigurationSource())
+            .sessionManagement(sessionManagement ->
+                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
-                    .requestMatchers(HttpMethod.OPTIONS, "*").permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
                     .requestMatchers(permitAllUrl).permitAll()
                     .anyRequest().authenticated())
@@ -93,11 +97,8 @@ public class SecurityConfig {
                 UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
             .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder()),
-                UsernamePasswordAuthenticationFilter.class)
-            .cors(cors -> corsConfigurationSource())
-            .sessionManagement(sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-                
+                UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

@@ -72,7 +72,5 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-
-
     }
 }
