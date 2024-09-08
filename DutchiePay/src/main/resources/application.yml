@@ -30,3 +30,16 @@ springdoc:
   api-docs:
     groups:
       enabled: true
+
+jwt:
+  secret:
+    access:
+      key: dGhpcyBpcyBhIHZlcnkgbG9uZyBzdHJpbmcgdGhhdCBpcyB1c3VhbGx5IGV4cG9uZW50aWFsIGF1dGhvcml6ZWQgdGhpcyBzdHJpbmc=
+    refresh:
+      key: Z2V0dGluZyB0aGUgc2VjcmV0IGtleSBmb3IgcmVmcmVzaC10b2tlbiBnb29kIGJvcm5nIGFuZCBzYWZlIG9ubHkgcmFuZG9tIGV4YW1wbGU=
+  access:
+    token:
+      expiration: 1800000  # 30분
+  refresh:
+    token:
+      expiration: 604800000  # 7일
