@@ -8,8 +8,6 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
-import dutchiepay.backend.global.jwt.RefreshToken;
-import dutchiepay.backend.global.jwt.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,15 +28,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository,
-        RefreshTokenRepository refreshTokenRepository,
         PasswordEncoder passwordEncoder) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/users/login", "POST"));
     }
@@ -73,6 +68,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         LockedException: 계정이 잠겨 있는 경우
         DisabledException: 계정이 비활성화된 경우
         */
+        return super.attemptAuthentication(request, response);
     }
 
     //로그인 성공
@@ -87,11 +83,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
         String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
 
-        RefreshToken refreshEntity = RefreshToken.builder()
-            .userId(user.getUserId())
-            .tokenString(refreshToken)
-            .build();
-        refreshTokenRepository.save(refreshEntity);
+        user.createRefreshToken(refreshToken);
 
         response.addHeader("Authorization", "Bearer " + accessToken);
         response.addHeader("Authorization", "Bearer " + refreshToken);

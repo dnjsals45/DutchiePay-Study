@@ -1,6 +1,12 @@
 package dutchiepay.backend.global.security;
 
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
+import dutchiepay.backend.domain.user.repository.UserRepository;
+import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -34,21 +41,22 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 } else if ("refresh".equals(tokenType)) {
-
-                    String refreshToken = token;
-                    String userId = claims.get("userId", String.class);
+                    Long userId = claims.get("userId", Long.class);
 
                     //날짜 비교 로직 필요X getUserInfoFromToken -> 만료된 토큰 시 ExpiredJwtException 던짐
-                    RefreshToken storedRefreshToken = refreshTokenRepository.findByUserId(userId)
-                            .orElseThrow(() -> new IllegalArgumentException("해당 유저의 리프레시 토큰을 찾지 못했습니다."));
+                    User user = userRepository.findById(userId).orElseThrow(
+                            () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
+                    );
+
+                    String storedRefreshToken = user.getRefreshToken();
 
                     // 저장된 리프레시 토큰과 일치하는지 확인
-                    if (storedRefreshToken.getTokenString().equals(refreshToken)) {
+                    if (token.equals(storedRefreshToken)) {
                         // 새 액세스 토큰 발급
-                        String newAccessToken = jwtUtil.createAccessToken(Long.parseLong(userId));
+                        String newAccessToken = jwtUtil.createAccessToken(userId);
                         response.addHeader("Authorization", "Bearer " + newAccessToken);
                     } else {
-                        throw new IllegalArgumentException("리프레시 토큰이 유효하지 않습니다.");
+                        throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
                     }
                 }
 

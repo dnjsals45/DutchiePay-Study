@@ -21,7 +21,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public Long getUserId(){
-        return user.getId();
+        return user.getUserId();
     }
 
     public String getEmail() {

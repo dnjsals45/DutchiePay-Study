@@ -77,4 +77,8 @@ public class User extends Auditing {
     public void changePassword(String password) {
         this.password = password;
     }
+
+    public void createRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }
