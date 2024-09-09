@@ -36,6 +36,7 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
@@ -75,7 +76,7 @@ public class SecurityConfig {
     //jwt 검증
     @Bean
     public JwtVerificationFilter jwtVerificationFilter() {
-        return new JwtVerificationFilter(jwtUtil, userRepository);
+        return new JwtVerificationFilter(jwtUtil, userRepository, userDetailsService);
     }
 
     @Bean
