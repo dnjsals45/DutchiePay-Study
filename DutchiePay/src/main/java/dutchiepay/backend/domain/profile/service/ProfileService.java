@@ -24,9 +24,7 @@ public class ProfileService {
     private final AskRepository askRepository;
     private final LikesRepository likesRepository;
 
-    public MyPageResponseDto myPage(Long userId) {
-        User user = userUtilService.findById(userId);
-
+    public MyPageResponseDto myPage(User user) {
         Long couponCount = usersCouponRepository.countByUser(user);
 
         // TODO 현재 참여한 진행중인 공구수 필요. 유저가 공구에 참여중이란 걸 어떻게 알 수 있을까?
@@ -35,21 +33,18 @@ public class ProfileService {
         return MyPageResponseDto.from(user, couponCount, orderCount);
     }
 
-    public List<MyGoodsResponseDto> getMyGoods(Long userId, Long page, Long limit) {
-        User user = userUtilService.findById(userId);
+    public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit) {
 
         return null;
     }
 
 
-    public Object getMyPosts(Long userId, Long page, Long limit) {
-        User user = userUtilService.findById(userId);
+    public Object getMyPosts(User user, Long page, Long limit) {
         return null;
     }
 
 
-    public Object getMyLike(Long userId, String category) {
-        User user = userUtilService.findById(userId);
+    public Object getMyLike(User user, String category) {
 
         List<Likes> likes = likesRepository.findAllByUser(user);
 
@@ -57,8 +52,7 @@ public class ProfileService {
         return null;
     }
 
-    public List<GetMyReviewResponseDto> getMyReviews(Long userId) {
-        User user = userUtilService.findById(userId);
+    public List<GetMyReviewResponseDto> getMyReviews(User user) {
 
         List<Review> reviews = reviewRepository.findAllByUser(user);
 
@@ -66,8 +60,7 @@ public class ProfileService {
     }
 
 
-    public List<GetMyAskResponseDto> getMyAsks(Long userId) {
-        User user = userUtilService.findById(userId);
+    public List<GetMyAskResponseDto> getMyAsks(User user) {
 
         List<Ask> asks = askRepository.findAllByUser(user);
 
@@ -75,14 +68,12 @@ public class ProfileService {
     }
 
     @Transactional
-    public void createReview(Long userId, @Valid CreateReviewRequestDto req) {
-        userUtilService.findById(userId);
-
+    public void createReview(User user, @Valid CreateReviewRequestDto req) {
         Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
         Review newReview = Review.builder()
                 .user(order.getUser())
-                .buyPost(order.getBuyPost())
+                .buy(order.getBuy())
                 .contents(req.getContent())
                 .rating(req.getRating())
                 .build();
@@ -91,14 +82,13 @@ public class ProfileService {
     }
 
     @Transactional
-    public void createAsk(Long userId, @Valid CreateAskRequestDto req) {
-        User user = userUtilService.findById(userId);
+    public void createAsk(User user, @Valid CreateAskRequestDto req) {
 
         Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
         Ask newAsk = Ask.builder()
                 .user(user)
-                .buyPost(order.getBuyPost())
+                .buy(order.getBuy())
                 .product(order.getProduct())
                 .orderNum(order.getOrderNum())
                 .contents(req.getContent())
@@ -111,43 +101,37 @@ public class ProfileService {
     }
 
     @Transactional
-    public void changeNickname(Long userId, String nickname) {
-        User user = userUtilService.findById(userId);
+    public void changeNickname(User user, String nickname) {
 
         user.changeNickname(nickname);
     }
 
     @Transactional
-    public void changeProfileImage(Long userId, String profileImg) {
-        User user = userUtilService.findById(userId);
+    public void changeProfileImage(User user, String profileImg) {
 
         user.changeProfileImg(profileImg);
     }
 
     @Transactional
-    public void changeLocation(Long userId, String location) {
-        User user = userUtilService.findById(userId);
+    public void changeLocation(User user, String location) {
 
         user.changeLocation(location);
     }
 
     @Transactional
-    public void changeAddress(Long userId, ChangeAddressRequestDto req) {
-        User user = userUtilService.findById(userId);
+    public void changeAddress(User user, ChangeAddressRequestDto req) {
 
         user.changeAddress(req.getAddress(), req.getDetail());
     }
 
     @Transactional
-    public void changePhone(Long userId, String phone) {
-        User user = userUtilService.findById(userId);
+    public void changePhone(User user, String phone) {
 
         user.changePhone(phone);
     }
 
     @Transactional
-    public void deleteAsk(Long userId, Long askId) {
-        User user = userUtilService.findById(userId);
+    public void deleteAsk(User user, Long askId) {
 
         Ask ask = askRepository.findById(askId).orElseThrow(() -> new IllegalArgumentException("문의 정보가 없습니다."));
 
