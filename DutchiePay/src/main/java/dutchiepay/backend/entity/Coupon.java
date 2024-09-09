@@ -28,9 +28,9 @@ public class Coupon extends Auditing {
 
     // 할인율
     @Column(nullable = false)
-    private Integer percentage;
+    private int percentage;
 
     // 조건
     @Column(nullable = false)
-    private Integer condition;
+    private int requirePrice;
 }

@@ -6,15 +6,15 @@ import lombok.*;
 
 @Entity
 @Builder
-@Table(name = "FreePost")
+@Table(name = "Free")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FreePost extends Auditing {
+public class Free extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long freePostId;
+    private Long freeId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -33,6 +33,6 @@ public class FreePost extends Auditing {
     private String postImg;
 
     @Column(nullable = false)
-    private Long hits;
+    private int hits;
 
 }

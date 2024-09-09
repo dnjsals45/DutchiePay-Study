@@ -2,6 +2,7 @@ package dutchiepay.backend;
 
 import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
 import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.domain.user.service.UserUtilService;
@@ -68,8 +69,8 @@ class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.findEmail(req))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 전화번호로 가입된 유저가 없습니다.");
+                .isInstanceOf(UserErrorException.class)
+                .hasMessage("해당하는 유저가 없습니다.");
 
         verify(userRepository).findByPhone(req.getPhone());
     }

@@ -28,5 +28,4 @@ public class Report extends Auditing {
 
     @Column(nullable = false)
     private boolean isChecked;
-
 }

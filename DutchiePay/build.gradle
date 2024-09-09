@@ -41,14 +41,19 @@ dependencies {
     // cool sms
     implementation 'net.nurigo:sdk:4.3.0'
 
-    // h2
-    runtimeOnly 'com.h2database:h2'
-
     // Query Dsl
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // mariadb
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.4.1'
+
+    // jjwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 }
 
 tasks.named('test') {

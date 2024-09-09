@@ -64,7 +64,7 @@ public class User extends Auditing {
     //탈퇴&정지 여부
     //0 : 정상, 1 : 정지, 2 : 탈퇴
     @Column(nullable = false)
-    private Integer state;
+    private int state;
 
     //소셜 ID
     @Column(length = 20)
@@ -74,16 +74,6 @@ public class User extends Auditing {
     @Column(length = 10)
     private String oauthProvider;
 
-    public User(String email, String name, String phone, String encodedPassword, String nickname,
-        String Location) {
-        this.email = email;
-        this.username = name;
-        this.phone = phone;
-        this.password = encodedPassword;
-        this.nickname = nickname;
-        this.location = Location;
-        this.state = 0;
-    }
     public void changePassword(String password) {
         this.password = password;
     }
@@ -107,5 +97,9 @@ public class User extends Auditing {
 
     public void changePhone(String phone) {
         this.phone = phone;
+    }
+
+    public void createRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }
