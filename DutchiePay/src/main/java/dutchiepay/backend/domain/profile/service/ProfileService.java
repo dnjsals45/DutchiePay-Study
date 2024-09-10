@@ -6,6 +6,7 @@ import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.profile.repository.ProfileRepository;
+import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -23,6 +24,7 @@ public class ProfileService {
     private final ReviewRepository reviewRepository;
     private final AskRepository askRepository;
     private final ProfileRepository profileRepository;
+    private final UserRepository userRepository;
 
     public MyPageResponseDto myPage(User user) {
         Long couponCount = usersCouponRepository.countByUser(user);
@@ -114,26 +116,36 @@ public class ProfileService {
     @Transactional
     public void changeNickname(User user, String nickname) {
         user.changeNickname(nickname);
+
+        userRepository.save(user);
     }
 
     @Transactional
     public void changeProfileImage(User user, String profileImg) {
         user.changeProfileImg(profileImg);
+
+        userRepository.save(user);
     }
 
     @Transactional
     public void changeLocation(User user, String location) {
         user.changeLocation(location);
+
+        userRepository.save(user);
     }
 
     @Transactional
     public void changeAddress(User user, ChangeAddressRequestDto req) {
         user.changeAddress(req.getAddress(), req.getDetail());
+
+        userRepository.save(user);
     }
 
     @Transactional
     public void changePhone(User user, String phone) {
         user.changePhone(phone);
+
+        userRepository.save(user);
     }
 
     @Transactional
