@@ -5,8 +5,10 @@ import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.commerce.repository.ScoreRepository;
 import dutchiepay.backend.domain.commerce.repository.StoreRepository;
 import dutchiepay.backend.domain.order.repository.LikesRepository;
+import dutchiepay.backend.domain.order.repository.OrdersRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
+import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.domain.profile.repository.ProfileRepository;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
@@ -16,9 +18,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +52,8 @@ class ProfileRepositoryTest {
     @Autowired
     private ScoreRepository scoreRepository;
 
-    private List<GetMyLikesResponseDto> result = new ArrayList<>();
+    @Autowired
+    private OrdersRepository ordersRepository;
 
     private User user;
 
@@ -61,6 +66,9 @@ class ProfileRepositoryTest {
     private Likes like;
 
     private Score score;
+
+    private Orders orders;
+
 
     @BeforeEach
     public void setUp() {
@@ -133,6 +141,8 @@ class ProfileRepositoryTest {
 
 
         // when
+        List<GetMyLikesResponseDto> result = new ArrayList<>();
+
         result = profileRepository.getMyLike(user, "디지털/가전");
         
         // then
@@ -146,5 +156,108 @@ class ProfileRepositoryTest {
         System.out.println("like.getAverage() = " + like.getAverage());
         System.out.println("like.getReviewCount() = " + like.getReviewCount());
         System.out.println("like.getExpireDate() = " + like.getExpireDate());
+    }
+
+    @Test
+    @Transactional
+    void 구매내역조회() {
+        // given
+        // 유저
+        user = User.builder()
+                .email("test@example.com")
+                .username("test")
+                .nickname("더취3")
+                .location("서울시 마포구")
+                .phone("01012345678")
+                .state(0)
+                .build();
+
+        userRepository.save(user);
+
+        // 업체
+        store = Store.builder()
+                .storeName("테스트 업체")
+                .contactNumber("024343434")
+                .representative("테스트 대표")
+                .storeAddress("서울시 마포구")
+                .build();
+        storeRepository.save(store);
+
+        // 상품
+        Product product1 = Product.builder()
+                .storeId(store)
+                .productName("테스트 상품")
+                .detailImg("테스트 상세 이미지")
+                .originalPrice(10000)
+                .salePrice(9000)
+                .discountPercent(10)
+                .productImg("테스트 상품 이미지")
+                .build();
+
+        Product product2 = Product.builder()
+                .storeId(store)
+                .productName("테스트 상품2")
+                .detailImg("테스트 상세 이미지2")
+                .originalPrice(5000)
+                .salePrice(4500)
+                .discountPercent(10)
+                .productImg("테스트 상품 이미지2")
+                .build();
+        productRepository.save(product1);
+        productRepository.save(product2);
+
+        // 주문
+        Orders orders1 = Orders.builder()
+                .user(user)
+                .product(product1)
+                .buy(buy)
+                .orderNum("2021090001")
+                .amount(1)
+                .totalPrice(18000)
+                .payment("카드결제")
+                .orderedAt(LocalDateTime.now())
+                .address("연세대학교 1층 로비")
+                .state("0")
+                .amount(2)
+                .build();
+
+        Orders orders2 = Orders.builder()
+                .user(user)
+                .product(product2)
+                .buy(buy)
+                .orderNum("2021090002")
+                .amount(1)
+                .totalPrice(22500)
+                .payment("카드결제")
+                .orderedAt(LocalDateTime.now())
+                .address("지나가던 버스 정류장 앞")
+                .state("0")
+                .amount(5)
+                .build();
+        ordersRepository.save(orders1);
+        ordersRepository.save(orders2);
+
+        // when
+        List<MyGoodsResponseDto> result = profileRepository.getMyGoods(user, PageRequest.of(0, 1));
+
+        // then
+        for (MyGoodsResponseDto dto : result) {
+            System.out.println("dto.getOrderId() = " + dto.getOrderId());
+            System.out.println("dto.getOrderNum() = " + dto.getOrderNum());
+            System.out.println("dto.getProductId() = " + dto.getProductId());
+            System.out.println("dto.getOrderDate() = " + dto.getOrderDate());
+            System.out.println("dto.getProductName() = " + dto.getProductName());
+            System.out.println("dto.getCount() = " + dto.getCount());
+            System.out.println("dto.getProductPrice() = " + dto.getProductPrice());
+            System.out.println("dto.getTotalPrice() = " + dto.getTotalPrice());
+            System.out.println("dto.getDiscountPercent() = " + dto.getDiscountPercent());
+            System.out.println("dto.getPayment() = " + dto.getPayment());
+            System.out.println("dto.getDeliveryAddress() = " + dto.getDeliveryAddress());
+            System.out.println("dto.getDeliveryState() = " + dto.getDeliveryState());
+            System.out.println("dto.getProductImg() = " + dto.getProductImg());
+            System.out.println("dto.getStoreName() = " + dto.getStoreName());
+            System.out.println("=============================================================");
+        }
+
     }
 }
