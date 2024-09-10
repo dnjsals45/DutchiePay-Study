@@ -34,7 +34,7 @@ public class User extends Auditing {
     private String username;
 
     //휴대폰 번호
-    @Column(nullable = false, length = 11)
+    @Column(length = 11)
     private String phone;
 
     //비밀번호
@@ -43,6 +43,9 @@ public class User extends Auditing {
     //닉네임
     @Column(nullable = false, length = 8, unique = true)
     private String nickname;
+
+    // 우편 번호
+    private String zipCode;
 
     //지역
     @Column(nullable = false, length = 15)
