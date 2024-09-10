@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
 class UsersCouponRepositoryPerformanceTest {
     @Autowired
@@ -44,7 +46,7 @@ class UsersCouponRepositoryPerformanceTest {
                 .couponName("테스트 쿠폰")
                 .expireDate(LocalDate.of(2022, 12, 31))
                 .percentage(10)
-                .condition(10000)
+                .requirePrice(10000)
                 .build();
 
         couponRepository.save(coupon);
