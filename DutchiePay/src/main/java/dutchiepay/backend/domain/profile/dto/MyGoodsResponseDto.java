@@ -14,13 +14,13 @@ public class MyGoodsResponseDto {
     private Long productId;
     private LocalDateTime orderDate;
     private String productName;
-    private Long count;
-    private Long productPrice;
-    private Long totalPrice;
-    private Long discountPercent;
+    private Integer count;
+    private Integer productPrice;
+    private Integer totalPrice;
+    private Integer discountPercent;
     private String payment;
     private String deliveryAddress;
-    private Long deliveryState;
+    private String deliveryState;
     private String productImg;
     private String storeName;
 }

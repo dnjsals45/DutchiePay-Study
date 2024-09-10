@@ -8,9 +8,11 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.commerce.BuyCategory;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
+import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -28,12 +30,13 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     QProduct product = QProduct.product;
     QScore score = QScore.score;
     QLikes like = QLikes.likes;
+    QOrders orders = QOrders.orders;
+    QStore store = QStore.store;
 
     @Override
     public List<GetMyLikesResponseDto> getMyLike(User user, String category) {
         LocalDate now = LocalDate.now();
 
-        System.out.println("category = " + category);
         return jpaQueryFactory
                 .select(Projections.constructor(GetMyLikesResponseDto.class,
                         buy.category,
@@ -72,6 +75,37 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .where(like.user.eq(user))
                 .where(categoryEq(category))
                 .orderBy(like.createdAt.desc())
+                .fetch();
+    }
+
+    // order : orderId, orderNum, orderDate, count(amount), totalPrice, payment, address, state,
+    // product : productId, productName, productPrice, discountPercent, productImg
+    // store : storeName
+    @Override
+    public List<MyGoodsResponseDto> getMyGoods(User user, Pageable pageable) {
+        return jpaQueryFactory
+                .select(Projections.constructor(MyGoodsResponseDto.class,
+                        orders.orderId,
+                        orders.orderNum,
+                        product.productId,
+                        orders.orderedAt.as("orderDate"),
+                        product.productName,
+                        orders.amount.as("count"),
+                        product.salePrice.as("productPrice"),
+                        orders.totalPrice,
+                        product.discountPercent,
+                        orders.payment,
+                        orders.address.as("deliveryAddress"),
+                        orders.state.as("deliveryState"),
+                        product.productImg,
+                        store.storeName))
+                .from(orders)
+                .join(orders.product, product)
+                .join(product.storeId, store)
+                .where(orders.user.eq(user))
+                .orderBy(orders.orderedAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
     }
 
