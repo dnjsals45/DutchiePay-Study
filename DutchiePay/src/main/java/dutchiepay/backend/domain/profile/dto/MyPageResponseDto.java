@@ -10,6 +10,7 @@ import lombok.*;
 public class MyPageResponseDto {
     private String address;
     private String detail;
+    private String zipcode;
     private String phone;
     private Long coupon;
     private Long order;
