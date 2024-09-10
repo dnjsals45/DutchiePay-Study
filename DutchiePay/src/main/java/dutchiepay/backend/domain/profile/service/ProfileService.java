@@ -38,7 +38,7 @@ public class ProfileService {
     }
 
 
-    public Object getMyPosts(User user, String type, Long page, Long limit) {
+    public List<MyPostsResponseDto> getMyPosts(User user, String type, Long page, Long limit) {
         if (type.equals("post")) {
             return profileRepository.getMyPosts(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
         } else if (type.equals("comment")) {
