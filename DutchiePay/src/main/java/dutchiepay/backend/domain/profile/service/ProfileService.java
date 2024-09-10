@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,21 +26,24 @@ public class ProfileService {
 
     public MyPageResponseDto myPage(User user) {
         Long couponCount = usersCouponRepository.countByUser(user);
-
-        // TODO 현재 참여한 진행중인 공구수 필요. 유저가 공구에 참여중이란 걸 어떻게 알 수 있을까?
-        // 유저가 결제완료 + 아직 진행중인 공구일 경우
-        Long orderCount = 0L;
+        Long orderCount = ordersRepository.countByUserPurchase(user, "결제 완료");
 
         return MyPageResponseDto.from(user, couponCount, orderCount);
     }
 
     public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit) {
-        return profileRepository.getMyGoods(user, PageRequest.of(page.intValue(), limit.intValue()));
+        return profileRepository.getMyGoods(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 
 
-    public Object getMyPosts(User user, Long page, Long limit) {
-        return null;
+    public Object getMyPosts(User user, String type, Long page, Long limit) {
+        if (type.equals("post")) {
+            return profileRepository.getMyPosts(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
+        } else if (type.equals("comment")) {
+            return profileRepository.getMyCommentsPosts(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
+        } else {
+            throw new ProfileErrorException(ProfileErrorCode.INVALID_POST_TYPE);
+        }
     }
 
 
@@ -55,6 +57,13 @@ public class ProfileService {
         return GetMyReviewResponseDto.from(reviews);
     }
 
+    public GetMyReviewResponseDto getOneReview(User user, Long reviewId) {
+        Review review = reviewRepository.findByUserAndReviewId(user, reviewId)
+                .orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_REVIEW));
+
+        return GetMyReviewResponseDto.from(review);
+    }
+
 
     public List<GetMyAskResponseDto> getMyAsks(User user) {
         List<Ask> asks = askRepository.findAllByUser(user);
@@ -66,8 +75,12 @@ public class ProfileService {
     public void createReview(User user, @Valid CreateReviewRequestDto req) {
         Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
+        if (user != order.getUser()) {
+            throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
+        }
+
         Review newReview = Review.builder()
-                .user(order.getUser())
+                .user(user)
                 .buy(order.getBuy())
                 .contents(req.getContent())
                 .rating(req.getRating())
@@ -79,6 +92,10 @@ public class ProfileService {
     @Transactional
     public void createAsk(User user, @Valid CreateAskRequestDto req) {
         Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
+
+        if (user != order.getUser()) {
+            throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
+        }
 
         Ask newAsk = Ask.builder()
                 .user(user)
