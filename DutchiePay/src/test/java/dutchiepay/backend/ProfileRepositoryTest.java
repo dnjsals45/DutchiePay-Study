@@ -55,21 +55,6 @@ class ProfileRepositoryTest {
     @Autowired
     private OrdersRepository ordersRepository;
 
-    private User user;
-
-    private Buy buy;
-
-    private Product product;
-
-    private Store store;
-
-    private Likes like;
-
-    private Score score;
-
-    private Orders orders;
-
-
     @BeforeEach
     public void setUp() {
     }
@@ -79,7 +64,7 @@ class ProfileRepositoryTest {
     void 좋아요누른상품찾기() {
         // given
         // 유저
-        user = User.builder()
+        User user = User.builder()
                 .email("test@example.com")
                 .username("test")
                 .nickname("더취3")
@@ -91,7 +76,7 @@ class ProfileRepositoryTest {
         userRepository.save(user);
 
         // 업체
-        store = Store.builder()
+        Store store = Store.builder()
                 .storeName("테스트 업체")
                 .contactNumber("024343434")
                 .representative("테스트 대표")
@@ -100,7 +85,7 @@ class ProfileRepositoryTest {
         storeRepository.save(store);
 
         // 상품
-        product = Product.builder()
+        Product product = Product.builder()
                 .storeId(store)
                 .productName("테스트 상품")
                 .detailImg("테스트 상세 이미지")
@@ -112,7 +97,7 @@ class ProfileRepositoryTest {
         productRepository.save(product);
 
         // 공구게시글
-        buy = Buy.builder()
+        Buy buy = Buy.builder()
                 .productId(product)
                 .title("테스트 공구 게시글1")
                 .deadline(LocalDate.now())
@@ -122,13 +107,13 @@ class ProfileRepositoryTest {
                 .build();
         buyRepository.save(buy);
 
-        like = Likes.builder()
+        Likes like = Likes.builder()
                 .user(user)
                 .buy(buy)
                 .build();
         likesRepository.save(like);
 
-        score = Score.builder()
+        Score score = Score.builder()
                 .buy(buy)
                 .one(1)
                 .two(2)
@@ -146,16 +131,16 @@ class ProfileRepositoryTest {
         result = profileRepository.getMyLike(user, "디지털/가전");
         
         // then
-        GetMyLikesResponseDto like = result.get(0);
-        System.out.println("like.getCategory() = " + like.getCategory());
-        System.out.println("like.getTitle() = " + like.getTitle());
-        System.out.println("like.getOriginalPrice() = " + like.getOriginalPrice());
-        System.out.println("like.getSalePrice() = " + like.getSalePrice());
-        System.out.println("like.getDiscountPercent() = " + like.getDiscountPercent());
-        System.out.println("like.getThumbnail() = " + like.getThumbnail());
-        System.out.println("like.getAverage() = " + like.getAverage());
-        System.out.println("like.getReviewCount() = " + like.getReviewCount());
-        System.out.println("like.getExpireDate() = " + like.getExpireDate());
+        GetMyLikesResponseDto likeResult = result.get(0);
+        System.out.println("카테고리 = " + likeResult.getCategory());
+        System.out.println("제목 = " + likeResult.getTitle());
+        System.out.println("원래 가격 = " + likeResult.getOriginalPrice());
+        System.out.println("세일 가격 = " + likeResult.getSalePrice());
+        System.out.println("할인율 = " + likeResult.getDiscountPercent());
+        System.out.println("썸네일 = " + likeResult.getThumbnail());
+        System.out.println("평균 별점 = " + likeResult.getAverage());
+        System.out.println("리뷰 수 = " + likeResult.getReviewCount());
+        System.out.println("마감 날짜 = " + likeResult.getExpireDate());
     }
 
     @Test
@@ -163,7 +148,7 @@ class ProfileRepositoryTest {
     void 구매내역조회() {
         // given
         // 유저
-        user = User.builder()
+        User user = User.builder()
                 .email("test@example.com")
                 .username("test")
                 .nickname("더취3")
@@ -175,7 +160,7 @@ class ProfileRepositoryTest {
         userRepository.save(user);
 
         // 업체
-        store = Store.builder()
+        Store store = Store.builder()
                 .storeName("테스트 업체")
                 .contactNumber("024343434")
                 .representative("테스트 대표")
@@ -206,11 +191,33 @@ class ProfileRepositoryTest {
         productRepository.save(product1);
         productRepository.save(product2);
 
+        // 공구 게시글
+        Buy buy1 = Buy.builder()
+                .productId(product1)
+                .title("테스트 공구 게시글1")
+                .deadline(LocalDate.now())
+                .skeleton(10)
+                .nowCount(100)
+                .category(BuyCategory.가전)
+                .build();
+
+        Buy buy2 = Buy.builder()
+                .productId(product2)
+                .title("테스트 공구 게시글1")
+                .deadline(LocalDate.now())
+                .skeleton(10)
+                .nowCount(100)
+                .category(BuyCategory.가전)
+                .build();
+        buyRepository.save(buy1);
+        buyRepository.save(buy2);
+
+
         // 주문
         Orders orders1 = Orders.builder()
                 .user(user)
                 .product(product1)
-                .buy(buy)
+                .buy(buy1)
                 .orderNum("2021090001")
                 .amount(1)
                 .totalPrice(18000)
@@ -224,7 +231,7 @@ class ProfileRepositoryTest {
         Orders orders2 = Orders.builder()
                 .user(user)
                 .product(product2)
-                .buy(buy)
+                .buy(buy2)
                 .orderNum("2021090002")
                 .amount(1)
                 .totalPrice(22500)
@@ -242,20 +249,20 @@ class ProfileRepositoryTest {
 
         // then
         for (MyGoodsResponseDto dto : result) {
-            System.out.println("dto.getOrderId() = " + dto.getOrderId());
-            System.out.println("dto.getOrderNum() = " + dto.getOrderNum());
-            System.out.println("dto.getProductId() = " + dto.getProductId());
-            System.out.println("dto.getOrderDate() = " + dto.getOrderDate());
-            System.out.println("dto.getProductName() = " + dto.getProductName());
-            System.out.println("dto.getCount() = " + dto.getCount());
-            System.out.println("dto.getProductPrice() = " + dto.getProductPrice());
-            System.out.println("dto.getTotalPrice() = " + dto.getTotalPrice());
-            System.out.println("dto.getDiscountPercent() = " + dto.getDiscountPercent());
-            System.out.println("dto.getPayment() = " + dto.getPayment());
-            System.out.println("dto.getDeliveryAddress() = " + dto.getDeliveryAddress());
-            System.out.println("dto.getDeliveryState() = " + dto.getDeliveryState());
-            System.out.println("dto.getProductImg() = " + dto.getProductImg());
-            System.out.println("dto.getStoreName() = " + dto.getStoreName());
+            System.out.println("주문Id = " + dto.getOrderId());
+            System.out.println("주문 번호 = " + dto.getOrderNum());
+            System.out.println("상품Id = " + dto.getProductId());
+            System.out.println("주문 날짜/시간 = " + dto.getOrderDate());
+            System.out.println("상품 이름 = " + dto.getProductName());
+            System.out.println("수량 = " + dto.getCount());
+            System.out.println("상품 가격 = " + dto.getProductPrice());
+            System.out.println("총 가격 = " + dto.getTotalPrice());
+            System.out.println("할인율 = " + dto.getDiscountPercent());
+            System.out.println("결제 방법 = " + dto.getPayment());
+            System.out.println("주문 배송지 = " + dto.getDeliveryAddress());
+            System.out.println("배송 상태 = " + dto.getDeliveryState());
+            System.out.println("상품 이미지 = " + dto.getProductImg());
+            System.out.println("업체 이름 = " + dto.getStoreName());
             System.out.println("=============================================================");
         }
 
