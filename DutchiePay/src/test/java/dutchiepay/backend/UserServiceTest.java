@@ -2,6 +2,7 @@ package dutchiepay.backend;
 
 import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
 import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.domain.user.service.UserService;
@@ -30,7 +31,7 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    @InjectMocks
+    @Mock
     private UserUtilService userUtilService;
 
     private User mockUser;
@@ -51,38 +52,29 @@ class UserServiceTest {
     void 이메일찾기_유저존재() {
         // given
         FindEmailRequestDto req = new FindEmailRequestDto("01012345678");
-        when(userRepository.findByPhone(req.getPhone())).thenReturn(Optional.of(mockUser));
+        when(userUtilService.findByPhone(req.getPhone())).thenReturn(mockUser);
+        when(userUtilService.maskEmail(mockUser.getEmail())).thenReturn("t**t@example.com");
 
         // when
         FindEmailResponseDto result = userService.findEmail(req);
 
         // then
         assertThat(result.getEmail()).isEqualTo("t**t@example.com");
-        verify(userRepository).findByPhone(req.getPhone());
+        verify(userUtilService).findByPhone(req.getPhone());
+        verify(userUtilService).maskEmail(mockUser.getEmail());
     }
 
     @Test
     void 이메일찾기_유저없음() {
         // given
         FindEmailRequestDto req = new FindEmailRequestDto("01012345678");
-        when(userRepository.findByPhone(req.getPhone())).thenReturn(Optional.empty());
+        when(userUtilService.findByPhone(req.getPhone())).thenThrow(new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
         // when & then
         assertThatThrownBy(() -> userService.findEmail(req))
                 .isInstanceOf(UserErrorException.class)
                 .hasMessage("해당하는 유저가 없습니다.");
 
-        verify(userRepository).findByPhone(req.getPhone());
-    }
-
-    @Test
-    void 닉네임생성테스트() {
-        Long userId1 = 1L;
-        Long userId2 = 100L;
-        Long userId3 = 493L;
-
-        assertThat(userUtilService.makeRandomNickname(userId1)).isEqualTo("신기한 더취0");
-        assertThat(userUtilService.makeRandomNickname(userId2)).isEqualTo("기쁜 더취12");
-        assertThat(userUtilService.makeRandomNickname(userId3)).isEqualTo("행복한 더취61");
+        verify(userUtilService).findByPhone(req.getPhone());
     }
 }

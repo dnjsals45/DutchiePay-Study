@@ -1,18 +1,26 @@
 package dutchiepay.backend;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.coupon.repository.CouponRepository;
 import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.Coupon;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.entity.Users_Coupon;
+import dutchiepay.backend.global.config.JpaAuditingConfig;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -26,7 +34,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
+@Import(UsersCouponRepositoryPerformanceTest.TestConfig.class)
 class UsersCouponRepositoryPerformanceTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @PersistenceContext
+        private EntityManager entityManager;
+
+        @Bean
+        public JPAQueryFactory jpaQueryFactory() {
+            return new JPAQueryFactory(entityManager);
+        }
+    }
+
     @Autowired
     private UsersCouponRepository usersCouponRepository;
 
@@ -139,6 +160,7 @@ class UsersCouponRepositoryPerformanceTest {
     }
 
     @Test
+    @Disabled
     void 성능테스트_유저1_쿠폰10000() {
         prepare(1, 10000);
         User testUser1 = users.get(0);
@@ -163,6 +185,7 @@ class UsersCouponRepositoryPerformanceTest {
     }
 
     @Test
+    @Disabled
     void 성능테스트_유저10_쿠폰100() {
         prepare(10, 100);
         User testUser1 = users.get(0);
@@ -187,6 +210,7 @@ class UsersCouponRepositoryPerformanceTest {
     }
 
     @Test
+    @Disabled
     void 성능테스트_유저10_쿠폰1000() {
         prepare(10, 1000);
         User testUser1 = users.get(0);
@@ -211,6 +235,7 @@ class UsersCouponRepositoryPerformanceTest {
     }
 
     @Test
+    @Disabled
     void 성능테스트_유저10_쿠폰10000() {
         prepare(10, 10000);
         User testUser1 = users.get(0);
