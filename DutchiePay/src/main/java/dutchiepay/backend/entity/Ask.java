@@ -34,7 +34,7 @@ public class Ask extends Auditing {
     private Product product;
 
     //주문번호
-    private Long orderNum;
+    private String orderNum;
 
     //문의내용
     @Column(nullable = false, length = 1000)
@@ -49,5 +49,4 @@ public class Ask extends Auditing {
 
     //답변 날짜
     private LocalDateTime answeredAt;
-
 }

@@ -24,4 +24,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("회원을 찾을 수 없습니다 : " + username));
         return new UserDetailsImpl(user);
     }
+
+    public UserDetails loadUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("회원을 찾을 수 없습니다 : " + userId));
+
+        return new UserDetailsImpl(user);
+    }
 }

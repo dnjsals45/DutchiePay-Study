@@ -14,6 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j(topic = "JWT 검증")
@@ -22,6 +26,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -38,6 +43,8 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                 String tokenType = claims.get("tokenType", String.class);
 
                 if ("access".equals(tokenType)) {
+                    UserDetailsImpl userDetails = getUserDetails(token);
+                    setAuthenticationUser(userDetails, request);
                     filterChain.doFilter(request, response);
                     return;
                 } else if ("refresh".equals(tokenType)) {
@@ -72,5 +79,20 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private UserDetailsImpl getUserDetails(String accessToken) {
+        Long userId = jwtUtil.getUserInfoFromToken(accessToken).get("userId", Long.class);
+        return (UserDetailsImpl) userDetailsService.loadUserById(userId);
+    }
+
+    private void setAuthenticationUser(UserDetailsImpl userDetails, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities()
+        );
+
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.info("Authenticated user: {}", userDetails.getUserId());
     }
 }

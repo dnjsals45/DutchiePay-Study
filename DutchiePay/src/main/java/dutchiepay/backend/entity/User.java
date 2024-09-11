@@ -34,7 +34,7 @@ public class User extends Auditing {
     private String username;
 
     //휴대폰 번호
-    @Column(nullable = false, length = 11)
+    @Column(length = 11)
     private String phone;
 
     //비밀번호
@@ -43,6 +43,9 @@ public class User extends Auditing {
     //닉네임
     @Column(nullable = false, length = 8, unique = true)
     private String nickname;
+
+    // 우편 번호
+    private String zipCode;
 
     //지역
     @Column(nullable = false, length = 15)
@@ -76,6 +79,27 @@ public class User extends Auditing {
 
     public void changePassword(String password) {
         this.password = password;
+    }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void changeProfileImg(String profileImg) {
+        this.profileImg = profileImg;
+    }
+
+    public void changeLocation(String location) {
+        this.location = location;
+    }
+
+    public void changeAddress(String address, String detail) {
+        this.address = address;
+        this.detail = detail;
+    }
+
+    public void changePhone(String phone) {
+        this.phone = phone;
     }
 
     public void createRefreshToken(String refreshToken) {

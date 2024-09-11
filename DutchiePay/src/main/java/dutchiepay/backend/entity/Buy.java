@@ -1,6 +1,8 @@
 package dutchiepay.backend.entity;
 
+import dutchiepay.backend.domain.commerce.BuyCategory;
 import dutchiepay.backend.global.config.Auditing;
+import dutchiepay.backend.global.converter.BuyCategoryConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +41,7 @@ public class Buy extends Auditing {
     private int nowCount;
 
     // 카테고리
+    @Convert(converter = BuyCategoryConverter.class)
     @Column(nullable = false)
-    private int category;
+    private BuyCategory category;
 }
