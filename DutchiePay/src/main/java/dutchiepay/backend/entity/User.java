@@ -70,7 +70,6 @@ public class User extends Auditing {
     private int state;
 
     //소셜 ID
-    @Column(length = 20)
     private String oauthId;
 
     //소셜 종류

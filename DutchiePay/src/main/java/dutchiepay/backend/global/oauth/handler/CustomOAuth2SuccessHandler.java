@@ -17,6 +17,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
@@ -24,6 +25,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         log.info("Oauth2 login success: User@{}", oAuth2User.getUserId());
 
         // 유저 데이터 기반으로 토큰 발급
+
 
     }
 }

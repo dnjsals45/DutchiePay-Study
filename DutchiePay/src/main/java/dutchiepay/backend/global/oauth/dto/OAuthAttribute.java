@@ -32,6 +32,7 @@ public class OAuthAttribute {
     public static OAuthAttribute of(String userNameAttributeName, Map<String, Object> attributes, String registrationId) {
         return switch (registrationId) {
             case "kakao" -> ofKakao(userNameAttributeName, attributes);
+            case "naver" -> ofNaver(userNameAttributeName, attributes);
             default -> null;
         };
     }
@@ -44,6 +45,20 @@ public class OAuthAttribute {
                 .nickname("test")
                 .oauthId(attributes.get("id").toString())
                 .oauthProvider("KAKAO")
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
+                .build();
+    }
+
+    private static OAuthAttribute ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
+
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
+        return OAuthAttribute.builder()
+                .email(response.get("email").toString())
+                .nickname("Navest")
+                .oauthId(response.get("id").toString())
+                .oauthProvider("NAVER")
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();

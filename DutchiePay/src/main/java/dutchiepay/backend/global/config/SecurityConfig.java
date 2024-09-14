@@ -1,5 +1,8 @@
 package dutchiepay.backend.global.config;
 
+import dutchiepay.backend.domain.user.repository.UserRepository;
+import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
 import dutchiepay.backend.global.security.NicknameQueryParamFilter;
 import dutchiepay.backend.global.security.UserDetailsServiceImpl;
@@ -30,8 +33,6 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
-    private final CustomOAuth2UserService customOauth2UserService;
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
@@ -47,7 +48,10 @@ public class SecurityConfig {
             "/users/email",
             "/users/pwd-nonuser",
             "/users/auth",
-            "/users/test"
+            "/users/test",
+            "/oauth/signup",
+            "/index",
+            "/oauth2"
     };
 
     private final String[] readOnlyUrl = {
