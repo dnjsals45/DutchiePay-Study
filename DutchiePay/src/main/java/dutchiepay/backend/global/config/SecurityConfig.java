@@ -1,11 +1,5 @@
 package dutchiepay.backend.global.config;
 
-import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
-import dutchiepay.backend.global.oauth.service.CustomOAuth2UserService;
-import dutchiepay.backend.domain.user.repository.UserRepository;
-import dutchiepay.backend.global.jwt.JwtUtil;
-import dutchiepay.backend.global.jwt.RefreshTokenRepository;
-import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
 import dutchiepay.backend.global.security.NicknameQueryParamFilter;
 import dutchiepay.backend.global.security.UserDetailsServiceImpl;
