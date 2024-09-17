@@ -46,7 +46,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        System.out.println("========Load User=========");
         OAuth2UserService delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
@@ -106,9 +105,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 String.class                     // 응답 타입
         );
 
-        // 결과 출력
-        System.out.println(response.getBody());
-
         userRepository.findByEmail(userDetails.getEmail())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
@@ -120,7 +116,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 "naver", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
                 userDetails.getUsername() // 현재 인증된 사용자
         );
-        System.out.println("get Principal Name: " + authorizedClient.getPrincipalName());
 
         String naverAccess = null;
         if (authorizedClient != null) {
