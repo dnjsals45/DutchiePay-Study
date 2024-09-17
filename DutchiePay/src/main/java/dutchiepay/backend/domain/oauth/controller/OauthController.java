@@ -27,7 +27,7 @@ public class OauthController {
     }
 
     @Operation(summary = "소셜 회원 탈퇴(구현중)")
-    @GetMapping
+    @DeleteMapping
     public String unlink(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestParam String type){
         if (type.equals("kakao")) {
             customOAuth2UserService.deleteKakaoUser(userDetails);
