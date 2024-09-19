@@ -86,7 +86,6 @@ public class UserService {
         return null;
     }
 
-    @Transactional
     public void unlinkKakao(UserDetailsImpl userDetails) {
         OAuth2AuthorizedClient authorizedClient = oauthService.loadAuthorizedClient(
                 "kakao", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
@@ -107,16 +106,15 @@ public class UserService {
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         // POST 요청 보내기 (request body 없음)
-        ResponseEntity<String> response = restTemplate.exchange(
-                "https://kapi.kakao.com/v1/user/unlink",  // 요청할 URL
-                HttpMethod.POST,                 // HTTP 메서드
-                entity,                          // HttpEntity (본문 없음, 헤더만 있음)
-                String.class                     // 응답 타입
+        restTemplate.exchange(
+            "https://kapi.kakao.com/v1/user/unlink",  // 요청할 URL
+            HttpMethod.POST,                 // HTTP 메서드
+            entity,                          // HttpEntity (본문 없음, 헤더만 있음)
+            String.class                     // 응답 타입
         );
 
     }
 
-    @Transactional
     public void unlinkNaver(UserDetailsImpl userDetails) {
 
         OAuth2AuthorizedClient authorizedClient = oauthService.loadAuthorizedClient(
@@ -137,14 +135,15 @@ public class UserService {
                 "&service_provider=NAVER" +
                 "&grant_type=delete";
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                "https://nid.naver.com/oauth2.0/token" + data,  // 요청할 URL
-                HttpMethod.POST,                 // HTTP 메서드
-                null,                          // HttpEntity
-                String.class                     // 응답 타입
+        restTemplate.exchange(
+            "https://nid.naver.com/oauth2.0/token" + data,  // 요청할 URL
+            HttpMethod.POST,                 // HTTP 메서드
+            null,                          // HttpEntity
+            String.class                     // 응답 타입
         );
     }
 
+    @Transactional
     public void deleteUser(UserDetailsImpl userDetails) {
         userRepository.findByEmail(userDetails.getEmail())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
