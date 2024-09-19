@@ -23,4 +23,8 @@ public abstract class Auditing {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
+
+    public void delete(){
+        this.deletedAt = LocalDateTime.now();
+    }
 }

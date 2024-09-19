@@ -2,6 +2,7 @@ package dutchiepay.backend.global.config;
 
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
 import dutchiepay.backend.global.security.NicknameQueryParamFilter;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final UserDetailsServiceImpl userDetailsService;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
@@ -48,7 +50,9 @@ public class SecurityConfig {
             "/users/email",
             "/users/pwd-nonuser",
             "/users/auth",
-            "/users/test"
+            "/users/test",
+            "/oauth/signup",
+            "/oauth"
     };
 
     private final String[] readOnlyUrl = {
@@ -94,6 +98,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
                     .requestMatchers(permitAllUrl).permitAll()
                     .anyRequest().authenticated())
+            .oauth2Login(oauth2 ->
+                    oauth2.successHandler(customOAuth2SuccessHandler))
             .addFilterBefore(new NicknameQueryParamFilter(),
                 UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)

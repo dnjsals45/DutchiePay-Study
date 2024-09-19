@@ -30,7 +30,7 @@ public class User extends Auditing {
     private String email;
 
     //성함
-    @Column(length = 5)
+    @Column(length = 10)
     private String username;
 
     //휴대폰 번호
@@ -70,7 +70,6 @@ public class User extends Auditing {
     private int state;
 
     //소셜 ID
-    @Column(length = 20)
     private String oauthId;
 
     //소셜 종류
@@ -104,5 +103,19 @@ public class User extends Auditing {
 
     public void createRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void delete() {
+        super.delete();
+        // TODO 닉네임은? 지역은?
+        this.phone = null;
+        this.password = null;
+        this.zipCode = null;
+        this.address = null;
+        this.detail = null;
+        this.refreshToken = null;
+        this.profileImg = null;
+        this.state = 2;
+        this.oauthId = null;
     }
 }
