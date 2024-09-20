@@ -1,4 +1,4 @@
-package dutchiepay.backend.global.Exception;
+package dutchiepay.backend.global.exception;
 
 import org.springframework.http.HttpStatus;
 

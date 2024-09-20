@@ -1,13 +1,14 @@
-package dutchiepay.backend.global.Exception;
+package dutchiepay.backend.global.exception;
 
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@Slf4j
+@Slf4j(topic = "CustomExceptionHandler")
 @RestControllerAdvice
 public class CustomExceptionHandler {
 
