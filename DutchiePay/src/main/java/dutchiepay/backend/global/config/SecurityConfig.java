@@ -3,10 +3,7 @@ package dutchiepay.backend.global.config;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
-import dutchiepay.backend.global.security.JwtAuthenticationFilter;
-import dutchiepay.backend.global.security.JwtVerificationFilter;
-import dutchiepay.backend.global.security.NicknameQueryParamFilter;
-import dutchiepay.backend.global.security.UserDetailsServiceImpl;
+import dutchiepay.backend.global.security.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -84,6 +82,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new JwtAuthenticationEntryPoint();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
@@ -104,7 +107,10 @@ public class SecurityConfig {
                 UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
             .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder()),
-                UsernamePasswordAuthenticationFilter.class);
+                UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exception ->
+                    exception
+                            .authenticationEntryPoint(authenticationEntryPoint()));
 
         return http.build();
     }
