@@ -1,15 +1,11 @@
 package dutchiepay.backend.domain.profile.controller;
 
-import dutchiepay.backend.domain.profile.dto.ChangeAddressRequestDto;
-import dutchiepay.backend.domain.profile.dto.CreateAskRequestDto;
-import dutchiepay.backend.domain.profile.dto.CreateReviewRequestDto;
+import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.service.ProfileService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -101,28 +97,32 @@ public class ProfileController {
      */
     @Operation(summary = "닉네임 변경 (구현 완료)")
     @PatchMapping("/nickname")
-    public ResponseEntity<?> changeNickname(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody String nickname) {
-        profileService.changeNickname(userDetails.getUser(), nickname);
+    public ResponseEntity<?> changeNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            @Valid @RequestBody ChangeNicknameRequestDto request) {
+        profileService.changeNickname(userDetails.getUser(), request.getNickname());
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "프로필 이미지 변경 (구현 완료)")
     @PatchMapping("/image")
-    public ResponseEntity<?> changeProfileImage(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody String profileImg) {
-        profileService.changeProfileImage(userDetails.getUser(), profileImg);
+    public ResponseEntity<?> changeProfileImage(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                @Valid @RequestBody ChangeProfileImgRequestDto request) {
+        profileService.changeProfileImage(userDetails.getUser(), request.getProfileImg());
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "지역 변경 (구현 완료)")
     @PatchMapping("/location")
-    public ResponseEntity<?> changeLocation(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody String location) {
-        profileService.changeLocation(userDetails.getUser(), location);
+    public ResponseEntity<?> changeLocation(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            @Valid @RequestBody ChangeLocationRequestDto request) {
+        profileService.changeLocation(userDetails.getUser(), request.getLocation());
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "배송지 정보 변경 (구현 완료)")
     @PatchMapping("/address")
-    public ResponseEntity<?> changeAddress(@AuthenticationPrincipal UserDetailsImpl userDetails, @Valid @RequestBody ChangeAddressRequestDto req) {
+    public ResponseEntity<?> changeAddress(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                           @Valid @RequestBody ChangeAddressRequestDto req) {
         profileService.changeAddress(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
@@ -130,10 +130,8 @@ public class ProfileController {
     @Operation(summary = "전화번호 변경 (구현 완료)")
     @PatchMapping("/phone")
     public ResponseEntity<?> changePhone(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                         @NotBlank
-                                         @Pattern(regexp = "^\\d{11}$", message = "전화번호는 11자리 숫자여야 합니다.")
-                                         @RequestBody String phone) {
-        profileService.changePhone(userDetails.getUser(), phone);
+                                         @Valid @RequestBody ChangePhoneRequestDto request ) {
+        profileService.changePhone(userDetails.getUser(), request.getPhone());
         return ResponseEntity.ok().build();
     }
 
