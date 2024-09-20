@@ -33,9 +33,6 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        log.warn("url: {}", request.getRequestURI());
-        log.warn("method: {}", request.getMethod());
-
         String token = jwtUtil.getJwtFromHeader(request);
 
         if (token != null) {
