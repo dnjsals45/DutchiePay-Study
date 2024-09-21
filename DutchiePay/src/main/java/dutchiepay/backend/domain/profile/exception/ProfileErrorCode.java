@@ -1,6 +1,6 @@
 package dutchiepay.backend.domain.profile.exception;
 
-import dutchiepay.backend.global.Exception.StatusCode;
+import dutchiepay.backend.global.exception.StatusCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

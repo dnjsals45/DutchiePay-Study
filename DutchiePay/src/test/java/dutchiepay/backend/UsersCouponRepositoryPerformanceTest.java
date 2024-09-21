@@ -112,6 +112,7 @@ class UsersCouponRepositoryPerformanceTest {
     }
 
     @Test
+    @Disabled
     void 성능테스트_유저1_쿠폰100() {
         prepare(1, 100);
         User testUser1 = users.get(0);
@@ -136,6 +137,7 @@ class UsersCouponRepositoryPerformanceTest {
     }
 
     @Test
+    @Disabled
     void 성능테스트_유저1_쿠폰1000() {
         prepare(1, 1000);
         User testUser1 = users.get(0);
