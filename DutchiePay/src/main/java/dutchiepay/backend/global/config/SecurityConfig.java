@@ -50,7 +50,8 @@ public class SecurityConfig {
             "/users/auth",
             "/users/test",
             "/oauth/signup",
-            "/oauth"
+            "/oauth",
+            "/image",
     };
 
     private final String[] readOnlyUrl = {
