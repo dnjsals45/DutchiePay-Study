@@ -45,7 +45,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "회원 비밀번호 재설정(구현 완료")
+    @Operation(summary = "회원 비밀번호 재설정(구현 완료)")
     @PatchMapping("/pwd-user")
     public ResponseEntity<?> changePasswordUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                 @Valid @RequestBody UserChangePasswordRequestDto req) {
