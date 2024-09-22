@@ -21,6 +21,18 @@ public class UserUtilService {
         return userRepository.findByPhone(phone).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
     }
 
+    public User commonUserFindByPhone(String phone) {
+        return userRepository.findByPhoneAndOauthProviderIsNull(phone).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    public User commonUserFindByEmailAndPhone(String email, String phone) {
+        return userRepository.findByEmailAndPhoneAndOauthProviderIsNull(email, phone).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    public User commonUserFindByEmail(String email) {
+        return userRepository.findByEmailAndOauthProviderIsNull(email).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+    }
+
     public String maskEmail(String email) {
         int index = email.indexOf("@");
 
@@ -48,4 +60,5 @@ public class UserUtilService {
 
         return String.format("%s %s%s", prefix.getPrefix(), "더취", (userId / 8));
     }
+
 }

@@ -46,6 +46,7 @@ public class SecurityConfig {
             "/users/signup",
             "/users?nickname",
             "/users/email",
+            "/users/pwd",
             "/users/pwd-nonuser",
             "/users/auth",
             "/users/test",
