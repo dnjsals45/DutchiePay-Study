@@ -50,7 +50,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         user.createRefreshToken(refreshToken);
         userRepository.save(user);
 
-        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
+        response.sendRedirect("/oauth/users?access=" + accessToken);
+
     }
 
     private void sendResponse(HttpServletResponse response, UserLoginResponseDto userLoginResponseDto) throws IOException {
