@@ -79,4 +79,8 @@ public class UserDetailsImpl implements OAuth2User, UserDetails {
         return user.getUserId().toString();
     }
 
+    public String getOAuthProvider() {
+        return user.getOauthProvider();
+    }
+
 }

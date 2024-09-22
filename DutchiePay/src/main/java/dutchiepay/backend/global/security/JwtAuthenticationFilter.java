@@ -3,6 +3,7 @@ package dutchiepay.backend.global.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dutchiepay.backend.domain.user.dto.UserLoginRequestDto;
+import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
@@ -55,7 +56,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 UserLoginRequestDto.class
             );
 
-            User user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(
+            User user = userRepository.findByEmailAndOauthProviderIsNull(requestDto.getEmail()).orElseThrow(
                 () -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)
             );
 
@@ -102,7 +103,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         user.createRefreshToken(refreshToken);
         userRepository.save(user);
 
-        sendResponse(response, accessToken, refreshToken);
+        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
@@ -111,14 +112,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         );
     }
 
-    private void sendResponse(HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
+    private void sendResponse(HttpServletResponse response, UserLoginResponseDto userLoginResponseDto) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
 
-        new ObjectMapper().writeValue(response.getWriter(), new ObjectNode(new ObjectMapper().getNodeFactory())
-            .put("accessToken", accessToken)
-            .put("refreshToken", refreshToken)
-        );
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        ObjectNode rootNode = objectMapper.valueToTree(userLoginResponseDto);
+
+        objectMapper.writeValue(response.getWriter(), rootNode);
     }
 
     //로그인 실패

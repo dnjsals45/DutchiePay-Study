@@ -5,6 +5,7 @@ import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -147,5 +148,14 @@ public class UserService {
     public void deleteUser(UserDetailsImpl userDetails) {
         userRepository.findByEmail(userDetails.getEmail())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
+    }
+
+    public UserLoginResponseDto userInfo(UserDetailsImpl userDetails) {
+        User user = userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        final JwtUtil jwtUtil = new JwtUtil();
+        String accessToken = jwtUtil.createAccessToken(user.getUserId());
+
+        return UserLoginResponseDto.toDto(user, accessToken);
     }
 }
