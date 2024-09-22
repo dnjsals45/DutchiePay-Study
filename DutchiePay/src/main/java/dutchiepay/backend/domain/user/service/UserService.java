@@ -62,29 +62,28 @@ public class UserService {
     }
 
     public FindEmailResponseDto findEmail(FindEmailRequestDto req) {
-        User user = userUtilService.findByPhone(req.getPhone());
+        User user = userUtilService.commonUserFindByPhone(req.getPhone());
 
         return FindEmailResponseDto.of(userUtilService.maskEmail(user.getEmail()));
     }
 
     public void findPassword(FindPasswordRequestDto req) {
-        userRepository.findByPhone(req.getPhone())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        userUtilService.commonUserFindByEmailAndPhone(req.getEmail(), req.getPhone());
     }
 
     @Transactional
     public void changeNonUserPassword(NonUserChangePasswordRequestDto req) {
-        // TODO entity save만으로 PasswordEncoder가 동작하는지 확인 필요
-        User user = userRepository.findByEmail(req.getEmail())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        User user = userUtilService.commonUserFindByEmail(req.getEmail());
 
-        user.changePassword(req.getPassword());
+        user.changePassword(passwordEncoder.encode(req.getPassword()));
+        userRepository.save(user);
     }
 
     @Transactional
-    public String changeUserPassword(UserChangePasswordRequestDto req) {
-        // TODO 유저 비밀번호 재설정의 경우에는 토큰으로 유저를 파악해서 진행. 추후 구현 필요
-        return null;
+    public void changeUserPassword(User user, UserChangePasswordRequestDto req) {
+        user.changePassword(passwordEncoder.encode(req.getPassword()));
+
+        userRepository.save(user);
     }
 
     public void unlinkKakao(UserDetailsImpl userDetails) {

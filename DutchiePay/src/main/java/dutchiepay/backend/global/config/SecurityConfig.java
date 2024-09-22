@@ -46,11 +46,13 @@ public class SecurityConfig {
             "/users/signup",
             "/users?nickname",
             "/users/email",
+            "/users/pwd",
             "/users/pwd-nonuser",
             "/users/auth",
             "/users/test",
             "/oauth/signup",
-            "/oauth"
+            "/oauth",
+            "/image",
     };
 
     private final String[] readOnlyUrl = {

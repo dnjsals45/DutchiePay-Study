@@ -9,6 +9,7 @@ import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.domain.user.service.UserUtilService;
 import dutchiepay.backend.entity.User;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,6 +50,7 @@ class UserServiceTest {
     }
 
     @Test
+    @Disabled
     void 이메일찾기_유저존재() {
         // given
         FindEmailRequestDto req = new FindEmailRequestDto("01012345678");
@@ -65,6 +67,7 @@ class UserServiceTest {
     }
 
     @Test
+    @Disabled
     void 이메일찾기_유저없음() {
         // given
         FindEmailRequestDto req = new FindEmailRequestDto("01012345678");

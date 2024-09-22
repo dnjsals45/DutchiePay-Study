@@ -3,11 +3,14 @@ package dutchiepay.backend.domain.user.controller;
 import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
 import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.security.UserDetailsImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import dutchiepay.backend.domain.user.dto.*;
 import dutchiepay.backend.global.sms.SmsService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,41 +25,32 @@ public class UserController {
     private final UserService userService;
     private final SmsService smsService;
 
-    @GetMapping("/test")
-    public ResponseEntity<?> test() {
-        User testUser = User.builder()
-                .email("test@example.com")
-                .username("테스트")
-                .phone("01012345678")
-                .nickname("테스트 유저")
-                .location("서울시 마포구 신수동")
-                .state(0)
-                .build();
-
-        return ResponseEntity.ok().body(testUser);
-    }
-
-
+    @Operation(summary = "이메일 찾기(구현 완료)", description = "휴대폰 번호를 이용한 이메일 찾기")
     @PostMapping("/email")
     public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto req) {
         return ResponseEntity.ok().body(userService.findEmail(req));
     }
 
+    @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
     @PostMapping("/pwd")
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto req) {
         userService.findPassword(req);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "비회원 비밀번호 재설정(구현 완료)")
     @PatchMapping("/pwd-nonuser")
     public ResponseEntity<?> changePasswordNonUser(@Valid @RequestBody NonUserChangePasswordRequestDto req) {
         userService.changeNonUserPassword(req);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "회원 비밀번호 재설정(구현 완료)")
     @PatchMapping("/pwd-user")
-    public ResponseEntity<?> changePasswordUser(@Valid @RequestBody UserChangePasswordRequestDto req) {
-        return ResponseEntity.ok().body(userService.changeUserPassword(req));
+    public ResponseEntity<?> changePasswordUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                @Valid @RequestBody UserChangePasswordRequestDto req) {
+        userService.changeUserPassword(userDetails.getUser(), req);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/auth")
