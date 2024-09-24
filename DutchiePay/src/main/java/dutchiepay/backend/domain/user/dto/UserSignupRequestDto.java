@@ -26,8 +26,6 @@ public class UserSignupRequestDto {
     @Pattern(regexp = "^[가-힣A-Za-z\\d]{2,8}$", message = "한글, 영문, 숫자를 사용하여 2글자 이상 8글자 이하로 입력해주세요.")
     private String nickname;
 
-    private String name;
-
     private String location;
 
 }
