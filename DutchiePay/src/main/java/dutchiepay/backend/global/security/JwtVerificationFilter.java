@@ -3,6 +3,7 @@ package dutchiepay.backend.global.security;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
+import dutchiepay.backend.domain.user.service.AccessTokenBlackListService;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -14,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -27,11 +27,12 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final UserDetailsServiceImpl userDetailsService;
+    private final AccessTokenBlackListService accessTokenBlackListService;
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+        HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
 
         String token = jwtUtil.getJwtFromHeader(request);
 
@@ -43,6 +44,9 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                 String tokenType = claims.get("tokenType", String.class);
 
                 if ("access".equals(tokenType)) {
+                    if (accessTokenBlackListService.isTokenBlackListed(token)) {
+                        throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
+                    }
                     UserDetailsImpl userDetails = getUserDetails(token);
                     setAuthenticationUser(userDetails, request);
                     filterChain.doFilter(request, response);
@@ -52,7 +56,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
                     //날짜 비교 로직 필요X getUserInfoFromToken -> 만료된 토큰 시 ExpiredJwtException 던짐
                     User user = userRepository.findById(userId).orElseThrow(
-                            () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
+                        () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
                     );
 
                     String storedRefreshToken = user.getRefreshToken();
@@ -88,7 +92,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private void setAuthenticationUser(UserDetailsImpl userDetails, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities()
+            userDetails, null, userDetails.getAuthorities()
         );
 
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
