@@ -1,6 +1,12 @@
 package dutchiepay.backend.domain.user.service;
 
-import dutchiepay.backend.domain.user.dto.*;
+import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
+import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
+import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
+import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
+import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
+import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
+import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
@@ -12,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -29,6 +34,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OAuth2AuthorizedClientService oauthService;
+    private final AccessTokenBlackListService accessTokenBlackListService;
 
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
@@ -48,10 +54,18 @@ public class UserService {
             .password(encodedPassword)
             .phone(requestDto.getPhone())
             .nickname(requestDto.getNickname())
-            .username(requestDto.getName())
             .location(requestDto.getLocation())
             .build();
 
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void logout(Long userId, String accessToken) {
+        User user = userUtilService.findById(userId);
+
+        accessTokenBlackListService.addBlackList(accessToken);
+        user.deleteRefreshToken();
         userRepository.save(user);
     }
 
@@ -96,8 +110,8 @@ public class UserService {
 
     public void unlinkKakao(UserDetailsImpl userDetails) {
         OAuth2AuthorizedClient authorizedClient = oauthService.loadAuthorizedClient(
-                "kakao", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
-                userDetails.getUsername() // 현재 인증된 사용자
+            "kakao", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
+            userDetails.getUsername() // 현재 인증된 사용자
         );
         String kakaoAccess = null;
         if (authorizedClient != null) {
@@ -126,8 +140,8 @@ public class UserService {
     public void unlinkNaver(UserDetailsImpl userDetails) {
 
         OAuth2AuthorizedClient authorizedClient = oauthService.loadAuthorizedClient(
-                "naver", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
-                userDetails.getUsername() // 현재 인증된 사용자
+            "naver", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
+            userDetails.getUsername() // 현재 인증된 사용자
         );
 
         String naverAccess = null;
@@ -138,10 +152,10 @@ public class UserService {
 
         // POST 요청으로 데이터 전송
         String data = "?client_id=" + naverClientId +
-                "&client_secret=" + naverClientSecret +
-                "&access_token=" + naverAccess +
-                "&service_provider=NAVER" +
-                "&grant_type=delete";
+            "&client_secret=" + naverClientSecret +
+            "&access_token=" + naverAccess +
+            "&service_provider=NAVER" +
+            "&grant_type=delete";
 
         restTemplate.exchange(
             "https://nid.naver.com/oauth2.0/token" + data,  // 요청할 URL
@@ -154,12 +168,13 @@ public class UserService {
     @Transactional
     public void deleteUser(UserDetailsImpl userDetails) {
         userRepository.findByEmail(userDetails.getEmail())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
+            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
 
     public UserLoginResponseDto userInfo(UserDetailsImpl userDetails) {
-        User user = userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(),
+                userDetails.getEmail())
+            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
         final JwtUtil jwtUtil = new JwtUtil();
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
 
