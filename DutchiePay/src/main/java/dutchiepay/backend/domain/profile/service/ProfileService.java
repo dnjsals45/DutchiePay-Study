@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.profile.service;
 
+import dutchiepay.backend.domain.commerce.BuyCategory;
 import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
@@ -50,6 +51,10 @@ public class ProfileService {
 
 
     public List<GetMyLikesResponseDto> getMyLike(User user, String category) {
+        if (!BuyCategory.isExist(category)) {
+            throw new ProfileErrorException(ProfileErrorCode.INVALID_CATEGORY);
+        }
+
         return profileRepository.getMyLike(user, category);
     }
 
@@ -74,7 +79,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public void createReview(User user, @Valid CreateReviewRequestDto req) {
+    public void createReview(User user, CreateReviewRequestDto req) {
         Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
         if (user != order.getUser()) {
@@ -92,7 +97,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public void createAsk(User user, @Valid CreateAskRequestDto req) {
+    public void createAsk(User user, CreateAskRequestDto req) {
         Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
         if (user != order.getUser()) {

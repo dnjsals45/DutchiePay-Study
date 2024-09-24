@@ -38,4 +38,13 @@ public enum BuyCategory {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("일치하는 카테고리명이 없습니다 %s", categoryName)));
     }
+
+    public static boolean isExist(String categoryName) {
+        for (BuyCategory buyCategory : BuyCategory.values()) {
+            if (buyCategory.getCategory().equals(categoryName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

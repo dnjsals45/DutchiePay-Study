@@ -17,6 +17,7 @@ public enum UserErrorCode implements StatusCode {
     USER_EMAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 이메일입니다."),
     USER_INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
     DELETED_USER(HttpStatus.BAD_REQUEST, "이미 탈퇴한 회원입니다."),
+    USER_SAME_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일합니다."),
 
     /**
      * 401 UNAUTHORIZED

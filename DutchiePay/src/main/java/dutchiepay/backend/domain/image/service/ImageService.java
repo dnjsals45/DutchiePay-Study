@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.net.URL;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +32,7 @@ public class ImageService {
      * @return     GetPreSignedUrlResponseDto(presigned url)
      */
     public GetPreSignedUrlResponseDto getPreSignedUrl(String fileName) {
-        String uniqueFileName = UUID.randomUUID() + "_" + fileName;
-
-        GeneratePresignedUrlRequest generatePresignedUrlRequest = getGeneratePresignedUrlRequest(bucket, uniqueFileName);
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = getGeneratePresignedUrlRequest(bucket, fileName);
         URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
 
         return GetPreSignedUrlResponseDto.builder()

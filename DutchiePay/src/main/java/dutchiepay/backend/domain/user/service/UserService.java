@@ -75,6 +75,10 @@ public class UserService {
     public void changeNonUserPassword(NonUserChangePasswordRequestDto req) {
         User user = userUtilService.commonUserFindByEmail(req.getEmail());
 
+        if (passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new UserErrorException(UserErrorCode.USER_SAME_PASSWORD);
+        }
+
         user.changePassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
     }
@@ -82,6 +86,10 @@ public class UserService {
     @Transactional
     public void changeUserPassword(User user, UserChangePasswordRequestDto req) {
         user.changePassword(passwordEncoder.encode(req.getPassword()));
+
+        if (passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new UserErrorException(UserErrorCode.USER_SAME_PASSWORD);
+        }
 
         userRepository.save(user);
     }
