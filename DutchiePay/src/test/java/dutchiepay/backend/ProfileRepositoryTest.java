@@ -211,9 +211,6 @@ class ProfileRepositoryTest {
         MyPageResponseDto dto = profileService.myPage(user);
 
         // then
-        System.out.println("주소 = " + dto.getAddress());
-        System.out.println("상세주소 = " + dto.getDetail());
-        System.out.println("우편번호 = " + dto.getZipcode());
         System.out.println("전화번호 = " + dto.getPhone());
         System.out.println("쿠폰 수 = " + dto.getCoupon());
         System.out.println("주문 수 = " + dto.getOrder());
