@@ -6,8 +6,7 @@ import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.Coupon;
 import dutchiepay.backend.entity.User;
-import dutchiepay.backend.entity.Users_Coupon;
-import dutchiepay.backend.global.config.JpaAuditingConfig;
+import dutchiepay.backend.entity.UsersCoupon;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
@@ -101,7 +100,7 @@ class UsersCouponRepositoryPerformanceTest {
 
         for (User user : users) {
             for (int i = 0; i < couponNum; i++) {
-                Users_Coupon usersCoupon = Users_Coupon.builder()
+                UsersCoupon usersCoupon = UsersCoupon.builder()
                         .user(user)
                         .coupon(coupon)
                         .build();

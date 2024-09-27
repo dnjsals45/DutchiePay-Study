@@ -1,10 +1,10 @@
 package dutchiepay.backend.domain.coupon.repository;
 
 import dutchiepay.backend.entity.User;
-import dutchiepay.backend.entity.Users_Coupon;
+import dutchiepay.backend.entity.UsersCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UsersCouponRepository extends JpaRepository<Users_Coupon, Long> {
+public interface UsersCouponRepository extends JpaRepository<UsersCoupon, Long> {
     Long countByUser(User user);
 
     Long countByUserUserId(Long userId);

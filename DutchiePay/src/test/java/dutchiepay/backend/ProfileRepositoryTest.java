@@ -174,17 +174,17 @@ class ProfileRepositoryTest {
         couponRepository.save(coupon3);
 
         // 유저 쿠폰
-        Users_Coupon users_coupon1 = Users_Coupon.builder()
+        UsersCoupon users_coupon1 = UsersCoupon.builder()
                 .user(user)
                 .coupon(coupon1)
                 .build();
 
-        Users_Coupon users_coupon2 = Users_Coupon.builder()
+        UsersCoupon users_coupon2 = UsersCoupon.builder()
                 .user(user)
                 .coupon(coupon2)
                 .build();
 
-        Users_Coupon users_coupon3 = Users_Coupon.builder()
+        UsersCoupon users_coupon3 = UsersCoupon.builder()
                 .user(user)
                 .coupon(coupon3)
                 .build();
@@ -211,9 +211,6 @@ class ProfileRepositoryTest {
         MyPageResponseDto dto = profileService.myPage(user);
 
         // then
-        System.out.println("주소 = " + dto.getAddress());
-        System.out.println("상세주소 = " + dto.getDetail());
-        System.out.println("우편번호 = " + dto.getZipcode());
         System.out.println("전화번호 = " + dto.getPhone());
         System.out.println("쿠폰 수 = " + dto.getCoupon());
         System.out.println("주문 수 = " + dto.getOrder());

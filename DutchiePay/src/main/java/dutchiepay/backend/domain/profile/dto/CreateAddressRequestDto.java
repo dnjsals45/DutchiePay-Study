@@ -6,8 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChangeAddressRequestDto {
-    private Long addressId;
+public class CreateAddressRequestDto {
     private String addressName;
     private String name;
     private String phone;
