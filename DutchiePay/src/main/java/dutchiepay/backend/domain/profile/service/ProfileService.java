@@ -149,6 +149,10 @@ public class ProfileService {
         Address address = addressRepository.findById(req.getAddressId())
                         .orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ADDRESS));
 
+        if (req.getIsDefault().equals(Boolean.TRUE)) {
+            addressRepository.changeIsDefaultTrueToFalse(user);
+        }
+
         address.update(req);
         addressRepository.save(address);
     }
