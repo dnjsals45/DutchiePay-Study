@@ -5,6 +5,8 @@ import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.PhoneAuthRequestDto;
 import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
+import dutchiepay.backend.domain.user.dto.UserReLoginRequestDto;
+import dutchiepay.backend.domain.user.dto.UserReissueRequestDto;
 import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
 import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.global.jwt.JwtUtil;
@@ -96,5 +98,17 @@ public class UserController {
 
         userService.deleteUser(userDetails);
         return ResponseEntity.ok().body(null);
+    }
+
+    @Operation(summary = "자동로그인(구현 완료)")
+    @PostMapping("/relogin")
+    public ResponseEntity<?> reLogin(@Valid @RequestBody UserReLoginRequestDto requestDto) {
+        return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
+    }
+
+    @Operation(summary = "access Token 재발급")
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto) {
+        return ResponseEntity.ok().body(userService.reissue(requestDto));
     }
 }

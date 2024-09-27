@@ -6,6 +6,9 @@ import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
+import dutchiepay.backend.domain.user.dto.UserReLoginResponseDto;
+import dutchiepay.backend.domain.user.dto.UserReissueRequestDto;
+import dutchiepay.backend.domain.user.dto.UserReissueResponseDto;
 import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
@@ -175,9 +178,36 @@ public class UserService {
         User user = userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(),
                 userDetails.getEmail())
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        final JwtUtil jwtUtil = new JwtUtil();
-        String accessToken = jwtUtil.createAccessToken(user.getUserId());
 
-        return UserLoginResponseDto.toDto(user, accessToken);
+        return UserLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()));
+    }
+
+    public UserReLoginResponseDto reLogin(String refreshToken) {
+        User user = userRepository.findByRefreshToken(refreshToken)
+            .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
+
+        if (user.getPhone() == null) {
+            return UserReLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()), false);
+        }
+        return UserReLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()), true);
+    }
+
+    public String reissueAccessToken(Long userId) {
+        final JwtUtil jwtUtil = new JwtUtil();
+        return jwtUtil.createAccessToken(userId);
+    }
+
+    @Transactional
+    public UserReissueResponseDto reissue(UserReissueRequestDto requestDto) {
+        String accessToken = requestDto.getAccess();
+
+        User user = userRepository.findByRefreshToken(requestDto.getRefresh())
+            .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
+
+        if (accessTokenBlackListService.isTokenBlackListed(accessToken)) {
+            throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
+        }
+        accessTokenBlackListService.addBlackList(accessToken);
+        return UserReissueResponseDto.toDto(reissueAccessToken(user.getUserId()));
     }
 }

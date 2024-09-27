@@ -4,9 +4,8 @@ import dutchiepay.backend.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-
 public interface UserRepository extends JpaRepository<User, Long> {
+
     Optional<User> findByPhone(String phone);
 
     Optional<User> findByEmail(String email);
@@ -22,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByPhoneAndOauthProviderIsNull(String phone);
 
     Optional<User> findByEmailAndPhoneAndOauthProviderIsNull(String email, String phone);
+
+    Optional<User> findByRefreshToken(String refreshToken);
 }
