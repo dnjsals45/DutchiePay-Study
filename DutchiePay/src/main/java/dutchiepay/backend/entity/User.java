@@ -105,6 +105,10 @@ public class User extends Auditing {
         this.refreshToken = refreshToken;
     }
 
+    public void deleteRefreshToken() {
+        this.refreshToken = null;
+    }
+
     public void delete() {
         super.delete();
         // TODO 닉네임은? 지역은?

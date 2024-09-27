@@ -16,21 +16,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @Slf4j(topic = "로그인 & JWT 생성")
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
+public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
@@ -56,9 +55,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 UserLoginRequestDto.class
             );
 
-            User user = userRepository.findByEmailAndOauthProviderIsNull(requestDto.getEmail()).orElseThrow(
-                () -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)
-            );
+            User user = userRepository.findByEmailAndOauthProviderIsNull(requestDto.getEmail())
+                .orElseThrow(
+                    () -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)
+                );
+
+            if (1 == user.getState()) {
+                throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
+            }
 
             if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
                 throw new UserErrorException(UserErrorCode.USER_INVALID_PASSWORD);
@@ -69,21 +73,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 예시로 ROLE_USER 권한 추가
 
             return new UsernamePasswordAuthenticationToken(
-                    new UserDetailsImpl(user), // principal
-                    user.getPassword(), // credentials
-                    authorities // authorities
+                new UserDetailsImpl(user), // principal
+                user.getPassword(), // credentials
+                authorities // authorities
             );
 
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new BadCredentialsException(e.getMessage());
         }
-        //TODO 계정이 정지된 경우, 탈퇴한 경우 예외처리 필요?
-        /*
-        AccountExpiredException: 계정이 만료된 경우
-        LockedException: 계정이 잠겨 있는 경우
-        DisabledException: 계정이 비활성화된 경우
-        */
+
     }
 
     //로그인 성공
@@ -106,13 +105,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
 
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(
-                        userDetails, null, null
-                )
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, null
+            )
         );
     }
 
-    private void sendResponse(HttpServletResponse response, UserLoginResponseDto userLoginResponseDto) throws IOException {
+    private void sendResponse(HttpServletResponse response,
+        UserLoginResponseDto userLoginResponseDto) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
 
