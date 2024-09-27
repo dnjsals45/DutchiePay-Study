@@ -10,7 +10,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Users_Coupon extends Auditing {
+public class UsersCoupon extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

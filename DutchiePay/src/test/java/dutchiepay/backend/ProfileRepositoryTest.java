@@ -174,17 +174,17 @@ class ProfileRepositoryTest {
         couponRepository.save(coupon3);
 
         // 유저 쿠폰
-        Users_Coupon users_coupon1 = Users_Coupon.builder()
+        UsersCoupon users_coupon1 = UsersCoupon.builder()
                 .user(user)
                 .coupon(coupon1)
                 .build();
 
-        Users_Coupon users_coupon2 = Users_Coupon.builder()
+        UsersCoupon users_coupon2 = UsersCoupon.builder()
                 .user(user)
                 .coupon(coupon2)
                 .build();
 
-        Users_Coupon users_coupon3 = Users_Coupon.builder()
+        UsersCoupon users_coupon3 = UsersCoupon.builder()
                 .user(user)
                 .coupon(coupon3)
                 .build();
