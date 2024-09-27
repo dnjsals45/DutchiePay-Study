@@ -44,18 +44,9 @@ public class User extends Auditing {
     @Column(nullable = false, length = 8, unique = true)
     private String nickname;
 
-    // 우편 번호
-    private String zipCode;
-
     //지역
     @Column(nullable = false, length = 15)
     private String location;
-
-    //주소
-    private String address;
-
-    //상세 주소
-    private String detail;
 
     //리프레쉬 토큰
     @Column(length = 512)
@@ -92,11 +83,6 @@ public class User extends Auditing {
         this.location = location;
     }
 
-    public void changeAddress(String address, String detail) {
-        this.address = address;
-        this.detail = detail;
-    }
-
     public void changePhone(String phone) {
         this.phone = phone;
     }
@@ -110,9 +96,6 @@ public class User extends Auditing {
         // TODO 닉네임은? 지역은?
         this.phone = null;
         this.password = null;
-        this.zipCode = null;
-        this.address = null;
-        this.detail = null;
         this.refreshToken = null;
         this.profileImg = null;
         this.state = 2;
