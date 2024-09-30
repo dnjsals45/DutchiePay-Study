@@ -11,12 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserLoginRequestDto {
+public class UserReLoginRequestDto {
 
     @NotBlank
-    private String email;
-
-    @NotBlank
-    private String password;
-
+    private String refresh;
 }

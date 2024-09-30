@@ -1,6 +1,5 @@
 package dutchiepay.backend.domain.user.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +10,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserLoginRequestDto {
+public class UserReissueResponseDto {
 
-    @NotBlank
-    private String email;
+    String access;
 
-    @NotBlank
-    private String password;
-
+    public static UserReissueResponseDto toDto(String access) {
+        return UserReissueResponseDto.builder()
+            .access(access)
+            .build();
+    }
 }

@@ -11,12 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserLoginRequestDto {
+public class UserReissueRequestDto {
 
     @NotBlank
-    private String email;
+    private String access;
 
     @NotBlank
-    private String password;
-
+    private String refresh;
 }

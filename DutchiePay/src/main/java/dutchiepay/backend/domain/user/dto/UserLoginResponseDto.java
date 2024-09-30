@@ -2,11 +2,16 @@ package dutchiepay.backend.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dutchiepay.backend.entity.User;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserLoginResponseDto {
 
     private Long userId;
@@ -21,13 +26,13 @@ public class UserLoginResponseDto {
 
     public static UserLoginResponseDto toDto(User user, String access) {
         return UserLoginResponseDto.builder()
-                .userId(user.getUserId())
-                .type(user.getOauthProvider())
-                .nickname(user.getNickname())
-                .profileImg(user.getProfileImg())
-                .location(user.getLocation())
-                .access(access)
-                .refresh(user.getRefreshToken())
-                .certified(user.getPhone() != null).build();
+            .userId(user.getUserId())
+            .type(user.getOauthProvider())
+            .nickname(user.getNickname())
+            .profileImg(user.getProfileImg())
+            .location(user.getLocation())
+            .access(access)
+            .refresh(user.getRefreshToken())
+            .certified(user.getPhone() != null).build();
     }
 }
