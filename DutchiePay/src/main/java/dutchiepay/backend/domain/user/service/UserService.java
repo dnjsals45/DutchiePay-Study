@@ -47,14 +47,11 @@ public class UserService {
 
     @Transactional
     public void signup(UserSignupRequestDto requestDto) {
-        String nickname = requestDto.getNickname();
-        existsNickname(nickname);
-
-        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+        existsNickname(requestDto.getNickname());
 
         User user = User.builder()
             .email(requestDto.getEmail())
-            .password(encodedPassword)
+            .password(passwordEncoder.encode(requestDto.getPassword()))
             .phone(requestDto.getPhone())
             .nickname(requestDto.getNickname())
             .location(requestDto.getLocation())
@@ -74,7 +71,7 @@ public class UserService {
 
     public void existsNickname(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
-            throw new IllegalArgumentException("이미 사용중인 닉네임입니다.");
+            throw new UserErrorException(UserErrorCode.USER_NICKNAME_ALREADY_EXISTS);
         }
     }
 

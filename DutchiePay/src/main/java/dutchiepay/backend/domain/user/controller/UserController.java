@@ -8,6 +8,8 @@ import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.UserReLoginRequestDto;
 import dutchiepay.backend.domain.user.dto.UserReissueRequestDto;
 import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
@@ -19,10 +21,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -38,6 +42,20 @@ public class UserController {
     @PostMapping("/email")
     public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto req) {
         return ResponseEntity.ok().body(userService.findEmail(req));
+    }
+
+    @Operation(summary = "닉네임 검사 중복확인(구현 완료)")
+    @GetMapping
+    public ResponseEntity<?> isExistNickname(@RequestParam(required = false) String nickname) {
+        if (nickname == null || nickname.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(UserErrorCode.USER_NICKNAME_MISSING);
+        }
+        try {
+            userService.existsNickname(nickname);
+        } catch (UserErrorException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok().body(null);
     }
 
     @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
@@ -74,7 +92,7 @@ public class UserController {
     public ResponseEntity<?> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
         try {
             userService.signup(requestDto);
-        } catch (IllegalArgumentException e) {
+        } catch (UserErrorException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().body(null);
@@ -106,7 +124,7 @@ public class UserController {
         return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
     }
 
-    @Operation(summary = "access Token 재발급")
+    @Operation(summary = "access Token 재발급(구현 완료)")
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto) {
         return ResponseEntity.ok().body(userService.reissue(requestDto));
