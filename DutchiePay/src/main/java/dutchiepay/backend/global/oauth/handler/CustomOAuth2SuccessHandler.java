@@ -13,6 +13,7 @@ import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +45,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         // 사용자한테 토큰 정보가 없으면 access, refresh 발급, refresh가 유효하고 access가 무효하면 access 발급, 둘다 무효하면 둘다 발급
         User user = userRepository.findById(oAuth2User.getUserId()).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        String accessToken = jwtUtil.createAccessToken(oAuth2User.getUserId());
         String refreshToken = jwtUtil.createRefreshToken(oAuth2User.getUserId());
 
         user.createRefreshToken(refreshToken);
         userRepository.save(user);
 
-        response.sendRedirect("/oauth/users?access=" + accessToken);
+        setCookie(response, "token", refreshToken);
 
     }
 
@@ -63,5 +63,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         ObjectNode rootNode = objectMapper.valueToTree(userLoginResponseDto);
 
         objectMapper.writeValue(response.getWriter(), rootNode);
+    }
+
+    public void setCookie(HttpServletResponse response, String name, String value) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setMaxAge(120);
+//        cookie.setSecure(true); // HTTPS에서만 전송
+        response.addCookie(cookie);
     }
 }
