@@ -19,8 +19,7 @@ import java.util.Map;
 @Component
 @Aspect
 public class LoggingAspect {
-    @Pointcut(value = "execution(* dutchiepay.backend.domain.*.controller.*Controller.*(..)) " +
-            "&& !execution(* dutchiepay.backend.domain.oauth.controller.*Controller.*(..))")
+    @Pointcut(value = "execution(* dutchiepay.backend.domain.*.controller.*Controller.*(..)) ")
     private void logCut() {
     }
 
@@ -59,10 +58,31 @@ public class LoggingAspect {
 
     @AfterReturning(pointcut = "logCut()", returning = "result")
     public void afterLogging(JoinPoint joinPoint, Object result) {
-        ResponseEntity<?> response = (ResponseEntity<?>) result;
-        HttpHeaders headers = response.getHeaders();
 
         log.info("================================= Response =================================");
+
+        if (result instanceof ResponseEntity<?>) {
+            ResponseEntity<?> response = (ResponseEntity<?>) result;
+            logResponseEntity(response);
+        } else if (result instanceof String) {
+            logStringResponse((String) result);
+        } else {
+            log.info("응답 내용 : {}", result);
+        }
+
+        log.info("============================================================================");
+    }
+
+    @AfterThrowing(pointcut = "logCut()", throwing = "exception")
+    public void afterThrowingLogging(JoinPoint joinPoint, Exception exception) {
+        log.error("================================= Exception =================================");
+        log.error("예외 종류 : {} ⇾ 메시지 : {}", exception.getClass().getSimpleName(), exception.getMessage());
+        log.error("=============================================================================");
+    }
+
+    private void logResponseEntity(ResponseEntity<?> response) {
+        HttpHeaders headers = response.getHeaders();
+
         log.info("응답 코드 : {}", response.getStatusCode());
         log.info("응답 헤더 : {}", headers);
 
@@ -75,13 +95,9 @@ public class LoggingAspect {
         }
 
         log.info("응답 내용 : {}", response.getBody());
-        log.info("============================================================================");
     }
 
-    @AfterThrowing(pointcut = "logCut()", throwing = "exception")
-    public void afterThrowingLogging(JoinPoint joinPoint, Exception exception) {
-        log.error("================================= Exception =================================");
-        log.error("예외 종류 : {} ⇾ 메시지 : {}", exception.getClass().getSimpleName(), exception.getMessage());
-        log.error("=============================================================================");
+    private void logStringResponse(String response) {
+        log.info("응답 내용 : {}", response);
     }
 }
