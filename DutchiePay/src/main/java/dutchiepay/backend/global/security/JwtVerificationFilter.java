@@ -45,7 +45,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
                 if ("access".equals(tokenType)) {
                     if (accessTokenBlackListService.isTokenBlackListed(token)) {
-                        throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
+                        return;
                     }
                     UserDetailsImpl userDetails = getUserDetails(token);
                     setAuthenticationUser(userDetails, request);
