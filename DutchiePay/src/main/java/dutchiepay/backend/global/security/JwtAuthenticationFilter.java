@@ -62,6 +62,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             if (1 == user.getState()) {
                 throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
+            } else if (2 == user.getState()) {
+                throw new UserErrorException(UserErrorCode.USER_TERMINATED);
             }
 
             if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
