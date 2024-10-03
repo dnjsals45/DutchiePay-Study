@@ -219,14 +219,13 @@ public class UserService {
     @Transactional
     public UserReissueResponseDto reissue(UserReissueRequestDto requestDto) {
         String accessToken = requestDto.getAccess();
+        if (!accessTokenBlackListService.isTokenBlackListed(accessToken)) {
+            accessTokenBlackListService.addBlackList(accessToken);
+        }
 
         User user = userRepository.findByRefreshToken(requestDto.getRefresh())
             .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (accessTokenBlackListService.isTokenBlackListed(accessToken)) {
-            throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
-        }
-        accessTokenBlackListService.addBlackList(accessToken);
         return UserReissueResponseDto.toDto(reissueAccessToken(user.getUserId()));
     }
 
