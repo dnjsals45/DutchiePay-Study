@@ -16,6 +16,8 @@ import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -48,6 +50,8 @@ public class UserService {
     @Transactional
     public void signup(UserSignupRequestDto requestDto) {
         existsNickname(requestDto.getNickname());
+        existsPhone(requestDto.getPhone());
+        existsEmail(requestDto.getEmail());
 
         User user = User.builder()
             .email(requestDto.getEmail())
@@ -72,6 +76,24 @@ public class UserService {
     public void existsNickname(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new UserErrorException(UserErrorCode.USER_NICKNAME_ALREADY_EXISTS);
+        }
+    }
+
+    public void existsEmail(String email) {
+        User user = userRepository.findByEmailAndOauthProviderIsNullAndState(email, 0)
+            .orElseThrow(null);
+        if (user == null) {
+            return;
+        } else if (user.getState() == 1) {
+            throw new UserErrorException(UserErrorCode.USER_EMAIL_SUSPENDED);
+        } else if (user.getState() == 2) {
+            throw new UserErrorException(UserErrorCode.USER_EMAIL_TERMINATED);
+        }
+    }
+
+    public void existsPhone(String phone) {
+        if (userRepository.existsByPhoneAndOauthProviderIsNull(phone)) {
+            throw new UserErrorException(UserErrorCode.USER_PHONE_ALREADY_EXISTS);
         }
     }
 
@@ -197,14 +219,57 @@ public class UserService {
     @Transactional
     public UserReissueResponseDto reissue(UserReissueRequestDto requestDto) {
         String accessToken = requestDto.getAccess();
+        if (!accessTokenBlackListService.isTokenBlackListed(accessToken)) {
+            accessTokenBlackListService.addBlackList(accessToken);
+        }
 
         User user = userRepository.findByRefreshToken(requestDto.getRefresh())
             .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (accessTokenBlackListService.isTokenBlackListed(accessToken)) {
-            throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
-        }
-        accessTokenBlackListService.addBlackList(accessToken);
         return UserReissueResponseDto.toDto(reissueAccessToken(user.getUserId()));
+    }
+
+
+    @Transactional
+    public String checkToken(String accessToken, String refreshToken) {
+
+        if (accessToken != null && !accessToken.trim().isEmpty()) {
+
+            try {
+                if (accessTokenBlackListService.isTokenBlackListed(accessToken)) {
+                    throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
+                }
+
+                final JwtUtil jwtUtil = new JwtUtil();
+                Claims claims = jwtUtil.getUserInfoFromToken(accessToken);
+
+                return accessToken;
+            } catch (ExpiredJwtException | UserErrorException e) {
+                if (e instanceof ExpiredJwtException) {
+                    accessTokenBlackListService.addBlackList(accessToken);
+                }
+                if (refreshToken == null && refreshToken.trim().isEmpty()) {
+                    throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
+                }
+            }
+
+        } else if (refreshToken != null && !refreshToken.trim().isEmpty()) {
+
+            final JwtUtil jwtUtil = new JwtUtil();
+            Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
+            Long userId = claims.get("userId", Long.class);
+
+            User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
+            );
+
+            if (refreshToken.equals(user.getRefreshToken())) {
+                return jwtUtil.createAccessToken(userId);
+            } else {
+                throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
+            }
+
+        }
+        throw new IllegalArgumentException("액세스 토큰 또는 리프레시 토큰이 제공되어야 합니다.");
     }
 }

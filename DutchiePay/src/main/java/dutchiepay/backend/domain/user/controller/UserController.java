@@ -52,10 +52,24 @@ public class UserController {
         }
         try {
             userService.existsNickname(nickname);
+            return ResponseEntity.ok().body(null);
         } catch (UserErrorException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(null);
+    }
+
+    @Operation(summary = "이메일 검사 중복확인(구현 완료)", description = "소셜 가입 이메일 제외, 이메일 회원가입만 중복 체크")
+    @GetMapping
+    public ResponseEntity<?> isExistEmail(@RequestParam(required = false) String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(UserErrorCode.USER_EMAIL_MISSING);
+        }
+        try {
+            userService.existsEmail(email);
+            return ResponseEntity.ok().body(null);
+        } catch (UserErrorException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
@@ -92,10 +106,10 @@ public class UserController {
     public ResponseEntity<?> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
         try {
             userService.signup(requestDto);
+            return ResponseEntity.ok().body(null);
         } catch (UserErrorException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(null);
     }
 
     @Operation(summary = "로그아웃(구현 완료)")
@@ -113,20 +127,32 @@ public class UserController {
     @Operation(summary = "회원 탈퇴(추가 수정 필요)", description = "개인정보 삭제 범위, 재가입 불가 구분용 정보 필요")
     @DeleteMapping
     public ResponseEntity<?> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        userService.deleteUser(userDetails);
-        return ResponseEntity.ok().body(null);
+        try {
+            userService.deleteUser(userDetails);
+            return ResponseEntity.ok().body(null);
+        } catch (UserErrorException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @Operation(summary = "자동로그인(구현 완료)")
     @PostMapping("/relogin")
     public ResponseEntity<?> reLogin(@Valid @RequestBody UserReLoginRequestDto requestDto) {
-        return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
+        try {
+            return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
+        } catch (UserErrorException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @Operation(summary = "access Token 재발급(구현 완료)")
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto) {
-        return ResponseEntity.ok().body(userService.reissue(requestDto));
+        try {
+            return ResponseEntity.ok().body(userService.reissue(requestDto));
+        } catch (UserErrorException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 }
