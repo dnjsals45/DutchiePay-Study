@@ -50,8 +50,8 @@ public class UserService {
     @Transactional
     public void signup(UserSignupRequestDto requestDto) {
         existsNickname(requestDto.getNickname());
-        existsEmail(requestDto.getEmail());
         existsPhone(requestDto.getPhone());
+        existsEmail(requestDto.getEmail());
 
         User user = User.builder()
             .email(requestDto.getEmail())
@@ -80,14 +80,20 @@ public class UserService {
     }
 
     public void existsEmail(String email) {
-        if (userRepository.existsByEmailAndOauthProviderIsNull(email)) {
-            throw new UserErrorException(UserErrorCode.User_EMAIL_ALREADY_EXISTS);
+        User user = userRepository.findByEmailAndOauthProviderIsNullAndState(email, 0)
+            .orElseThrow(null);
+        if (user == null) {
+            return;
+        } else if (user.getState() == 1) {
+            throw new UserErrorException(UserErrorCode.USER_EMAIL_SUSPENDED);
+        } else if (user.getState() == 2) {
+            throw new UserErrorException(UserErrorCode.USER_EMAIL_TERMINATED);
         }
     }
 
     public void existsPhone(String phone) {
-        if (userRepository.existsByEmailAndOauthProviderIsNull(phone)) {
-            throw new UserErrorException(UserErrorCode.User_PHONE_ALREADY_EXISTS);
+        if (userRepository.existsByPhoneAndOauthProviderIsNull(phone)) {
+            throw new UserErrorException(UserErrorCode.USER_PHONE_ALREADY_EXISTS);
         }
     }
 
