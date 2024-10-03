@@ -51,6 +51,7 @@ public class UserService {
     public void signup(UserSignupRequestDto requestDto) {
         existsNickname(requestDto.getNickname());
         existsEmail(requestDto.getEmail());
+        existsPhone(requestDto.getPhone());
 
         User user = User.builder()
             .email(requestDto.getEmail())
@@ -81,6 +82,12 @@ public class UserService {
     public void existsEmail(String email) {
         if (userRepository.existsByEmailAndOauthProviderIsNull(email)) {
             throw new UserErrorException(UserErrorCode.User_EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    public void existsPhone(String phone) {
+        if (userRepository.existsByEmailAndOauthProviderIsNull(phone)) {
+            throw new UserErrorException(UserErrorCode.User_PHONE_ALREADY_EXISTS);
         }
     }
 
