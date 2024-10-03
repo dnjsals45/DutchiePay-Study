@@ -50,6 +50,7 @@ public class UserService {
     @Transactional
     public void signup(UserSignupRequestDto requestDto) {
         existsNickname(requestDto.getNickname());
+        existsEmail(requestDto.getEmail());
 
         User user = User.builder()
             .email(requestDto.getEmail())
@@ -74,6 +75,12 @@ public class UserService {
     public void existsNickname(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new UserErrorException(UserErrorCode.USER_NICKNAME_ALREADY_EXISTS);
+        }
+    }
+
+    public void existsEmail(String email) {
+        if (userRepository.existsByEmailAndOauthProviderIsNull(email)) {
+            throw new UserErrorException(UserErrorCode.User_EMAIL_ALREADY_EXISTS);
         }
     }
 

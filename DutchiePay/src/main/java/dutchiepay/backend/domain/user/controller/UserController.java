@@ -58,6 +58,20 @@ public class UserController {
         return ResponseEntity.ok().body(null);
     }
 
+    @Operation(summary = "이메일 검사 중복확인(구현 완료)", description = "소셜 가입 이메일 제외, 이메일 회원가입만 중복 체크")
+    @GetMapping
+    public ResponseEntity<?> isExistEmail(@RequestParam(required = false) String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(UserErrorCode.USER_EMAIL_MISSING);
+        }
+        try {
+            userService.existsEmail(email);
+        } catch (UserErrorException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok().body(null);
+    }
+
     @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
     @PostMapping("/pwd")
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto req) {
