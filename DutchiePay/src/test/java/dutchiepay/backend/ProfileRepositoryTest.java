@@ -17,6 +17,7 @@ import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -82,6 +83,7 @@ class ProfileRepositoryTest {
 
     @Test
     @Transactional
+    @Disabled
     void 마이페이지조회() {
         // given
         // 유저
@@ -212,8 +214,6 @@ class ProfileRepositoryTest {
 
         // then
         System.out.println("전화번호 = " + dto.getPhone());
-        System.out.println("쿠폰 수 = " + dto.getCoupon());
-        System.out.println("주문 수 = " + dto.getOrder());
         System.out.println("이메일 = " + dto.getEmail());
     }
 

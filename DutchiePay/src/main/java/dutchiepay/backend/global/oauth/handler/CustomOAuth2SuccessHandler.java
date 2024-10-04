@@ -68,6 +68,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "  },\n" +
                 "  parentOrigin\n" +
                 "); console.log('로그인 성공'); console.log(parentOrigin); console.log(refreshToken); </script></body></html>";
+
         response.setContentType("text/html");
         response.getWriter().write(html);
 
