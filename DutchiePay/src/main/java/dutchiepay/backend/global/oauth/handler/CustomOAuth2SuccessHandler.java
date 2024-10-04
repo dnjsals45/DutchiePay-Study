@@ -47,50 +47,33 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
         user.createRefreshToken(refreshToken);
 
-        // access token 발급 후 UserLoginResponseDto 호출
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
 
-        String html = """
-        <!DOCTYPE html>
-        <html lang="ko">
-        <head>
-            <meta charset="UTF-8">
-        </head>
-        <body>
-            <script>
-            const parentOrigin = window.location.origin.startsWith('http://localhost:') || window.location.origin.startsWith('http://127.0.0.1:')
-                ? 'http://localhost:3000'
-                : 'https://d2m4bskl88m9ql.cloudfront.net';
-
-            window.opener.postMessage(
-                {
-                    userId: '%s',
-                    type: '%s',
-                    nickname: '%s',
-                    profileImg: '%s',
-                    location: '%s',
-                    access: '%s',
-                    refresh: '%s',
-                    isCertified: %b
-                },
-                parentOrigin
-            );
-            console.log(window.location.origin);
-            console.log(parentOrigin);
-            </script>
-        </body>
-        </html>
-        """.formatted(
-                user.getUserId(),
-                user.getOauthProvider(),
-                user.getNickname(),
-                user.getProfileImg(),
-                user.getLocation(),
-                accessToken,
-                refreshToken,
-                user.getPhone() != null
-        );
-
+        String html = "<!DOCTYPE html>\n" +
+                "<html lang='ko'>\n" +
+                "<head>\n" +
+                "    <meta charset='UTF-8'>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <script>\n" +
+                "    const parentOrigin = 'http://localhost:3000';\n" +
+                "    window.opener.postMessage(\n" +
+                "        {\n" +
+                "            userId: " + user.getUserId() + ",\n" +
+                "            type: " + user.getOauthProvider() + ",\n" +
+                "            nickname: " + user.getNickname() + ",\n" +
+                "            profileImg: " + user.getProfileImg() + ",\n" +
+                "            location: " + user.getLocation() + ",\n" +
+                "            access: " + accessToken + ",\n" +
+                "            refresh: " + refreshToken + ",\n" +
+                "            isCertified: " + (user.getPhone() != null) + "\n" +
+                "        },\n" +
+                "        parentOrigin\n" +
+                "    );\n" +
+                "    window.close();\n" +
+                "    </script>\n" +
+                "</body>\n" +
+                "</html>";
         response.setContentType("text/html; charset=UTF-8");
         response.getWriter().write(html);
 
