@@ -58,16 +58,16 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "    <script>\n" +
                 "    const parentOrigin = 'http://localhost:3000';\n" +
                 "    window.opener.postMessage(\n" +
-                "        {\n" +
-                "            userId: " + user.getUserId() + ",\n" +
-                "            type: " + user.getOauthProvider() + ",\n" +
-                "            nickname: " + user.getNickname() + ",\n" +
-                "            profileImg: " + user.getProfileImg() + ",\n" +
-                "            location: " + user.getLocation() + ",\n" +
-                "            access: " + accessToken + ",\n" +
-                "            refresh: " + refreshToken + ",\n" +
-                "            isCertified: " + (user.getPhone() != null) + "\n" +
-                "        },\n" +
+                "    {\n" +
+                "       userId: '" + user.getUserId() + "',\n" +
+                "       type: '" + user.getOauthProvider() + "',\n" +
+                "       nickname: '" + user.getNickname() + "',\n" +
+                "       profileImg: " + user.getProfileImg() + ",\n" +
+                "       location: '" + user.getLocation() + "',\n" +
+                "       access: '" + accessToken + "',\n" +
+                "       refresh: '" + refreshToken + "',\n" +
+                "       isCertified: " + (user.getPhone() != null) + "\n" +
+                "    },\n" +
                 "        parentOrigin\n" +
                 "    );\n" +
                 "    window.close();\n" +
