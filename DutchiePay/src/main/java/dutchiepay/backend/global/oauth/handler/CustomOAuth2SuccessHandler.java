@@ -1,31 +1,26 @@
 package dutchiepay.backend.global.oauth.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
-import dutchiepay.backend.global.oauth.dto.CustomOAuth2User;
-import dutchiepay.backend.global.security.JwtAuthenticationFilter;
-import dutchiepay.backend.global.security.JwtVerificationFilter;
 import dutchiepay.backend.global.security.UserDetailsImpl;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.Base64;
 
 @Slf4j
 @Component
@@ -34,6 +29,20 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private static String ENCRYPT_SECRET_KEY;
+    private static String ALGORITHM;
+
+    @Value("${ENCRYPT_SECRET_KEY}")
+    private String tempEncryptSecretKey;
+
+    @Value("${ALGORITHM}")
+    private String tempAlgorithm;
+
+    @PostConstruct
+    public void init() {
+        ENCRYPT_SECRET_KEY = tempEncryptSecretKey;
+        ALGORITHM = tempAlgorithm;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -74,38 +83,40 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>";
-        response.setContentType("text/html; charset=UTF-8");
-        response.getWriter().write(html);
+
+        String encryptedHtml = null;
+        try {
+            encryptedHtml = encrypt(html);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // 암호화된 HTML을 클라이언트로 전송
+        response.setContentType("text/plain; charset=UTF-8");
+        response.getWriter().write(encryptedHtml);
 
         userRepository.save(user);
 
     }
 
     /**
-     * JSON 형식으로 response를 보내는 메서드
-     * 사용하지 않음
+     * response 값 암호화
+     * @param data 암호화 할 html
+     * @return 암호화된 text
+     * @throws Exception 암호화 중 발생하는 exception
      */
-    private void sendResponse(HttpServletResponse response, UserLoginResponseDto userLoginResponseDto) throws IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        ObjectNode rootNode = objectMapper.valueToTree(userLoginResponseDto);
-
-        objectMapper.writeValue(response.getWriter(), rootNode);
-    }
-
-    /**
-     * 소셜 로그인 성공 후 cookie에 refresh token을 담는 메서드
-     * @param response
-     * @param name
-     * @param value
-     */
-    public void setCookie(HttpServletResponse response, String name, String value) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setMaxAge(120);
-//        cookie.setSecure(true); // HTTPS에서만 전송
-        response.addCookie(cookie);
+    public static String encrypt(String data) throws Exception {
+        if (ENCRYPT_SECRET_KEY == null || ALGORITHM == null) {
+            throw new IllegalStateException("암호화 과정 중 예외 발생");
+        }
+        try {
+            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPT_SECRET_KEY.getBytes(), ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        } catch(Exception e) {
+            throw new Exception("암호화 과정 중 예외 발생", e);
+        }
     }
 }
