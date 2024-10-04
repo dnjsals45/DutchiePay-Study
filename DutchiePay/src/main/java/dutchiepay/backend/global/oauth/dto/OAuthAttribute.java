@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 @Getter
@@ -44,7 +45,7 @@ public class OAuthAttribute {
                 .email(kakaoAccount.get("email").toString())
                 .nickname("test")
                 .oauthId(attributes.get("id").toString())
-                .oauthProvider("kakao")
+                .oauthProvider(generateNickname())
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
@@ -56,7 +57,7 @@ public class OAuthAttribute {
 
         return OAuthAttribute.builder()
                 .email(response.get("email").toString())
-                .nickname("Navest")
+                .nickname(generateNickname())
                 .oauthId(response.get("id").toString())
                 .oauthProvider("naver")
                 .attributes(attributes)
@@ -65,8 +66,6 @@ public class OAuthAttribute {
     }
 
     public User toEntity() {
-        // 닉네임 자동생성 필요?
-
         return User.builder()
                 .email(email)
                 .username(nickname)
@@ -76,5 +75,17 @@ public class OAuthAttribute {
                 .oauthId(oauthId)
                 .oauthProvider(oauthProvider)
                 .build();
+    }
+
+    private static String generateNickname() {
+        // 닉네임 자동생성
+        Random random = new Random();
+        random.setSeed(System.currentTimeMillis());
+        int randNum = random.nextInt(999999);
+        StringBuilder sb = new StringBuilder(Integer.toString(randNum));
+        while (sb.length() < 6) {
+            sb.insert(0, 0);
+        }
+        return "더취" + sb;
     }
 }
