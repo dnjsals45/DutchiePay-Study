@@ -67,7 +67,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "    isCertified: " + (user.getPhone() == null ? "false" : "true") + "\n" +
                 "  },\n" +
                 "  parentOrigin\n" +
-                "); window.close();</script></body></html>";
+                "); console.log('로그인 성공'); console.log(parentOrigin); console.log(refreshToken); </script></body></html>";
         response.setContentType("text/html");
         response.getWriter().write(html);
 

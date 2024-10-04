@@ -43,9 +43,9 @@ public class OAuthAttribute {
 
         return OAuthAttribute.builder()
                 .email(kakaoAccount.get("email").toString())
-                .nickname("test")
+                .nickname(generateNickname())
                 .oauthId(attributes.get("id").toString())
-                .oauthProvider(generateNickname())
+                .oauthProvider("kakao")
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
@@ -68,7 +68,6 @@ public class OAuthAttribute {
     public User toEntity() {
         return User.builder()
                 .email(email)
-                .username(nickname)
                 .nickname(nickname)
                 .location("서울시 중구")
                 .state(0)
