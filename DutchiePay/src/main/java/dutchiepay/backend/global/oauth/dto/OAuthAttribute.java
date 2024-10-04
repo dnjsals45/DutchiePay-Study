@@ -45,7 +45,7 @@ public class OAuthAttribute {
                 .email(kakaoAccount.get("email").toString())
                 .nickname(generateNickname())
                 .oauthId(attributes.get("id").toString())
-                .oauthProvider("kakao")
+                .oauthProvider(generateNickname())
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
