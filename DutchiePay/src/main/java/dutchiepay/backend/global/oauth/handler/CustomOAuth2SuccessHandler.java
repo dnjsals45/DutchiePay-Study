@@ -41,19 +41,46 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         log.info("Oauth2 login success: User@{}", oAuth2User.getUserId());
 
-        // 유저 데이터 기반으로 토큰 발급
-        // 사용자한테 토큰 정보가 없으면 access, refresh 발급, refresh가 유효하고 access가 무효하면 access 발급, 둘다 무효하면 둘다 발급
         User user = userRepository.findById(oAuth2User.getUserId()).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        String refreshToken = jwtUtil.createRefreshToken(oAuth2User.getUserId());
-
+        // refresh token 발급 후 저장
+        String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
         user.createRefreshToken(refreshToken);
+
+        // access token 발급 후 UserLoginResponseDto 호출
+        String accessToken = jwtUtil.createAccessToken(user.getUserId());
+//        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
+
+        String html = "<html><body><script>const parentOrigin = window.location.hostname === 'localhost'\n" +
+                "  ? 'http://localhost:3000'  // 개발 환경\n" +
+                "  : 'https://d2m4bskl88m9ql.cloudfront.net';  // 실제 배포 환경\n" +
+                "\n" +
+                "window.opener.postMessage(\n" +
+                "  {\n" +
+                "    userId: '" + user.getUserId() + "',\n" +
+                "    type: '" + user.getOauthProvider() + "',\n" +
+                "    nickname: '" + user.getNickname() + "',\n" +
+                "    profileImg: '" + user.getProfileImg() + "',\n" +
+                "    location: '" + user.getLocation() + "',\n" +
+                "    access: '" + accessToken + "',\n" +
+                "    refresh: '" + refreshToken + "',\n" +
+                "    isCertified: " + (user.getPhone() == null ? "false" : "true") + "\n" +
+                "  },\n" +
+                "  parentOrigin\n" +
+                "); window.close();</script></body></html>";
+        response.setContentType("text/html");
+        response.getWriter().write(html);
+
         userRepository.save(user);
 
-        setCookie(response, "token", refreshToken);
 
+//        setCookie(response, "token", refreshToken);
     }
 
+    /**
+     * JSON 형식으로 response를 보내는 메서드
+     * 사용하지 않음
+     */
     private void sendResponse(HttpServletResponse response, UserLoginResponseDto userLoginResponseDto) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
@@ -65,6 +92,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         objectMapper.writeValue(response.getWriter(), rootNode);
     }
 
+    /**
+     * 소셜 로그인 성공 후 cookie에 refresh token을 담는 메서드
+     * @param response
+     * @param name
+     * @param value
+     */
     public void setCookie(HttpServletResponse response, String name, String value) {
         Cookie cookie = new Cookie(name, value);
         cookie.setMaxAge(120);
