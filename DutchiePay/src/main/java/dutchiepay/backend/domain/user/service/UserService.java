@@ -100,6 +100,12 @@ public class UserService {
     public FindEmailResponseDto findEmail(FindEmailRequestDto req) {
         User user = userUtilService.commonUserFindByPhone(req.getPhone());
 
+        if (user.getState() == 1) {
+            throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
+        } else if (user.getState() == 2) {
+            throw new UserErrorException(UserErrorCode.USER_TERMINATED);
+        }
+
         return FindEmailResponseDto.of(userUtilService.maskEmail(user.getEmail()));
     }
 
@@ -121,6 +127,10 @@ public class UserService {
 
     @Transactional
     public void changeUserPassword(User user, UserChangePasswordRequestDto req) {
+        if (req.getPassword().equals(req.getNewPassword())) {
+            throw new UserErrorException(UserErrorCode.SAME_PASSWORD);
+        }
+
         if (passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new UserErrorException(UserErrorCode.USER_SAME_PASSWORD);
         }

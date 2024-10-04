@@ -19,6 +19,7 @@ public enum ProfileErrorCode implements StatusCode {
     INVALID_USER_ORDER_REVIEW(HttpStatus.BAD_REQUEST, "자신이 구매한 상품에만 댓글을 달 수 있습니다."),
     INVALID_USER_ORDER_ASK(HttpStatus.BAD_REQUEST, "자신이 구매한 상품에만 문의를 달 수 있습니다."),
     INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "주소 정보가 없습니다."),
+    ADDRESS_COUNT_LIMIT(HttpStatus.BAD_REQUEST, "주소는 최대 5개까지 등록 가능합니다."),
 
     /**
      * 401 UNAUTHORIZED

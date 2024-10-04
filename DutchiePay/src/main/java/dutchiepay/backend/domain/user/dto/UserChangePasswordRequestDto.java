@@ -8,4 +8,5 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserChangePasswordRequestDto {
     private String password;
+    private String newPassword;
 }
