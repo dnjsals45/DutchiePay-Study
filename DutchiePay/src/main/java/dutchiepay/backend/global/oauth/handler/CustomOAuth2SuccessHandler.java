@@ -51,9 +51,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
 //        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
 
-        String html = "<html><body><script>const parentOrigin = window.location.hostname === 'localhost'\n" +
-                "  ? 'http://localhost:3000'  // 개발 환경\n" +
-                "  : 'https://d2m4bskl88m9ql.cloudfront.net';  // 실제 배포 환경\n" +
+        String html = "<html><body><script>const parentOrigin = 'http://localhost:3000'\n" +
                 "\n" +
                 "window.opener.postMessage(\n" +
                 "  {\n" +
@@ -67,7 +65,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "    isCertified: " + (user.getPhone() == null ? "false" : "true") + "\n" +
                 "  },\n" +
                 "  parentOrigin\n" +
-                "); console.log('로그인 성공'); console.log(parentOrigin); console.log(refreshToken); </script></body></html>";
+                "); console.log('로그인 성공'); console.log(parentOrigin); </script></body></html>";
         response.setContentType("text/html");
         response.getWriter().write(html);
 
