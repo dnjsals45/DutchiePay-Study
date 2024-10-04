@@ -45,8 +45,9 @@ public class UserController {
     }
 
     @Operation(summary = "닉네임 검사 중복확인(구현 완료)")
-    @GetMapping
+    @GetMapping(value = "", params = "nickname")
     public ResponseEntity<?> isExistNickname(@RequestParam(required = false) String nickname) {
+        System.out.println("nickname = " + nickname);
         if (nickname == null || nickname.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(UserErrorCode.USER_NICKNAME_MISSING);
         }
@@ -59,8 +60,9 @@ public class UserController {
     }
 
     @Operation(summary = "이메일 검사 중복확인(구현 완료)", description = "소셜 가입 이메일 제외, 이메일 회원가입만 중복 체크")
-    @GetMapping
+    @GetMapping(value = "", params = "email")
     public ResponseEntity<?> isExistEmail(@RequestParam(required = false) String email) {
+        System.out.println("email = " + email);
         if (email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(UserErrorCode.USER_EMAIL_MISSING);
         }
