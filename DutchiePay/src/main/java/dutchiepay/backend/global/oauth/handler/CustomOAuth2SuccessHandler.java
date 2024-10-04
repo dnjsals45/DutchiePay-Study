@@ -49,31 +49,52 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         // access token 발급 후 UserLoginResponseDto 호출
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
-//        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
 
-        String html = "<html><body><script>const parentOrigin = 'http://localhost:3000'\n" +
-                "\n" +
-                "window.opener.postMessage(\n" +
-                "  {\n" +
-                "    userId: '" + user.getUserId() + "',\n" +
-                "    type: '" + user.getOauthProvider() + "',\n" +
-                "    nickname: '" + user.getNickname() + "',\n" +
-                "    profileImg: '" + user.getProfileImg() + "',\n" +
-                "    location: '" + user.getLocation() + "',\n" +
-                "    access: '" + accessToken + "',\n" +
-                "    refresh: '" + refreshToken + "',\n" +
-                "    isCertified: " + (user.getPhone() == null ? "false" : "true") + "\n" +
-                "  },\n" +
-                "  parentOrigin\n" +
-                "); console.log('로그인 성공'); console.log(parentOrigin); </script></body></html>";
+        String html = """
+        <!DOCTYPE html>
+        <html lang="ko">
+        <head>
+            <meta charset="UTF-8">
+        </head>
+        <body>
+            <script>
+            const parentOrigin = window.location.origin.startsWith('http://localhost:') || window.location.origin.startsWith('http://127.0.0.1:')
+                ? 'http://localhost:3000'
+                : 'https://d2m4bskl88m9ql.cloudfront.net';
 
-        response.setContentType("text/html");
+            window.opener.postMessage(
+                {
+                    userId: '%s',
+                    type: '%s',
+                    nickname: '%s',
+                    profileImg: '%s',
+                    location: '%s',
+                    access: '%s',
+                    refresh: '%s',
+                    isCertified: %b
+                },
+                parentOrigin
+            );
+            window.close();
+            </script>
+        </body>
+        </html>
+        """.formatted(
+                user.getUserId(),
+                user.getOauthProvider(),
+                user.getNickname(),
+                user.getProfileImg(),
+                user.getLocation(),
+                accessToken,
+                refreshToken,
+                user.getPhone() != null
+        );
+
+        response.setContentType("text/html; charset=UTF-8");
         response.getWriter().write(html);
 
         userRepository.save(user);
 
-
-//        setCookie(response, "token", refreshToken);
     }
 
     /**
