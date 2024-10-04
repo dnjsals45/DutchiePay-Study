@@ -32,11 +32,7 @@ public class ProfileService {
     private final UsersAddressRepository usersAddressRepository;
 
     public MyPageResponseDto myPage(User user) {
-        List<Address> addressList = addressRepository.findAllByUser(user);
-        Long couponCount = usersCouponRepository.countByUser(user);
-        Long orderCount = ordersRepository.countByUserPurchase(user, "결제 완료");
-
-        return MyPageResponseDto.from(user, addressList, couponCount, orderCount);
+        return MyPageResponseDto.from(user);
     }
 
     public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit) {
@@ -177,6 +173,10 @@ public class ProfileService {
 
     @Transactional
     public void addAddress(User user, @Valid CreateAddressRequestDto req) {
+        if (usersAddressRepository.countByUser(user) >= 5) {
+            throw new ProfileErrorException(ProfileErrorCode.ADDRESS_COUNT_LIMIT);
+        }
+
         Address newAddress = Address.builder()
                 .addressName(req.getAddressName())
                 .receiver(req.getName())
