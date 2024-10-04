@@ -75,7 +75,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 },
                 parentOrigin
             );
-            window.close();
+            console.log(window.location.origin);
+            console.log(parentOrigin);
             </script>
         </body>
         </html>
