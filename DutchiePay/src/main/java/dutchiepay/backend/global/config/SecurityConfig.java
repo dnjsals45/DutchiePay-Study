@@ -59,6 +59,7 @@ public class SecurityConfig {
         "/oauth/signup",
         "/oauth",
         "/image",
+        "/health"
     };
 
     private final String[] readOnlyUrl = {
