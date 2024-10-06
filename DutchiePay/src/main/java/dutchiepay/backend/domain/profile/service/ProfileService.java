@@ -1,18 +1,14 @@
 package dutchiepay.backend.domain.profile.service;
 
 import dutchiepay.backend.domain.commerce.BuyCategory;
-import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
-import dutchiepay.backend.domain.profile.repository.AddressRepository;
 import dutchiepay.backend.domain.profile.repository.ProfileRepository;
-import dutchiepay.backend.domain.profile.repository.UsersAddressRepository;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -22,14 +18,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-    private final UsersCouponRepository usersCouponRepository;
     private final OrdersRepository ordersRepository;
     private final ReviewRepository reviewRepository;
     private final AskRepository askRepository;
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
-    private final AddressRepository addressRepository;
-    private final UsersAddressRepository usersAddressRepository;
 
     public MyPageResponseDto myPage(User user) {
         return MyPageResponseDto.from(user);
@@ -141,19 +134,6 @@ public class ProfileService {
     }
 
     @Transactional
-    public void changeAddress(User user, ChangeAddressRequestDto req) {
-        Address address = addressRepository.findById(req.getAddressId())
-                        .orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ADDRESS));
-
-        if (req.getIsDefault().equals(Boolean.TRUE)) {
-            addressRepository.changeIsDefaultTrueToFalse(user);
-        }
-
-        address.update(req);
-        addressRepository.save(address);
-    }
-
-    @Transactional
     public void changePhone(User user, String phone) {
         user.changePhone(phone);
 
@@ -169,48 +149,5 @@ public class ProfileService {
         }
 
         askRepository.softDelete(ask);
-    }
-
-    @Transactional
-    public void addAddress(User user, @Valid CreateAddressRequestDto req) {
-        if (usersAddressRepository.countByUser(user) >= 5) {
-            throw new ProfileErrorException(ProfileErrorCode.ADDRESS_COUNT_LIMIT);
-        }
-
-        Address newAddress = Address.builder()
-                .addressName(req.getAddressName())
-                .receiver(req.getName())
-                .phone(req.getPhone())
-                .addressInfo(req.getAddress())
-                .detail(req.getDetail())
-                .zipCode(req.getZipCode())
-                .isDefault(req.getIsDefault())
-                .build();
-
-        if (newAddress.getIsDefault().equals(Boolean.TRUE)) {
-            addressRepository.changeIsDefaultTrueToFalse(user);
-        }
-
-        addressRepository.save(newAddress);
-
-        UsersAddress usersAddress = UsersAddress.builder()
-                .user(user)
-                .address(newAddress)
-                .build();
-
-        usersAddressRepository.save(usersAddress);
-    }
-
-    @Transactional
-    public void deleteAddress(User user, Long addressId) {
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ADDRESS));
-
-        if (address.getIsDefault().equals(Boolean.TRUE)) {
-            addressRepository.changeOldestAddressToDefault(user);
-        }
-
-        usersAddressRepository.deleteByUserAndAddress(user, address);
-        addressRepository.delete(address);
     }
 }

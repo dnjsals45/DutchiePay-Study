@@ -1,4 +1,4 @@
-package dutchiepay.backend.domain.profile.dto;
+package dutchiepay.backend.domain.delivery.dto;
 
 import lombok.*;
 
@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChangeAddressRequestDto {
+public class ChangeDeliveryResquestDto {
     private Long addressId;
     private String addressName;
     private String name;
@@ -16,3 +16,4 @@ public class ChangeAddressRequestDto {
     private String zipCode;
     private Boolean isDefault;
 }
+

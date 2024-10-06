@@ -1,5 +1,8 @@
 package dutchiepay.backend.domain.delivery.controller;
 
+import dutchiepay.backend.domain.delivery.dto.ChangeDeliveryResquestDto;
+import dutchiepay.backend.domain.delivery.dto.CreateDelieveryRequestDto;
+import dutchiepay.backend.domain.delivery.dto.DeleteDeliveryRequestDto;
 import dutchiepay.backend.domain.delivery.service.DeliveryService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,21 +10,41 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "배송지 API", description = "프로필 관련 API")
+@Tag(name = "배송지 API", description = "배송지 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/delivery")
 public class DeliveryController {
     private final DeliveryService deliveryService;
 
-    @Operation(summary = "배송지 조회")
+    @Operation(summary = "배송지 조회(구현 완료)")
     @GetMapping("")
     public ResponseEntity<?> getMyDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok().body(deliveryService.getDelivery(userDetails.getUser()));
     }
 
+    @Operation(summary = "배송지 추가(구현 완료)")
+    @PostMapping("")
+    public ResponseEntity<?> addDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                         CreateDelieveryRequestDto req) {
+        return ResponseEntity.ok().body(deliveryService.addDelivery(userDetails.getUser(), req));
+    }
+
+    @Operation(summary = "배송지 수정(구현 완료)")
+    @PatchMapping("")
+    public ResponseEntity<?> updateDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            ChangeDeliveryResquestDto req) {
+        deliveryService.updateDelivery(userDetails.getUser(), req);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "배송지 삭제(구현 완료)")
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            DeleteDeliveryRequestDto req) {
+        deliveryService.deleteDelivery(userDetails.getUser(), req);
+        return ResponseEntity.ok().build();
+    }
 }

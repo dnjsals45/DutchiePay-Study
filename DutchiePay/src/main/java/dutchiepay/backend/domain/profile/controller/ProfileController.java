@@ -92,14 +92,6 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "배송지 정보 추가")
-    @PostMapping("/address")
-    public ResponseEntity<?> addAddress(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @Valid @RequestBody CreateAddressRequestDto req) {
-        profileService.addAddress(userDetails.getUser(), req);
-        return ResponseEntity.ok().build();
-    }
-
     /**
      * PATCH
      */
@@ -127,14 +119,6 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "배송지 정보 변경 (구현 완료)")
-    @PatchMapping("/address")
-    public ResponseEntity<?> changeAddress(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                           @Valid @RequestBody ChangeAddressRequestDto req) {
-        profileService.changeAddress(userDetails.getUser(), req);
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "전화번호 변경 (구현 완료)")
     @PatchMapping("/phone")
     public ResponseEntity<?> changePhone(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -150,13 +134,6 @@ public class ProfileController {
     @DeleteMapping("/asks")
     public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody DeleteAskRequestDto req) {
         profileService.deleteAsk(userDetails.getUser(), req.getReviewId());
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "배송지 정보 삭제(구현 완료)")
-    @DeleteMapping("/address")
-    public ResponseEntity<?> deleteAddress(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody DeleteAddressRequestDto req) {
-        profileService.deleteAddress(userDetails.getUser(), req.getAddressId());
         return ResponseEntity.ok().build();
     }
 }

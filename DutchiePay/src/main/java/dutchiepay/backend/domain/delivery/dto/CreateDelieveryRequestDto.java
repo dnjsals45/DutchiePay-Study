@@ -1,4 +1,4 @@
-package dutchiepay.backend.domain.profile.dto;
+package dutchiepay.backend.domain.delivery.dto;
 
 import lombok.*;
 
@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CreateAddressRequestDto {
+public class CreateDelieveryRequestDto {
     private String addressName;
     private String name;
     private String phone;

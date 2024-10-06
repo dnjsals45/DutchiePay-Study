@@ -44,34 +44,24 @@ public class UserController {
         return ResponseEntity.ok().body(userService.findEmail(req));
     }
 
-    @Operation(summary = "닉네임 검사 중복확인(구현 완료)")
+    @Operation(summary = "닉네임 검사 중복확인(구현 완료)", operationId = "닉네임 중복확인")
     @GetMapping(value = "", params = "nickname")
     public ResponseEntity<?> isExistNickname(@RequestParam(required = false) String nickname) {
-        System.out.println("nickname = " + nickname);
         if (nickname == null || nickname.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(UserErrorCode.USER_NICKNAME_MISSING);
         }
-        try {
-            userService.existsNickname(nickname);
-            return ResponseEntity.ok().body(null);
-        } catch (UserErrorException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        userService.existsNickname(nickname);
+        return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 검사 중복확인(구현 완료)", description = "소셜 가입 이메일 제외, 이메일 회원가입만 중복 체크")
+    @Operation(summary = "이메일 검사 중복확인(구현 완료)", operationId = "이메일 중복확인")
     @GetMapping(value = "", params = "email")
     public ResponseEntity<?> isExistEmail(@RequestParam(required = false) String email) {
-        System.out.println("email = " + email);
         if (email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(UserErrorCode.USER_EMAIL_MISSING);
         }
-        try {
-            userService.existsEmail(email);
-            return ResponseEntity.ok().body(null);
-        } catch (UserErrorException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        userService.existsEmail(email);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
@@ -106,12 +96,8 @@ public class UserController {
     @Operation(summary = "회원가입(구현 완료)")
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
-        try {
-            userService.signup(requestDto);
-            return ResponseEntity.ok().body(null);
-        } catch (UserErrorException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        userService.signup(requestDto);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "로그아웃(구현 완료)")
@@ -129,12 +115,8 @@ public class UserController {
     @Operation(summary = "회원 탈퇴(추가 수정 필요)", description = "개인정보 삭제 범위, 재가입 불가 구분용 정보 필요")
     @DeleteMapping
     public ResponseEntity<?> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        try {
-            userService.deleteUser(userDetails);
-            return ResponseEntity.ok().body(null);
-        } catch (UserErrorException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        userService.deleteUser(userDetails);
+        return ResponseEntity.ok().body(null);
     }
 
     @Operation(summary = "자동로그인(구현 완료)")

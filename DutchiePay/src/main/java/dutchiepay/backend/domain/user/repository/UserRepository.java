@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndPhoneAndOauthProviderIsNull(String email, String phone);
 
-    Optional<User> findByEmailAndOauthProviderIsNullAndState(String email, int state);
+    User findByEmailAndOauthProviderIsNullAndState(String email, int state);
 
     Optional<User> findByRefreshToken(String refreshToken);
 

@@ -1,4 +1,4 @@
-package dutchiepay.backend.domain.profile.dto;
+package dutchiepay.backend.domain.delivery.dto;
 
 import lombok.*;
 
@@ -6,6 +6,6 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DeleteAddressRequestDto {
+public class DeleteDeliveryRequestDto {
     private Long addressId;
 }

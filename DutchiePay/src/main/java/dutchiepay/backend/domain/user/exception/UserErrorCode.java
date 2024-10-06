@@ -25,6 +25,7 @@ public enum UserErrorCode implements StatusCode {
     DELETED_USER(HttpStatus.BAD_REQUEST, "이미 탈퇴한 회원입니다."),
     USER_SAME_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일합니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 새로운 비밀번호가 같습니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호가 올바르지 않습니다."),
 
     /**
      * 401 UNAUTHORIZED
