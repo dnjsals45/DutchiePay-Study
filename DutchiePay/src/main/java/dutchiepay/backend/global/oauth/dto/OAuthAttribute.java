@@ -28,8 +28,6 @@ public class OAuthAttribute {
         this.nickname = nickname;
         this.oauthId = oauthId;
         this.oauthProvider = oauthProvider;
-        System.out.println("========Constructor==========");
-        System.out.println("This.oauthProvider:  " + this.oauthProvider);
     }
 
     public static OAuthAttribute of(String userNameAttributeName, Map<String, Object> attributes, String registrationId) {
@@ -68,8 +66,6 @@ public class OAuthAttribute {
     }
 
     public User toEntity() {
-        System.out.println("=========toEntity==========");
-        System.out.println("oauthProvider   " + oauthProvider);
         return User.builder()
                 .email(email)
                 .nickname(nickname)

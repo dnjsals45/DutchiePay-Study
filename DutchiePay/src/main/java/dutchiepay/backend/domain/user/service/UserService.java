@@ -140,6 +140,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void unlinkKakao(UserDetailsImpl userDetails) {
         OAuth2AuthorizedClient authorizedClient = oauthService.loadAuthorizedClient(
             "kakao", // OAuth2 로그인 제공자 이름 (예: "google", "naver")
@@ -167,8 +168,11 @@ public class UserService {
             String.class                     // 응답 타입
         );
 
+        userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
 
+    @Transactional
     public void unlinkNaver(UserDetailsImpl userDetails) {
 
         OAuth2AuthorizedClient authorizedClient = oauthService.loadAuthorizedClient(
@@ -195,6 +199,9 @@ public class UserService {
             null,                          // HttpEntity
             String.class                     // 응답 타입
         );
+
+        userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
 
     @Transactional
