@@ -137,10 +137,11 @@ public class UserService {
         }
 
         if (passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new UserErrorException(UserErrorCode.USER_SAME_PASSWORD);
+            user.changePassword(passwordEncoder.encode(req.getNewPassword()));
+            userRepository.save(user);
+        } else {
+            throw new UserErrorException(UserErrorCode.INVALID_PASSWORD);
         }
-
-        user.changePassword(passwordEncoder.encode(req.getPassword()));
 
         userRepository.save(user);
     }
