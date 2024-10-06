@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.exception;
 
+import dutchiepay.backend.domain.delivery.exception.DeliveryErrorException;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,13 @@ public class CustomExceptionHandler {
         log.warn("handleProcessorException : {}", e.getMessage());
         final ErrorMessage message = ErrorMessage.of(e.getMessage());
         return ResponseEntity.status(e.getProfileErrorCode().getHttpStatus()).body(message);
+    }
+
+    @ExceptionHandler(DeliveryErrorException.class)
+    protected ResponseEntity<?> handleDeliveryErrorException(DeliveryErrorException e) {
+        log.warn("handleDeliveryErrorException : {}", e.getMessage());
+        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        return ResponseEntity.status(e.getDeliveryErrorCode().getHttpStatus()).body(message);
     }
 
     /**
