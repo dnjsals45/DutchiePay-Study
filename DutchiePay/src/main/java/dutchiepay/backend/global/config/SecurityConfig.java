@@ -7,7 +7,7 @@ import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationEntryPoint;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
-import dutchiepay.backend.global.security.NicknameQueryParamFilter;
+//import dutchiepay.backend.global.security.NicknameQueryParamFilter;
 import dutchiepay.backend.global.security.UserDetailsServiceImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +50,6 @@ public class SecurityConfig {
     private final String[] permitAllUrl = {
         "/users/login",
         "/users/signup",
-        "/users?nickname",
-        "/users/email",
         "/users/pwd",
         "/users/pwd-nonuser",
         "/users/auth",
@@ -65,6 +63,7 @@ public class SecurityConfig {
     private final String[] readOnlyUrl = {
         "/favicon.ico",
         "/api-docs/**",
+        "/users",
         "/v3/api-docs/**", "/swagger-ui/**", "/swagger",
     };
 
@@ -113,8 +112,8 @@ public class SecurityConfig {
                     .anyRequest().authenticated())
             .oauth2Login(oauth2 ->
                 oauth2.successHandler(customOAuth2SuccessHandler))
-            .addFilterBefore(new NicknameQueryParamFilter(),
-                UsernamePasswordAuthenticationFilter.class)
+//            .addFilterBefore(new NicknameQueryParamFilter(),
+//                UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
             .addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder()),
