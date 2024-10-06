@@ -1,6 +1,6 @@
 package dutchiepay.backend.entity;
 
-import dutchiepay.backend.domain.profile.dto.ChangeAddressRequestDto;
+import dutchiepay.backend.domain.delivery.dto.ChangeDeliveryResquestDto;
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,7 +36,7 @@ public class Address extends Auditing {
     @Column(nullable = false)
     private Boolean isDefault;
 
-    public void update(ChangeAddressRequestDto req) {
+    public void update(ChangeDeliveryResquestDto req) {
         this.addressName = req.getAddressName();
         this.receiver = req.getName();
         this.phone = req.getPhone();

@@ -1,4 +1,4 @@
-package dutchiepay.backend.domain.profile.repository;
+package dutchiepay.backend.domain.delivery.repository;
 
 import dutchiepay.backend.entity.Address;
 import dutchiepay.backend.entity.User;
