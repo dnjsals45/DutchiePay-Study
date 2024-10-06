@@ -6,6 +6,7 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -46,10 +47,20 @@ public class CustomExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.warn("handleMethodArgumentNotValidException : {}", e.getMessage());
-        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        String defaultMessage = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Validation failed");
+
+        log.warn("handleMethodArgumentNotValidException : {}", defaultMessage);
+
+        final ErrorMessage message = ErrorMessage.of(defaultMessage);
+
         return ResponseEntity.badRequest().body(message);
     }
+
 
     /**
      * NullPointerException 에러 처리가 된 경우
