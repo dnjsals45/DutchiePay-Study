@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -80,14 +82,17 @@ public class UserService {
     }
 
     public void existsEmail(String email) {
-        User user = userRepository.findByEmailAndOauthProviderIsNullAndState(email, 0)
-            .orElseThrow(null);
-        if (user == null) {
-            return;
-        } else if (user.getState() == 1) {
-            throw new UserErrorException(UserErrorCode.USER_EMAIL_SUSPENDED);
-        } else if (user.getState() == 2) {
-            throw new UserErrorException(UserErrorCode.USER_EMAIL_TERMINATED);
+        Optional<User> user = userRepository.findByEmailAndOauthProviderIsNull(email);
+
+        if (user.isPresent()) {
+            User now = user.get();
+            if (now.getState() == 1) {
+                throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
+            } else if (now.getState() == 2) {
+                throw new UserErrorException(UserErrorCode.USER_TERMINATED);
+            } else {
+                throw new UserErrorException(UserErrorCode.USER_EMAIL_ALREADY_EXISTS);
+            }
         }
     }
 
