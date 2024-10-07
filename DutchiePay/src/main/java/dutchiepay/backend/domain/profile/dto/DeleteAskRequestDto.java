@@ -8,6 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DeleteAskRequestDto {
-    @NotBlank(message = "리뷰 아이디를 입력해주세요.")
+    @NotBlank(message = "후기 ID를 입력해주세요.")
     private Long reviewId;
 }
