@@ -18,7 +18,7 @@ public class GetMyDeliveryResponseDto {
     private String address;
     private String detail;
     private String zipCode;
-    private boolean isDefault;
+    private Boolean isDefault;
 
     public static List<GetMyDeliveryResponseDto> from(List<Address> addressList) {
         List<GetMyDeliveryResponseDto> addressResponse = new ArrayList<>();

@@ -132,7 +132,8 @@ public class ProfileController {
      */
     @Operation(summary = "후기 삭제 (구현 완료)")
     @DeleteMapping("/asks")
-    public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody DeleteAskRequestDto req) {
+    public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                       @Valid @RequestBody DeleteAskRequestDto req) {
         profileService.deleteAsk(userDetails.getUser(), req.getReviewId());
         return ResponseEntity.ok().build();
     }

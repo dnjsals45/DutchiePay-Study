@@ -9,8 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChangeNicknameRequestDto {
-
-    @NotBlank
+    @NotBlank(message = "닉네임을 입력해주세요.")
     @Pattern(regexp = "^.{1,8}$", message = "닉네임은 8글자까지 가능합니다.")
     private String nickname;
 }
