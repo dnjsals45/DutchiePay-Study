@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChangeDeliveryRequestDto {
+    @NotNull(message = "배송지 ID를 입력해주세요.")
     private Long addressId;
     @NotBlank(message = "배송지 이름을 입력해주세요.")
     private String addressName;
