@@ -28,7 +28,7 @@ public class DeliveryService {
     }
 
     @Transactional
-    public CreateDeliveryResponseDto addDelivery(User user, CreateDelieveryRequestDto req) {
+    public CreateDeliveryResponseDto addDelivery(User user, CreateDeliveryRequestDto req) {
         if (usersAddressRepository.countByUser(user) >= 5) {
             throw new DeliveryErrorException(DeliveryErrorCode.ADDRESS_COUNT_LIMIT);
         }

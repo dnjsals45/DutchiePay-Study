@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CreateDelieveryRequestDto {
+public class CreateDeliveryRequestDto {
     private String addressName;
     private String name;
     private String phone;
