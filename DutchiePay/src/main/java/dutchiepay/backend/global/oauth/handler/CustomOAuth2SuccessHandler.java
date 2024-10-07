@@ -1,5 +1,8 @@
 package dutchiepay.backend.global.oauth.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
@@ -58,6 +61,19 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
 
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonStr = null;
+        try {
+            jsonStr = mapper.writeValueAsString(UserLoginResponseDto.toDto(user, accessToken));
+        } catch (JsonProcessingException e) {
+            log.info(e.getMessage());
+        }
+        String encryptedData;
+        try {
+            encryptedData = encrypt(jsonStr);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         String html = "<!DOCTYPE html>\n" +
                 "<html lang='ko'>\n" +
                 "<head>\n" +
@@ -65,38 +81,17 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "</head>\n" +
                 "<body>\n" +
                 "    <script>\n" +
-                "    const parentOrigin = 'http://localhost:3000';\n" +
-                "    window.opener.postMessage(\n" +
-                "    {\n" +
-                "       userId: '" + user.getUserId() + "',\n" +
-                "       type: '" + user.getOauthProvider() + "',\n" +
-                "       nickname: '" + user.getNickname() + "',\n" +
-                "       profileImg: " + user.getProfileImg() + ",\n" +
-                "       location: '" + user.getLocation() + "',\n" +
-                "       access: '" + accessToken + "',\n" +
-                "       refresh: '" + refreshToken + "',\n" +
-                "       isCertified: " + (user.getPhone() != null) + "\n" +
-                "    },\n" +
-                "        parentOrigin\n" +
-                "    );\n" +
-                "    window.close();\n" +
+                "    const data = '" + encryptedData + "';\n" +
+                "    window.opener.postMessage(data, 'http://localhost:3000');\n" +
+                "    //window.close();\n" +
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>";
 
-        String encryptedHtml = null;
-        try {
-            encryptedHtml = encrypt(html);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        // 암호화된 HTML을 클라이언트로 전송
-        response.setContentType("text/plain; charset=UTF-8");
-        response.getWriter().write(encryptedHtml);
+        response.setContentType("text/html; charset=UTF-8");
+        response.getWriter().write(html);
 
         userRepository.save(user);
-
     }
 
     /**
