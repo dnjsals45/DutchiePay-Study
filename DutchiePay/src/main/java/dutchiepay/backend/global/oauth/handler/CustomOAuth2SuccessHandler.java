@@ -81,9 +81,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "</head>\n" +
                 "<body>\n" +
                 "    <script>\n" +
-                "    const data = '" + encryptedData + "';\n" +
-                "    window.opener.postMessage(data, 'http://localhost:3000');\n" +
-                "    //window.close();\n" +
+                "    window.opener.postMessage('" + encryptedData + "', 'http://localhost:3000');\n" +
+                "    window.close();\n" +
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>";
