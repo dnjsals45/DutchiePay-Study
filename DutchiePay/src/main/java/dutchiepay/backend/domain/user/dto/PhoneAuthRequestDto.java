@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PhoneAuthRequestDto {
-    @NotBlank
-    @Pattern(regexp = "^\\d{11}$", message = "전화번호는 11자리 숫자여야 합니다.")
+    @NotBlank(message = "전화번호를 입력해주세요.")
+    @Pattern(regexp = "^\\d{1,11}$", message = "전화번호는 1자리 이상 11자리 이하 숫자여야 합니다.")
     private String phone;
 }
