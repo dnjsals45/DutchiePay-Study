@@ -60,7 +60,7 @@ public class DeliveryService {
     }
 
     @Transactional
-    public void updateDelivery(User user, ChangeDeliveryResquestDto req) {
+    public void updateDelivery(User user, ChangeDeliveryRequestDto req) {
         Address address = addressRepository.findById(req.getAddressId())
                 .orElseThrow(() -> new DeliveryErrorException(DeliveryErrorCode.INVALID_ADDRESS));
 

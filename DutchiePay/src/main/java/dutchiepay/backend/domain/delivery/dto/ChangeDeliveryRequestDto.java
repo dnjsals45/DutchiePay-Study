@@ -9,7 +9,8 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CreateDeliveryRequestDto {
+public class ChangeDeliveryRequestDto {
+    private Long addressId;
     @NotBlank(message = "배송지 이름을 입력해주세요.")
     private String addressName;
     @NotBlank(message = "받는이를 입력해주세요.")
@@ -26,3 +27,4 @@ public class CreateDeliveryRequestDto {
     @NotNull(message = "기본 배송지 여부를 입력해주세요.")
     private Boolean isDefault;
 }
+

@@ -1,6 +1,6 @@
 package dutchiepay.backend.domain.delivery.controller;
 
-import dutchiepay.backend.domain.delivery.dto.ChangeDeliveryResquestDto;
+import dutchiepay.backend.domain.delivery.dto.ChangeDeliveryRequestDto;
 import dutchiepay.backend.domain.delivery.dto.CreateDeliveryRequestDto;
 import dutchiepay.backend.domain.delivery.dto.DeleteDeliveryRequestDto;
 import dutchiepay.backend.domain.delivery.service.DeliveryService;
@@ -36,7 +36,7 @@ public class DeliveryController {
     @Operation(summary = "배송지 수정(구현 완료)")
     @PatchMapping("")
     public ResponseEntity<?> updateDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                            @Valid @RequestBody ChangeDeliveryResquestDto req) {
+                                            @Valid @RequestBody ChangeDeliveryRequestDto req) {
         deliveryService.updateDelivery(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
