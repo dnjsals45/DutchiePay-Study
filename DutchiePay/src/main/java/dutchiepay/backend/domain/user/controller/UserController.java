@@ -122,21 +122,12 @@ public class UserController {
     @Operation(summary = "자동로그인(구현 완료)")
     @PostMapping("/relogin")
     public ResponseEntity<?> reLogin(@Valid @RequestBody UserReLoginRequestDto requestDto) {
-        try {
-            return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
-        } catch (UserErrorException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
     }
 
     @Operation(summary = "access Token 재발급(구현 완료)")
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto) {
-        try {
-            return ResponseEntity.ok().body(userService.reissue(requestDto));
-        } catch (UserErrorException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-
+        return ResponseEntity.ok().body(userService.reissue(requestDto));
     }
 }

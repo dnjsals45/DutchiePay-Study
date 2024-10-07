@@ -54,6 +54,8 @@ public class SecurityConfig {
         "/users/pwd-nonuser",
         "/users/auth",
         "/users/test",
+        "/users/relogin",
+        "/users/reissue",
         "/oauth/signup",
         "/oauth",
         "/image",

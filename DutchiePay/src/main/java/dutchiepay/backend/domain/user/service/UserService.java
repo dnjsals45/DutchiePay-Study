@@ -42,6 +42,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final OAuth2AuthorizedClientService oauthService;
     private final AccessTokenBlackListService accessTokenBlackListService;
+    private final JwtUtil jwtUtil;
 
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
@@ -235,7 +236,6 @@ public class UserService {
     }
 
     public String reissueAccessToken(Long userId) {
-        final JwtUtil jwtUtil = new JwtUtil();
         return jwtUtil.createAccessToken(userId);
     }
 
