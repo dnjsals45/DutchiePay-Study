@@ -56,4 +56,12 @@ public class Orders extends Auditing {
 
     @Column(nullable = false)
     private int amount;
+
+    public void confirmPurchase() {
+        this.state = "주문확정";
+    }
+
+    public void cancelPurchase() {
+        this.state = "주문취소";
+    }
 }

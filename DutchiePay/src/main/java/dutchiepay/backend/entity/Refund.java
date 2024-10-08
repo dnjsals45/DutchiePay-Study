@@ -30,7 +30,7 @@ public class Refund extends Auditing {
 
     @Column(length = 10, nullable = false)
     private String category;
-    
+
     @Column(length = 500, nullable = false)
     private String reason;
 

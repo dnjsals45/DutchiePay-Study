@@ -9,6 +9,7 @@ import dutchiepay.backend.domain.profile.repository.ProfileRepository;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -145,9 +146,19 @@ public class ProfileService {
         Ask ask = askRepository.findById(askId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ASK));
 
         if (ask.getUser() != user) {
-            throw new ProfileErrorException(ProfileErrorCode.DELETE_USER_MISSMATCH);
+            throw new ProfileErrorException(ProfileErrorCode.DELETE_ASK_USER_MISSMATCH);
         }
 
         askRepository.softDelete(ask);
+    }
+
+    public void deleteReview(User user, Long reviewId) {
+        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_REVIEW));
+
+        if (review.getUser() != user) {
+            throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
+        }
+
+        reviewRepository.softDelete(review);
     }
 }
