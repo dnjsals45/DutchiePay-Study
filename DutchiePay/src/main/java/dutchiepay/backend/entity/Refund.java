@@ -29,14 +29,13 @@ public class Refund extends Auditing {
     private Orders orders;
 
     @Column(length = 10, nullable = false)
-    private String type;
-
+    private String category;
+    
     @Column(length = 500, nullable = false)
     private String reason;
 
     private String detail;
 
-    @Column(length = 10, nullable = false)
-    private String category;
+
 
 }
