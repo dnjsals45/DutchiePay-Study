@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Slf4j
@@ -61,27 +62,29 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
 
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonStr = null;
-        try {
-            jsonStr = mapper.writeValueAsString(UserLoginResponseDto.toDto(user, accessToken));
-        } catch (JsonProcessingException e) {
-            log.info(e.getMessage());
-        }
+        String data = "   \"userId\": " + user.getUserId() + ",\n" +
+                "   \"type\": " + user.getOauthProvider() + ",\n" +
+                "   \"nickname\": "+ user.getNickname() + ",\n" +
+                "   \"profileImg\": "  + user.getProfileImg() + ",\n" +
+                "   \"location\": "+ user.getLocation() + ",\n" +
+                "   \"access\": "+ accessToken + ",\n" +
+                "   \"refresh\": "+ refreshToken + ",\n" +
+                "   \"isCertified\": " + (user.getPhone() != null);
+
         String encryptedData;
         try {
-            encryptedData = encrypt(jsonStr);
+            encryptedData = encrypt(data);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         String html = "<!DOCTYPE html>\n" +
-                "<html lang='ko'>\n" +
+                "<html lang=\"ko\">\n" +
                 "<head>\n" +
-                "    <meta charset='UTF-8'>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
                 "</head>\n" +
                 "<body>\n" +
                 "    <script>\n" +
-                "    window.opener.postMessage({type: 'OAUTH_LOGIN', encrypted: '" + encryptedData + "'}, 'http://localhost:3000');\n" +
+                "    window.opener.postMessage({type: \"OAUTH_LOGIN\", encrypted: \"" + encryptedData + "\"}, \"http://localhost:3000\");\n" +
                 "    window.close();\n" +
                 "    </script>\n" +
                 "</body>\n" +
@@ -104,10 +107,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             throw new IllegalStateException("암호화 과정 중 예외 발생");
         }
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPT_SECRET_KEY.getBytes(), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPT_SECRET_KEY.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+            byte[] encryptedBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch(Exception e) {
             throw new Exception("암호화 과정 중 예외 발생", e);
