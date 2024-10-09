@@ -131,7 +131,7 @@ public class ProfileController {
      * DELETE
      */
     @Operation(summary = "후기 삭제 (구현 완료)")
-    @DeleteMapping("/asks")
+    @DeleteMapping("/reviews")
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                        @Valid @RequestBody DeleteReviewRequestDto req) {
         profileService.deleteReview(userDetails.getUser(), req.getReviewId());
