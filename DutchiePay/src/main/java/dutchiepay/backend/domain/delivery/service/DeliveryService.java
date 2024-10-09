@@ -29,7 +29,9 @@ public class DeliveryService {
 
     @Transactional
     public CreateDeliveryResponseDto addDelivery(User user, CreateDeliveryRequestDto req) {
-        if (usersAddressRepository.countByUser(user) >= 5) {
+        Long count = usersAddressRepository.countByUser(user);
+
+        if (count >= 5) {
             throw new DeliveryErrorException(DeliveryErrorCode.ADDRESS_COUNT_LIMIT);
         }
 
@@ -40,10 +42,10 @@ public class DeliveryService {
                 .addressInfo(req.getAddress())
                 .detail(req.getDetail())
                 .zipCode(req.getZipCode())
-                .isDefault(req.getIsDefault())
+                .isDefault(count == 0 ? Boolean.TRUE : req.getIsDefault())
                 .build();
 
-        if (newAddress.getIsDefault().equals(Boolean.TRUE)) {
+        if (count != 0 && newAddress.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeIsDefaultTrueToFalse(user);
         }
 
