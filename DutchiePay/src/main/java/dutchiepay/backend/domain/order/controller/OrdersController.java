@@ -1,33 +1,44 @@
 package dutchiepay.backend.domain.order.controller;
 
+import dutchiepay.backend.domain.order.dto.CancelPurchaseRequestDto;
+import dutchiepay.backend.domain.order.dto.ConfirmPurchaseRequestDto;
+import dutchiepay.backend.domain.order.dto.ExchangeRequestDto;
+import dutchiepay.backend.domain.order.service.OrdersService;
+import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orders")
 public class OrdersController {
+    private final OrdersService ordersService;
 
-    @Operation(summary = "환불/교환 신청 (구현 중)")
+    @Operation(summary = "환불/교환 신청 (구현 완료)")
     @PostMapping("/exchange")
-    public ResponseEntity<?> applyExchange() {
-        return ResponseEntity.ok().body(null);
+    public ResponseEntity<?> applyExchange(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                           @Valid @RequestBody ExchangeRequestDto req) {
+        ordersService.applyExchange(userDetails.getUser(), req);
+        return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "상품 구매 확정 (구현 중)")
+    @Operation(summary = "상품 구매 확정 (구현 완료)")
     @PatchMapping("/purchase")
-    public ResponseEntity<?> confirmPurchase() {
-        return ResponseEntity.ok().body(null);
+    public ResponseEntity<?> confirmPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                             @Valid @RequestBody ConfirmPurchaseRequestDto req) {
+        ordersService.confirmPurchase(userDetails.getUser(), req.getOrderId());
+        return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "구매 취소 (구현 중)")
+    @Operation(summary = "구매 취소 (구현 완료)")
     @PatchMapping("/exchange")
-    public ResponseEntity<?> cancelExchange() {
-        return ResponseEntity.ok().body(null);
+    public ResponseEntity<?> cancelPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            @Valid @RequestBody CancelPurchaseRequestDto req) {
+        ordersService.cancelPurchase(userDetails.getUser(), req);
+        return ResponseEntity.ok().build();
     }
 }

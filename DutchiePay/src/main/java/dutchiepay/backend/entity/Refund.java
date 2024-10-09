@@ -28,12 +28,14 @@ public class Refund extends Auditing {
     @JoinColumn(name = "order_id")
     private Orders orders;
 
+    @Column(length = 10, nullable = false)
+    private String category;
+
     @Column(length = 500, nullable = false)
     private String reason;
 
     private String detail;
 
-    @Column(length = 10, nullable = false)
-    private String category;
+
 
 }

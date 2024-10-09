@@ -131,10 +131,18 @@ public class ProfileController {
      * DELETE
      */
     @Operation(summary = "후기 삭제 (구현 완료)")
+    @DeleteMapping("/reviews")
+    public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                       @Valid @RequestBody DeleteReviewRequestDto req) {
+        profileService.deleteReview(userDetails.getUser(), req.getReviewId());
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "문의 삭제 (구현 완료)")
     @DeleteMapping("/asks")
     public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                        @Valid @RequestBody DeleteAskRequestDto req) {
-        profileService.deleteAsk(userDetails.getUser(), req.getReviewId());
+        profileService.deleteAsk(userDetails.getUser(), req.getAskId());
         return ResponseEntity.ok().build();
     }
 }

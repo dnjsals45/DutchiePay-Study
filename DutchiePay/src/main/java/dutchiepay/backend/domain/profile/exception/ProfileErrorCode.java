@@ -22,7 +22,8 @@ public enum ProfileErrorCode implements StatusCode {
     /**
      * 401 UNAUTHORIZED
      */
-    DELETE_USER_MISSMATCH(HttpStatus.UNAUTHORIZED, "본인만 문의 삭제를 할 수 있습니다.");
+    DELETE_ASK_USER_MISSMATCH(HttpStatus.UNAUTHORIZED, "본인만 문의 삭제를 할 수 있습니다."),
+    DELETE_REVIEW_USER_MISSMATCH(HttpStatus.UNAUTHORIZED, "본인만 문의 삭제를 할 수 있습니다.");
 
     /**
      * 403 FORBIDDEN
