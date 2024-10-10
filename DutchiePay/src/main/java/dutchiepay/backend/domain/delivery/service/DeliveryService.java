@@ -66,6 +66,10 @@ public class DeliveryService {
         Address address = addressRepository.findById(req.getAddressId())
                 .orElseThrow(() -> new DeliveryErrorException(DeliveryErrorCode.INVALID_ADDRESS));
 
+        if (address.getIsDefault().equals(Boolean.TRUE) && req.getIsDefault().equals(Boolean.FALSE)) {
+            throw new DeliveryErrorException(DeliveryErrorCode.CANNOT_CHANGE_DEFAULT_ADDRESS);
+        }
+        
         if (req.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeIsDefaultTrueToFalse(user);
         }
