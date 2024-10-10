@@ -29,7 +29,9 @@ public class DeliveryService {
 
     @Transactional
     public CreateDeliveryResponseDto addDelivery(User user, CreateDeliveryRequestDto req) {
-        if (usersAddressRepository.countByUser(user) >= 5) {
+        Long count = usersAddressRepository.countByUser(user);
+
+        if (count >= 5) {
             throw new DeliveryErrorException(DeliveryErrorCode.ADDRESS_COUNT_LIMIT);
         }
 
@@ -40,10 +42,10 @@ public class DeliveryService {
                 .addressInfo(req.getAddress())
                 .detail(req.getDetail())
                 .zipCode(req.getZipCode())
-                .isDefault(req.getIsDefault())
+                .isDefault(count == 0 ? Boolean.TRUE : req.getIsDefault())
                 .build();
 
-        if (newAddress.getIsDefault().equals(Boolean.TRUE)) {
+        if (count != 0 && newAddress.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeIsDefaultTrueToFalse(user);
         }
 
@@ -64,6 +66,10 @@ public class DeliveryService {
         Address address = addressRepository.findById(req.getAddressId())
                 .orElseThrow(() -> new DeliveryErrorException(DeliveryErrorCode.INVALID_ADDRESS));
 
+        if (address.getIsDefault().equals(Boolean.TRUE) && req.getIsDefault().equals(Boolean.FALSE)) {
+            throw new DeliveryErrorException(DeliveryErrorCode.CANNOT_CHANGE_DEFAULT_ADDRESS);
+        }
+        
         if (req.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeIsDefaultTrueToFalse(user);
         }
@@ -77,11 +83,12 @@ public class DeliveryService {
         Address address = addressRepository.findById(req.getAddressId())
                 .orElseThrow(() -> new DeliveryErrorException(DeliveryErrorCode.INVALID_ADDRESS));
 
+        usersAddressRepository.deleteByUserAndAddress(user, address);
+        addressRepository.delete(address);
+
         if (address.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeOldestAddressToDefault(user);
         }
 
-        usersAddressRepository.deleteByUserAndAddress(user, address);
-        addressRepository.delete(address);
     }
 }

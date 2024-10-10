@@ -56,6 +56,7 @@ public class SecurityConfig {
         "/users/test",
         "/users/relogin",
         "/users/reissue",
+        "/users/email",
         "/oauth/signup",
         "/oauth",
         "/image",

@@ -13,6 +13,7 @@ public enum DeliveryErrorCode implements StatusCode {
      * 400 BAD_REQUEST
      */
     INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "주소 정보가 없습니다."),
+    CANNOT_CHANGE_DEFAULT_ADDRESS(HttpStatus.BAD_REQUEST, "기본 배송지는 변경할 수 없습니다."),
     ADDRESS_COUNT_LIMIT(HttpStatus.BAD_REQUEST, "주소는 최대 5개까지 등록 가능합니다.");
 
     /**
