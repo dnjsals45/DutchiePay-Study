@@ -79,11 +79,12 @@ public class DeliveryService {
         Address address = addressRepository.findById(req.getAddressId())
                 .orElseThrow(() -> new DeliveryErrorException(DeliveryErrorCode.INVALID_ADDRESS));
 
+        usersAddressRepository.deleteByUserAndAddress(user, address);
+        addressRepository.delete(address);
+
         if (address.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeOldestAddressToDefault(user);
         }
 
-        usersAddressRepository.deleteByUserAndAddress(user, address);
-        addressRepository.delete(address);
     }
 }

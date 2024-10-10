@@ -36,7 +36,8 @@ public class QAddressRepositoryImpl implements QAddressRepository{
                 .selectFrom(qAddress)
                 .join(qUsersAddress)
                 .on(qUsersAddress.address.eq(qAddress))
-                .where(qUsersAddress.user.eq(user))
+                .where(qUsersAddress.user.eq(user)
+                        .and(qAddress.isDefault.eq(false)))
                 .orderBy(qAddress.createdAt.asc())
                 .fetchFirst();
 
