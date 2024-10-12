@@ -12,7 +12,7 @@ public class MyPageResponseDto {
     private String email;
 
     public static MyPageResponseDto from(User user) {
-        String maskingPhone = user.getPhone().replaceAll("(\\d{2,3})(\\d{3,4})(\\d{4})", "$1-****-$3");
+        String maskingPhone = user.getPhone().replaceAll("(\\d{2,3})(\\d{3,4})(\\d{4})", "$1****$3");
 
         return MyPageResponseDto.builder()
                 .phone(maskingPhone)
