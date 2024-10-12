@@ -6,10 +6,11 @@ import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.profile.repository.ProfileRepository;
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -115,6 +116,9 @@ public class ProfileService {
 
     @Transactional
     public void changeNickname(User user, String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new UserErrorException(UserErrorCode.USER_NICKNAME_ALREADY_EXISTS);
+        }
         user.changeNickname(nickname);
 
         userRepository.save(user);
