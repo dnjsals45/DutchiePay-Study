@@ -70,7 +70,7 @@ public class DeliveryService {
             throw new DeliveryErrorException(DeliveryErrorCode.CANNOT_CHANGE_DEFAULT_ADDRESS);
         }
         
-        if (req.getIsDefault().equals(Boolean.TRUE)) {
+        if (address.getIsDefault().equals(Boolean.FALSE) && req.getIsDefault().equals(Boolean.TRUE)) {
             addressRepository.changeIsDefaultTrueToFalse(user);
         }
 
