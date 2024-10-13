@@ -79,8 +79,8 @@ public class DeliveryService {
     }
 
     @Transactional
-    public void deleteDelivery(User user, DeleteDeliveryRequestDto req) {
-        Address address = addressRepository.findById(req.getAddressId())
+    public void deleteDelivery(User user, Long addressId) {
+        Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new DeliveryErrorException(DeliveryErrorCode.INVALID_ADDRESS));
 
         usersAddressRepository.deleteByUserAndAddress(user, address);

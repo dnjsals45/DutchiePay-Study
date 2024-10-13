@@ -2,7 +2,6 @@ package dutchiepay.backend.domain.delivery.controller;
 
 import dutchiepay.backend.domain.delivery.dto.ChangeDeliveryRequestDto;
 import dutchiepay.backend.domain.delivery.dto.CreateDeliveryRequestDto;
-import dutchiepay.backend.domain.delivery.dto.DeleteDeliveryRequestDto;
 import dutchiepay.backend.domain.delivery.service.DeliveryService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,8 +43,8 @@ public class DeliveryController {
     @Operation(summary = "배송지 삭제(구현 완료)")
     @DeleteMapping("")
     public ResponseEntity<?> deleteDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                            @Valid @RequestBody DeleteDeliveryRequestDto req) {
-        deliveryService.deleteDelivery(userDetails.getUser(), req);
+                                            @RequestParam(name = "addressid") Long addressId) {
+        deliveryService.deleteDelivery(userDetails.getUser(), addressId);
         return ResponseEntity.ok().build();
     }
 }
