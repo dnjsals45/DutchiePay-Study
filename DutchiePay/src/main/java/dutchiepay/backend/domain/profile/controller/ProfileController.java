@@ -133,16 +133,16 @@ public class ProfileController {
     @Operation(summary = "후기 삭제 (구현 완료)")
     @DeleteMapping("/reviews")
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @Valid @RequestBody DeleteReviewRequestDto req) {
-        profileService.deleteReview(userDetails.getUser(), req.getReviewId());
+                                       @RequestParam(name = "reviewid") Long reviewId) {
+        profileService.deleteReview(userDetails.getUser(), reviewId);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "문의 삭제 (구현 완료)")
     @DeleteMapping("/asks")
     public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @Valid @RequestBody DeleteAskRequestDto req) {
-        profileService.deleteAsk(userDetails.getUser(), req.getAskId());
+                                       @RequestParam(name = "askid") Long askId) {
+        profileService.deleteAsk(userDetails.getUser(), askId);
         return ResponseEntity.ok().build();
     }
 }
