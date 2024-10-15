@@ -213,7 +213,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(UserDetailsImpl userDetails) {
-        userRepository.findByEmail(userDetails.getEmail())
+        userRepository.findByEmailAndOauthProviderIsNull(userDetails.getEmail())
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
 
