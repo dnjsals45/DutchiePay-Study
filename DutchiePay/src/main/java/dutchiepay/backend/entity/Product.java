@@ -17,7 +17,7 @@ public class Product extends Auditing {
 
     @ManyToOne
     @JoinColumn(name = "store_id")
-    private Store storeId;
+    private Store store;
 
     // 상품 이름
     @Column(nullable = false, length = 50)
