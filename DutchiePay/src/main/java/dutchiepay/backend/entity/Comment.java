@@ -18,11 +18,11 @@ public class Comment extends Auditing {
 
     @ManyToOne
     @JoinColumn(name = "free_id")
-    private Free free;
+    private Free freeId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private User userId;
 
     // 상위 댓글 Id
     private Long parentId;

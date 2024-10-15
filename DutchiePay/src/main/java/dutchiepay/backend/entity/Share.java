@@ -19,7 +19,7 @@ public class Share extends Auditing {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private User userId;
 
     // 제목
     @Column(nullable = false, length = 30)
