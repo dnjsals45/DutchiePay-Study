@@ -58,9 +58,9 @@ public class SecurityConfig {
         "/users/reissue",
         "/users/email",
         "/oauth/signup",
-        "/oauth",
         "/image",
-        "/health"
+        "/health",
+        "/commerce/asks"
     };
 
     private final String[] readOnlyUrl = {
