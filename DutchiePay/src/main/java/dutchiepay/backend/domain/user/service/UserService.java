@@ -174,9 +174,6 @@ public class UserService {
             entity,                          // HttpEntity (본문 없음, 헤더만 있음)
             String.class                     // 응답 타입
         );
-
-        userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
 
     @Transactional
@@ -206,7 +203,10 @@ public class UserService {
             null,                          // HttpEntity
             String.class                     // 응답 타입
         );
+    }
 
+    @Transactional
+    public void deleteOauthUser(UserDetailsImpl userDetails) {
         userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
     }
