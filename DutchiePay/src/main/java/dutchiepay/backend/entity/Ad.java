@@ -20,7 +20,7 @@ public class Ad extends Auditing {
 
     @OneToOne
     @JoinColumn(name = "buy_id")
-    private Buy buyId;
+    private Buy buy;
 
     // 만료 시간
     @Column(nullable = false)

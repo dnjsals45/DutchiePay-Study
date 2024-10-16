@@ -22,7 +22,7 @@ public class Buy extends Auditing {
 
     @OneToOne
     @JoinColumn(name = "product_id")
-    private Product productId;
+    private Product product;
 
     // 제목
     @Column(nullable = false, length = 50)
