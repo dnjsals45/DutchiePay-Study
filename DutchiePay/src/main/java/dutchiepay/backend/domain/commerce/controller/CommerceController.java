@@ -23,6 +23,13 @@ public class CommerceController {
 
     private final CommerceService commerceService;
 
+    @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
+    @GetMapping
+    public ResponseEntity<?> getBuyPage(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @RequestParam("buyId") Long buyId) {
+        return ResponseEntity.ok().body(commerceService.getBuyPage(userDetails.getUser(), buyId));
+    }
+
     @Operation(summary = "상품 좋아요 기능(구현중)")
     @PatchMapping
     public ResponseEntity<Void> likes(@AuthenticationPrincipal UserDetailsImpl userDetails,

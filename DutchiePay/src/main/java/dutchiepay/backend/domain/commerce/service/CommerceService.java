@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.commerce.service;
 
 import dutchiepay.backend.domain.commerce.dto.BuyAskResponseDto;
+import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
@@ -57,5 +58,9 @@ public class CommerceService {
 
         return askRepository.findByBuyAndDeletedAtIsNull(buyRepository.findById(buyId)
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)), pageable);
+    }
+
+    public GetBuyResponseDto getBuyPage(User user, Long buyId) {
+        return buyRepository.getBuyPageByBuyId(user.getUserId(), buyId);
     }
 }
