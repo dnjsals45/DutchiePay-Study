@@ -30,6 +30,7 @@ public class OauthController {
         } else {
             userService.unlinkNaver(userDetails);
         }
+        userService.deleteOauthUser(userDetails);
         return "redirect:/";
     }
 }
