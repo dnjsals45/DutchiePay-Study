@@ -1,12 +1,11 @@
 package dutchiepay.backend.domain.commerce.controller;
 
+import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
 import dutchiepay.backend.domain.commerce.service.CommerceService;
 import dutchiepay.backend.domain.commerce.dto.BuyAskResponseDto;
-import dutchiepay.backend.entity.Ask;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,12 +30,18 @@ public class CommerceController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "상품 문의내역 조회")
+    @Operation(summary = "상품 문의내역 조회(구현중)")
     @GetMapping("/asks")
     public ResponseEntity<List<BuyAskResponseDto>> getBuyAsks(@RequestParam("productId") Long buyId,
                                                               Pageable pageable) {
         return ResponseEntity.ok(commerceService.getBuyAsks(buyId, pageable).getContent()
                 .stream().map(BuyAskResponseDto::toDto)
                 .collect(Collectors.toList()));
+    }
+
+    @Operation(summary = "결제 정보 불러오기(구현중)")
+    @GetMapping("/delivery")
+    public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buypostid") Long buyId) {
+        return ResponseEntity.ok(commerceService.getPaymentInfo(buyId));
     }
 }
