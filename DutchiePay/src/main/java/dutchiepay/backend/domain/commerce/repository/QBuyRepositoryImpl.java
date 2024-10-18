@@ -1,8 +1,16 @@
 package dutchiepay.backend.domain.commerce.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Repository
@@ -107,5 +118,96 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .askCount(result.get(16, Long.class).intValue())
                 .ratingCount(ratingCount)
                 .build();
+    }
+
+    @Override
+    public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
+        BooleanExpression conditions = buy.buyId.gt(cursor);
+
+        if (category != null && !category.isEmpty()) {
+            conditions = conditions.and(buy.category.eq(BuyCategory.valueOf(category)));
+        }
+
+        if (end == 0) {
+            conditions = conditions.and(buy.deadline.after(LocalDate.now()));
+        }
+
+        OrderSpecifier<?> orderBy;
+        switch (filter) {
+            case "like":
+                orderBy = likes.count().desc();
+                break;
+            case "endDate":
+                orderBy = buy.deadline.desc();
+                break;
+            case "discount":
+                orderBy = product.discountPercent.desc();
+                break;
+            default:
+                orderBy = buy.buyId.desc();
+                break;
+        }
+
+        List<Tuple> results = jpaQueryFactory
+                .select(buy.buyId,
+                        product.productName,
+                        product.productImg,
+                        product.originalPrice,
+                        product.salePrice,
+                        product.discountPercent,
+                        buy.skeleton,
+                        buy.nowCount,
+                        buy.deadline,
+                        likes.count().gt(0L).as("isLiked"))
+                .from(buy)
+                .join(buy.product, product)
+                .leftJoin(likes).on(likes.buy.eq(buy).and(likes.user.eq(user)))
+                .where(conditions)
+                .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,
+                        product.salePrice, product.discountPercent, buy.skeleton, buy.nowCount, buy.deadline)
+                .orderBy(orderBy)
+                .limit(limit + 1)
+                .fetch();
+
+        List<GetBuyListResponseDto.ProductDto> products = new ArrayList<>();
+        int count = 0;
+        for (Tuple result : results) {
+            if (count >= limit) {
+                break;
+            }
+
+            GetBuyListResponseDto.ProductDto dto = GetBuyListResponseDto.ProductDto.builder()
+                    .buyPostId(result.get(0, Long.class))
+                    .productName(result.get(1, String.class))
+                    .productImg(result.get(2, String.class))
+                    .productPrice(result.get(3, Integer.class))
+                    .discountPrice(result.get(4, Integer.class))
+                    .discountPercent(result.get(5, Integer.class))
+                    .skeleton(result.get(6, Integer.class))
+                    .nowCount(result.get(7, Integer.class))
+                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)))
+                    .isLiked(result.get(9, Boolean.class))
+                    .build();
+
+            products.add(dto);
+            count++;
+        }
+
+        Long nextCursor = results.size() > limit ? results.get(limit).get(buy.buyId) : null;
+
+        return GetBuyListResponseDto.builder()
+                .products(products)
+                .cursor(nextCursor)
+                .build();
+    }
+
+    private int calculateExpireDate(LocalDate deadline) {
+        if (deadline.isBefore(LocalDate.now())) {
+            return -1;
+        } else if (deadline.isEqual(LocalDate.now())) {
+            return 0;
+        } else {
+            return (int) ChronoUnit.DAYS.between(LocalDate.now(), deadline);
+        }
     }
 }

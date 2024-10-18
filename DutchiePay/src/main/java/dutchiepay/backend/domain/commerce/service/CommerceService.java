@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.commerce.service;
 
 import dutchiepay.backend.domain.commerce.dto.BuyAskResponseDto;
+import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
@@ -62,5 +63,9 @@ public class CommerceService {
 
     public GetBuyResponseDto getBuyPage(User user, Long buyId) {
         return buyRepository.getBuyPageByBuyId(user.getUserId(), buyId);
+    }
+
+    public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
+        return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
     }
 }
