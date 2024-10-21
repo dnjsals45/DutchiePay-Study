@@ -41,6 +41,15 @@ public class CommerceController {
         return ResponseEntity.ok().body(commerceService.getBuyPage(userDetails.getUser(), buyId));
     }
 
+    @Operation(summary = "상품 후기 조회(구현중)")
+    @GetMapping("/review")
+    public ResponseEntity<?> getProductReview(@RequestParam("productId") Long productId,
+                                              @RequestParam("photo") Long photo,
+                                              @RequestParam("page") Long page,
+                                              @RequestParam("limit") Long limit) {
+        return ResponseEntity.ok().body(commerceService.getProductReview(productId, photo, page, limit));
+    }
+
     @Operation(summary = "상품 좋아요 기능(구현중)")
     @PatchMapping
     public ResponseEntity<Void> likes(@AuthenticationPrincipal UserDetailsImpl userDetails,

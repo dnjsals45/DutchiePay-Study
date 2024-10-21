@@ -16,6 +16,7 @@ import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,5 +68,9 @@ public class CommerceService {
 
     public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
         return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
+    }
+
+    public Object getProductReview(Long productId, Long photo, Long page, Long limit) {
+        return buyRepository.getProductReview(productId, photo, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 }

@@ -12,12 +12,15 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.commerce.BuyCategory;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
+import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    QUser user = QUser.user;
     QBuy buy = QBuy.buy;
     QProduct product = QProduct.product;
     QStore store = QStore.store;
@@ -201,6 +205,49 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .build();
     }
 
+    @Override
+    public GetProductReviewResponseDto getProductReview(Long productId, Long photo, PageRequest pageable) {
+        List<Tuple> result = jpaQueryFactory
+                .select(review.reviewId,
+                        review.user.nickname,
+                        review.contents,
+                        review.rating,
+                        review.reviewImg,
+                        review.createdAt)
+                .from(review)
+                .join(review.user, user)
+                .join(review.buy, buy)
+                .where(buy.product.productId.eq(productId))
+                .where(photoCondition(photo))
+                .orderBy(review.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        List<GetProductReviewResponseDto.ReviewDto> reviews = new ArrayList<>();
+        for (Tuple tuple : result) {
+            GetProductReviewResponseDto.ReviewDto reviewDto = GetProductReviewResponseDto.ReviewDto.builder()
+                    .reviewId(tuple.get(0, Long.class))
+                    .nickname(tuple.get(1, String.class))
+                    .content(tuple.get(2, String.class))
+                    .rating(tuple.get(3, Integer.class))
+                    .reviewImg(tuple.get(4, String.class))
+                    .createdAt(tuple.get(5, LocalDateTime.class))
+                    .build();
+
+            reviews.add(reviewDto);
+        }
+
+        Double avgRating = jpaQueryFactory
+                .select(review.rating.avg())
+                .from(review)
+                .join(review.buy, buy)
+                .where(buy.product.productId.eq(productId))
+                .fetchOne();
+
+        return GetProductReviewResponseDto.from(avgRating, reviews);
+    }
+
     private int calculateExpireDate(LocalDate deadline) {
         if (deadline.isBefore(LocalDate.now())) {
             return -1;
@@ -209,5 +256,12 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         } else {
             return (int) ChronoUnit.DAYS.between(LocalDate.now(), deadline);
         }
+    }
+
+    private BooleanExpression photoCondition(Long photo) {
+        if (photo == null) {
+            return null;
+        }
+        return photo == 1 ? review.reviewImg.isNotNull() : review.reviewImg.isNull();
     }
 }
