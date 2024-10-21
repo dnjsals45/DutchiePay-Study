@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.exception;
 
+import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.delivery.exception.DeliveryErrorException;
 import dutchiepay.backend.domain.order.exception.OrdersErrorException;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
@@ -48,6 +49,13 @@ public class CustomExceptionHandler {
         log.warn("handleOrdersErrorException : {}", e.getMessage());
         final ErrorMessage message = ErrorMessage.of(e.getMessage());
         return ResponseEntity.status(e.getOrdersErrorCode().getHttpStatus()).body(message);
+    }
+
+    @ExceptionHandler(CommerceException.class)
+    protected ResponseEntity<?> handleCommerceException(CommerceException e) {
+        log.warn("handleCommerceException : {}", e.getMessage());
+        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        return ResponseEntity.status(e.getCommerceErrorCode().getHttpStatus()).body(message);
     }
 
     /**
