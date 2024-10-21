@@ -1,16 +1,14 @@
 package dutchiepay.backend.domain.commerce.service;
 
-import dutchiepay.backend.domain.commerce.dto.BuyAskResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
+import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.order.repository.AskRepository;
 import dutchiepay.backend.domain.order.repository.LikesRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
-import dutchiepay.backend.domain.order.service.OrdersService;
-import dutchiepay.backend.domain.user.service.UserService;
 import dutchiepay.backend.entity.*;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
@@ -21,8 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,6 +27,7 @@ public class CommerceService {
     private final BuyRepository buyRepository;
     private final LikesRepository likesRepository;
     private final AskRepository askRepository;
+    private final ProductRepository productRepository;
 
     /**
      * 상품 좋아요
@@ -70,7 +67,10 @@ public class CommerceService {
         return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
     }
 
-    public Object getProductReview(Long productId, Long photo, Long page, Long limit) {
+    public GetProductReviewResponseDto getProductReview(Long productId, Long photo, Long page, Long limit) {
+        if (!productRepository.existsById(productId)) {
+            throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
+        }
         return buyRepository.getProductReview(productId, photo, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 }

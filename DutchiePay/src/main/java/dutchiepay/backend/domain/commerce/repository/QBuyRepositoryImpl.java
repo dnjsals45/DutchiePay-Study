@@ -1,12 +1,8 @@
 package dutchiepay.backend.domain.commerce.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.commerce.BuyCategory;
@@ -262,6 +258,6 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         if (photo == null) {
             return null;
         }
-        return photo == 1 ? review.reviewImg.isNotNull() : review.reviewImg.isNull();
+        return photo == 1 ? review.reviewImg.isNotNull() : null;
     }
 }

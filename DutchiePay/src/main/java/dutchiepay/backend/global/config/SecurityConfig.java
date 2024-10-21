@@ -60,7 +60,8 @@ public class SecurityConfig {
         "/oauth/signup",
         "/image",
         "/health",
-        "/commerce/asks"
+        "/commerce/asks",
+        "/commerce/review",
     };
 
     private final String[] readOnlyUrl = {
