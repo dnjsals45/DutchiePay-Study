@@ -74,15 +74,16 @@ public class CommerceService {
             throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
         }
         return buyRepository.getProductReview(productId, photo, PageRequest.of(page.intValue() - 1, limit.intValue()));
+    }
 
     /**
      * 공동구매 게시글의 상품 정보 반환
      * @param buyId 상품의 게시글 Id
      * @return PaymentInfoResponseDto 상품의 특정 정보만 담을 dto
      */
-    public PaymentInfoResponseDto getPaymentInfo(Long buyId) {
+    public PaymentInfoResponseDto getPaymentInfo (Long buyId){
         return PaymentInfoResponseDto.toDto(buyRepository.findById(buyId)
-                        .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)));
+                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)));
 
     }
 }
