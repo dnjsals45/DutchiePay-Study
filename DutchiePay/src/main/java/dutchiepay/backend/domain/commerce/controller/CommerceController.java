@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.commerce.controller;
 
+import dutchiepay.backend.domain.commerce.dto.AddEntityDto;
 import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
 import dutchiepay.backend.domain.commerce.service.CommerceService;
 import dutchiepay.backend.domain.commerce.dto.BuyAskResponseDto;
@@ -70,5 +71,11 @@ public class CommerceController {
     @GetMapping("/delivery")
     public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buypostid") Long buyId) {
         return ResponseEntity.ok(commerceService.getPaymentInfo(buyId));
+    }
+
+    @PostMapping("/addition")
+    public ResponseEntity<Void> addEntity(@RequestBody AddEntityDto addEntityDto) {
+        commerceService.addEntity(addEntityDto);
+        return ResponseEntity.ok().build();
     }
 }

@@ -32,6 +32,4 @@ public class Store extends Auditing {
     @Column(nullable = false)
     private String storeAddress;
 
-    @Column
-    private LocalDateTime deletedAt;
 }

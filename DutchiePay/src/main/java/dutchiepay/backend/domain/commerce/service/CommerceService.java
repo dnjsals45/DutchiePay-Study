@@ -3,14 +3,17 @@ package dutchiepay.backend.domain.commerce.service;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
+import dutchiepay.backend.domain.commerce.dto.AddEntityDto;
 import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
+import dutchiepay.backend.domain.commerce.repository.StoreRepository;
 import dutchiepay.backend.domain.order.repository.AskRepository;
 import dutchiepay.backend.domain.order.repository.LikesRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.*;
+import dutchiepay.backend.global.converter.BuyCategoryConverter;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ public class CommerceService {
     private final LikesRepository likesRepository;
     private final AskRepository askRepository;
     private final ProductRepository productRepository;
+    private final StoreRepository storeRepository;
 
     /**
      * 상품 좋아요
@@ -81,9 +85,35 @@ public class CommerceService {
      * @param buyId 상품의 게시글 Id
      * @return PaymentInfoResponseDto 상품의 특정 정보만 담을 dto
      */
-    public PaymentInfoResponseDto getPaymentInfo (Long buyId){
+    public PaymentInfoResponseDto getPaymentInfo(Long buyId) {
         return PaymentInfoResponseDto.toDto(buyRepository.findById(buyId)
-                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)));
+                        .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)));
+    }
 
+    @Transactional
+    public void addEntity(AddEntityDto addEntityDto) {
+        Store store = storeRepository.findByStoreName(addEntityDto.getStoreName());
+        if (store == null) store = storeRepository.save(Store.builder()
+                        .storeName(addEntityDto.getStoreName())
+                        .contactNumber(addEntityDto.getContactNumber())
+                        .representative(addEntityDto.getRepresentative())
+                        .storeAddress(addEntityDto.getStoreAddress()).build());
+
+        Product product = productRepository.save(Product.builder()
+                .store(store)
+                .productName(addEntityDto.getProductName())
+                .detailImg(addEntityDto.getDetailImg())
+                .originalPrice(addEntityDto.getOriginalPrice())
+                .salePrice(addEntityDto.getSalePrice())
+                .discountPercent(addEntityDto.getDiscountPercent())
+                .productImg(addEntityDto.getProductImg()).build());
+
+        buyRepository.save(Buy.builder()
+                .product(product)
+                .title(addEntityDto.getProductName())
+                .deadline(addEntityDto.getDeadline())
+                .skeleton(addEntityDto.getSkeleton())
+                .nowCount(0)
+                .category(addEntityDto.getCategory()).build());
     }
 }

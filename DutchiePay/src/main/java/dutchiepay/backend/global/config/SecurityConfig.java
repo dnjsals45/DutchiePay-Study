@@ -62,6 +62,8 @@ public class SecurityConfig {
         "/health",
         "/commerce/asks",
         "/commerce/review",
+        "/commerce/asks",
+        "/commerce/addition"
     };
 
     private final String[] readOnlyUrl = {
