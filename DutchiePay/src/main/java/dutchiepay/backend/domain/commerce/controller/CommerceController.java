@@ -22,6 +22,33 @@ public class CommerceController {
 
     private final CommerceService commerceService;
 
+    @Operation(summary = "공동구매 리스트 조회(구현중)")
+    @GetMapping(value = "/list", params = {"filter", "category", "end", "cursor", "limit"})
+    public ResponseEntity<?> getBuyList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @RequestParam("filter") String filter,
+                                        @RequestParam("category") String category,
+                                        @RequestParam("end") int end,
+                                        @RequestParam("cursor") Long cursor,
+                                        @RequestParam("limit") int limit) {
+        return ResponseEntity.ok().body(commerceService.getBuyList(userDetails.getUser(), filter, category, end, cursor, limit));
+    }
+
+    @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
+    @GetMapping(value = "", params = "buyId")
+    public ResponseEntity<?> getBuyPage(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @RequestParam("buyId") Long buyId) {
+        return ResponseEntity.ok().body(commerceService.getBuyPage(userDetails.getUser(), buyId));
+    }
+
+    @Operation(summary = "상품 후기 조회(구현중)")
+    @GetMapping("/review")
+    public ResponseEntity<?> getProductReview(@RequestParam("productId") Long productId,
+                                              @RequestParam("photo") Long photo,
+                                              @RequestParam("page") Long page,
+                                              @RequestParam("limit") Long limit) {
+        return ResponseEntity.ok().body(commerceService.getProductReview(productId, photo, page, limit));
+    }
+
     @Operation(summary = "상품 좋아요 기능(구현중)")
     @PatchMapping
     public ResponseEntity<Void> likes(@AuthenticationPrincipal UserDetailsImpl userDetails,

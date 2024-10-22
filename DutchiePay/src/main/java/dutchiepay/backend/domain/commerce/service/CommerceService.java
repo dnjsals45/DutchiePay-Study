@@ -1,5 +1,8 @@
 package dutchiepay.backend.domain.commerce.service;
 
+import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
+import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
+import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
 import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
@@ -12,6 +15,7 @@ import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +60,21 @@ public class CommerceService {
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)), pageable);
     }
 
+
+    public GetBuyResponseDto getBuyPage(User user, Long buyId) {
+        return buyRepository.getBuyPageByBuyId(user.getUserId(), buyId);
+    }
+
+    public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
+        return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
+    }
+
+    public GetProductReviewResponseDto getProductReview(Long productId, Long photo, Long page, Long limit) {
+        if (!productRepository.existsById(productId)) {
+            throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
+        }
+        return buyRepository.getProductReview(productId, photo, PageRequest.of(page.intValue() - 1, limit.intValue()));
+
     /**
      * 공동구매 게시글의 상품 정보 반환
      * @param buyId 상품의 게시글 Id
@@ -64,5 +83,6 @@ public class CommerceService {
     public PaymentInfoResponseDto getPaymentInfo(Long buyId) {
         return PaymentInfoResponseDto.toDto(buyRepository.findById(buyId)
                         .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)));
+
     }
 }

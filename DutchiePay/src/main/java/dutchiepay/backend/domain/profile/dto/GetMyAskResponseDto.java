@@ -27,7 +27,7 @@ public class GetMyAskResponseDto {
         for (Ask ask : asks) {
             response.add(GetMyAskResponseDto.builder()
                     .askId(ask.getAskId())
-                    .storeName(ask.getProduct().getStoreId().getStoreName())
+                    .storeName(ask.getProduct().getStore().getStoreName())
                     .orderNum(ask.getOrderNum())
                     .productId(ask.getProduct().getProductId())
                     .content(ask.getContents())

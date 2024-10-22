@@ -46,7 +46,7 @@ public class OrdersService {
 
         Refund newRefund = Refund.builder()
                 .user(user)
-                .store(order.getProduct().getStoreId())
+                .store(order.getProduct().getStore())
                 .orders(order)
                 .category(req.getType())
                 .reason(req.getReason())
