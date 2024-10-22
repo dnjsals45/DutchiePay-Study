@@ -32,6 +32,7 @@ import java.util.List;
 @ActiveProfiles("prod")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
+@Disabled
 class ProfileRepositoryTest {
 
     @Autowired

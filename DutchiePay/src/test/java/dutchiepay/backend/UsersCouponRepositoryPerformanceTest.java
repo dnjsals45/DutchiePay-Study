@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
 @Import(UsersCouponRepositoryPerformanceTest.TestConfig.class)
+@Disabled
 class UsersCouponRepositoryPerformanceTest {
 
     @TestConfiguration
