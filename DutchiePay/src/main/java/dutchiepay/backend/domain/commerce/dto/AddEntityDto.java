@@ -13,7 +13,7 @@ public class AddEntityDto {
     private int originalPrice;
     private int salePrice;
     private int discountPercent;
-    private BuyCategoryEnum category;
+    private String category;
     private int skeleton;
     private LocalDate deadline;
     private Long storeId;
