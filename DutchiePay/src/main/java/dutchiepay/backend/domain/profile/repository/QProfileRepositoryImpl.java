@@ -7,7 +7,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyPostsResponseDto;
@@ -254,6 +254,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     }
 
     private BooleanExpression categoryEq(String category) {
-        return category != null ? buy.category.eq(BuyCategory.fromCategoryName(category)) : null;
+        return category != null ? buy.category.eq(BuyCategoryEnum.fromCategoryName(category)) : null;
     }
 }

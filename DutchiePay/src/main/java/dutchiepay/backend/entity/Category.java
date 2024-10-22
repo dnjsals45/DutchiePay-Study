@@ -16,5 +16,6 @@ public class Category extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
 
+    @Column(nullable = false)
     private String name;
 }

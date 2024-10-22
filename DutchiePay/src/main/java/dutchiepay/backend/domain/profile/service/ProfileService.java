@@ -1,6 +1,6 @@
 package dutchiepay.backend.domain.profile.service;
 
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
@@ -47,7 +47,7 @@ public class ProfileService {
 
 
     public List<GetMyLikesResponseDto> getMyLike(User user, String category) {
-        if (!BuyCategory.isExist(category)) {
+        if (!BuyCategoryEnum.isExist(category)) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_CATEGORY);
         }
 

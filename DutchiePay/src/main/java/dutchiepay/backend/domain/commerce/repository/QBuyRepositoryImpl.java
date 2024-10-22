@@ -5,7 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
@@ -125,7 +125,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         BooleanExpression conditions = buy.buyId.gt(cursor);
 
         if (category != null && !category.isEmpty()) {
-            conditions = conditions.and(buy.category.eq(BuyCategory.valueOf(category)));
+            conditions = conditions.and(buy.category.eq(BuyCategoryEnum.valueOf(category)));
         }
 
         if (end == 0) {

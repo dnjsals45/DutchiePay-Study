@@ -1,16 +1,14 @@
 package dutchiepay.backend.domain.profile.dto;
 
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetMyLikesResponseDto {
-    private BuyCategory category;
+    private BuyCategoryEnum category;
     private String title;
     private Integer originalPrice;
     private Integer salePrice;

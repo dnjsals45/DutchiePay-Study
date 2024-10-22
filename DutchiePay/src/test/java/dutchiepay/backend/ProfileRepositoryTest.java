@@ -1,6 +1,6 @@
 package dutchiepay.backend;
 
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.commerce.repository.*;
 import dutchiepay.backend.domain.coupon.repository.CouponRepository;
 import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
@@ -137,7 +137,7 @@ class ProfileRepositoryTest {
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategory.가전)
+                .category(BuyCategoryEnum.가전)
                 .build();
 
         Buy buy2 = Buy.builder()
@@ -146,7 +146,7 @@ class ProfileRepositoryTest {
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategory.가전)
+                .category(BuyCategoryEnum.가전)
                 .build();
         buyRepository.save(buy1);
         buyRepository.save(buy2);
@@ -261,7 +261,7 @@ class ProfileRepositoryTest {
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategory.가전)
+                .category(BuyCategoryEnum.가전)
                 .build();
         buyRepository.save(buy);
 
@@ -354,7 +354,7 @@ class ProfileRepositoryTest {
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategory.가전)
+                .category(BuyCategoryEnum.가전)
                 .build();
 
         Buy buy2 = Buy.builder()
@@ -363,7 +363,7 @@ class ProfileRepositoryTest {
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategory.가전)
+                .category(BuyCategoryEnum.가전)
                 .build();
         buyRepository.save(buy1);
         buyRepository.save(buy2);
