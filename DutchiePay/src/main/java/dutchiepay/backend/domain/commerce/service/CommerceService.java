@@ -120,18 +120,15 @@ public class CommerceService {
                 .nowCount(0)
                 .build());
 
-        Category category;
         for (String c : addEntityDto.getCategory()) {
-            category = categoryRepository.findByName(c);
+            Category category = categoryRepository.findByName(c);
             if (category == null)
-                categoryRepository.save(Category.builder().name(c).build());
+                category = categoryRepository.save(Category.builder().name(c).build());
+
+            buyCategoryRepository.save(BuyCategory.builder()
+                    .buy(buy)
+                    .category(category)
+                    .build());
         }
-
-        addEntityDto.getCategory().forEach(
-                c -> buyCategoryRepository.save(BuyCategory.builder()
-                                .buy(buy)
-                                .category(categoryRepository.findByName(c))
-                                .build()));
-
     }
 }
