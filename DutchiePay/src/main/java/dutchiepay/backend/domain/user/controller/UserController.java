@@ -114,9 +114,9 @@ public class UserController {
 
     @Operation(summary = "회원 탈퇴(추가 수정 필요)", description = "개인정보 삭제 범위, 재가입 불가 구분용 정보 필요")
     @DeleteMapping
-    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         userService.deleteUser(userDetails);
-        return ResponseEntity.ok().body(null);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "자동로그인(구현 완료)")
