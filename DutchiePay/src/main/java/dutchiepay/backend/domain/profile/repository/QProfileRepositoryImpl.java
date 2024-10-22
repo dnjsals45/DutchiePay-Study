@@ -7,7 +7,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyPostsResponseDto;
@@ -47,14 +46,17 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     QStore store = QStore.store;
     QFree free = QFree.free;
     QComment comment = QComment.comment;
+    QBuyCategory buyCategory = QBuyCategory.buyCategory;
+    QCategory category = QCategory.category;
+
 
     @Override
-    public List<GetMyLikesResponseDto> getMyLike(User user, String category) {
+    public List<GetMyLikesResponseDto> getMyLike(User user, String categoryName) {
         LocalDate now = LocalDate.now();
 
         return jpaQueryFactory
                 .select(Projections.constructor(GetMyLikesResponseDto.class,
-                        buy.category,
+                        category.name,
                         buy.title,
                         product.originalPrice,
                         product.salePrice,
@@ -85,10 +87,12 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .from(like)
                 .join(like.buy, buy)
                 .join(buy.product, product)
+                .join(buyCategory).on(buyCategory.buy.eq(buy))
+                .join(category).on(buyCategory.category.eq(category))
                 .leftJoin(score).on(score.buy.eq(buy))
                 .where(buy.deletedAt.isNull())
                 .where(like.user.eq(user))
-                .where(categoryEq(category))
+                .where(categoryEq(categoryName))
                 .orderBy(like.createdAt.desc())
                 .fetch();
     }
@@ -253,7 +257,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         return result;
     }
 
-    private BooleanExpression categoryEq(String category) {
-        return category != null ? buy.category.eq(BuyCategoryEnum.fromCategoryName(category)) : null;
+    private BooleanExpression categoryEq(String categoryName) {
+        return category != null ? category.name.eq(categoryName) : null;
     }
 }

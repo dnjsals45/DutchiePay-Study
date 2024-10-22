@@ -1,6 +1,5 @@
 package dutchiepay.backend.domain.profile.dto;
 
-import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import lombok.*;
 
 @Getter
@@ -8,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetMyLikesResponseDto {
-    private BuyCategoryEnum category;
+    private String category;
     private String title;
     private Integer originalPrice;
     private Integer salePrice;
