@@ -109,7 +109,7 @@ class ProfileRepositoryTest {
 
         // 상품
         Product product1 = Product.builder()
-                .storeId(store)
+                .store(store)
                 .productName("테스트 상품1")
                 .detailImg("테스트 상세 이미지1")
                 .originalPrice(10000)
@@ -119,7 +119,7 @@ class ProfileRepositoryTest {
                 .build();
 
         Product product2 = Product.builder()
-                .storeId(store)
+                .store(store)
                 .productName("테스트 상품2")
                 .detailImg("테스트 상세 이미지2")
                 .originalPrice(10000)
@@ -132,21 +132,19 @@ class ProfileRepositoryTest {
 
         // 공구게시글
         Buy buy1 = Buy.builder()
-                .productId(product1)
+                .product(product1)
                 .title("테스트 공구 게시글1")
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategoryEnum.가전)
                 .build();
 
         Buy buy2 = Buy.builder()
-                .productId(product2)
+                .product(product2)
                 .title("테스트 공구 게시글2")
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategoryEnum.가전)
                 .build();
         buyRepository.save(buy1);
         buyRepository.save(buy2);
@@ -244,7 +242,7 @@ class ProfileRepositoryTest {
 
         // 상품
         Product product = Product.builder()
-                .storeId(store)
+                .store(store)
                 .productName("테스트 상품")
                 .detailImg("테스트 상세 이미지")
                 .originalPrice(10000)
@@ -256,12 +254,11 @@ class ProfileRepositoryTest {
 
         // 공구게시글
         Buy buy = Buy.builder()
-                .productId(product)
+                .product(product)
                 .title("테스트 공구 게시글1")
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategoryEnum.가전)
                 .build();
         buyRepository.save(buy);
 
@@ -326,7 +323,7 @@ class ProfileRepositoryTest {
 
         // 상품
         Product product1 = Product.builder()
-                .storeId(store)
+                .store(store)
                 .productName("테스트 상품")
                 .detailImg("테스트 상세 이미지")
                 .originalPrice(10000)
@@ -336,7 +333,7 @@ class ProfileRepositoryTest {
                 .build();
 
         Product product2 = Product.builder()
-                .storeId(store)
+                .store(store)
                 .productName("테스트 상품2")
                 .detailImg("테스트 상세 이미지2")
                 .originalPrice(5000)
@@ -349,21 +346,19 @@ class ProfileRepositoryTest {
 
         // 공구 게시글
         Buy buy1 = Buy.builder()
-                .productId(product1)
+                .product(product1)
                 .title("테스트 공구 게시글1")
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategoryEnum.가전)
                 .build();
 
         Buy buy2 = Buy.builder()
-                .productId(product2)
+                .product(product2)
                 .title("테스트 공구 게시글1")
                 .deadline(LocalDate.now())
                 .skeleton(10)
                 .nowCount(100)
-                .category(BuyCategoryEnum.가전)
                 .build();
         buyRepository.save(buy1);
         buyRepository.save(buy2);
@@ -461,7 +456,7 @@ class ProfileRepositoryTest {
 
         // 마트/배달 게시글
         Share sharePost1 = Share.builder()
-                .userId(user)
+                .user(user)
                 .title("테스트 마트/배달 게시글1")
                 .contents("테스트 마트/배달 게시글 내용1")
                 .category("배달")
@@ -529,14 +524,14 @@ class ProfileRepositoryTest {
 
         // 댓글
         Comment comment1 = Comment.builder()
-                .freeId(freePost1)
-                .userId(user)
+                .free(freePost1)
+                .user(user)
                 .contents("테스트 댓글 내용1")
                 .build();
 
         Comment comment2 = Comment.builder()
-                .freeId(freePost2)
-                .userId(user)
+                .free(freePost2)
+                .user(user)
                 .contents("테스트 댓글 내용2")
                 .build();
         commentRepository.save(comment1);
