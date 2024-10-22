@@ -5,7 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
@@ -37,6 +37,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     QLikes likes = QLikes.likes;
     QAsk ask = QAsk.ask;
     QScore score = QScore.score;
+    QBuyCategory buyCategory = QBuyCategory.buyCategory;
+    QCategory category = QCategory.category;
 
     @Override
     public GetBuyResponseDto getBuyPageByBuyId(Long userId, Long buyId) {
@@ -121,11 +123,17 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     }
 
     @Override
-    public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
+    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, int end, Long cursor, int limit) {
         BooleanExpression conditions = buy.buyId.gt(cursor);
 
-        if (category != null && !category.isEmpty()) {
-            conditions = conditions.and(buy.category.eq(BuyCategory.valueOf(category)));
+        if (categoryName != null && !categoryName.isEmpty()) {
+            conditions = conditions.and(
+                    JPAExpressions
+                            .select(buyCategory.buy)
+                            .from(buyCategory)
+                            .where(buyCategory.category.name.eq(categoryName))
+                            .contains(buy)
+            );
         }
 
         if (end == 0) {
@@ -161,6 +169,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         likes.count().gt(0L).as("isLiked"))
                 .from(buy)
                 .join(buy.product, product)
+                .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
+                .leftJoin(category).on(buyCategory.category.eq(category))
                 .leftJoin(likes).on(likes.buy.eq(buy).and(likes.user.eq(user)))
                 .where(conditions)
                 .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,

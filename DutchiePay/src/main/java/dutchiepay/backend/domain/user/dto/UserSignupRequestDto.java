@@ -20,7 +20,7 @@ public class UserSignupRequestDto {
     private String email;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "영문, 숫자, 특수문자를 모두 포함하여 8글자 이상으로 입력해주세요.")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,}$", message = "영문, 숫자, 특수문자를 모두 포함하여 8글자 이상으로 입력해주세요.")
     private String password;
 
     @NotBlank(message = "전화번호를 입력해주세요.")

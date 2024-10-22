@@ -106,7 +106,7 @@ public class ProfileController {
     @Operation(summary = "프로필 이미지 변경 (구현 완료)")
     @PatchMapping("/image")
     public ResponseEntity<?> changeProfileImage(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                @Valid @RequestBody ChangeProfileImgRequestDto request) {
+                                                @RequestBody ChangeProfileImgRequestDto request) {
         profileService.changeProfileImage(userDetails.getUser(), request.getProfileImg());
         return ResponseEntity.ok().build();
     }

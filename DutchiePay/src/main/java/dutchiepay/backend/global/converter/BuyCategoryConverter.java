@@ -1,18 +1,18 @@
 package dutchiepay.backend.global.converter;
 
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter
-public class BuyCategoryConverter implements AttributeConverter<BuyCategory, String> {
+public class BuyCategoryConverter implements AttributeConverter<BuyCategoryEnum, String> {
     @Override
-    public String convertToDatabaseColumn(BuyCategory buyCategory) {
-        return buyCategory.getCode();
+    public String convertToDatabaseColumn(BuyCategoryEnum buyCategoryEnum) {
+        return buyCategoryEnum.getCode();
     }
 
     @Override
-    public BuyCategory convertToEntityAttribute(String dbData) {
-        return BuyCategory.ofCategory(dbData);
+    public BuyCategoryEnum convertToEntityAttribute(String dbData) {
+        return BuyCategoryEnum.ofCategory(dbData);
     }
 }

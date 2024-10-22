@@ -7,7 +7,9 @@ import dutchiepay.backend.domain.commerce.dto.AddEntityDto;
 import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
+import dutchiepay.backend.domain.commerce.repository.BuyCategoryRepository;
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
+import dutchiepay.backend.domain.commerce.repository.CategoryRepository;
 import dutchiepay.backend.domain.commerce.repository.StoreRepository;
 import dutchiepay.backend.domain.order.repository.AskRepository;
 import dutchiepay.backend.domain.order.repository.LikesRepository;
@@ -33,6 +35,8 @@ public class CommerceService {
     private final AskRepository askRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private final CategoryRepository categoryRepository;
+    private final BuyCategoryRepository buyCategoryRepository;
 
     /**
      * 상품 좋아요
@@ -108,12 +112,25 @@ public class CommerceService {
                 .discountPercent(addEntityDto.getDiscountPercent())
                 .productImg(addEntityDto.getProductImg()).build());
 
-        buyRepository.save(Buy.builder()
+        Buy buy = Buy.builder()
                 .product(product)
                 .title(addEntityDto.getProductName())
                 .deadline(addEntityDto.getDeadline())
                 .skeleton(addEntityDto.getSkeleton())
                 .nowCount(0)
-                .category(addEntityDto.getCategory()).build());
+                .build();
+
+        buyRepository.save(buy);
+
+        Category category = Category.builder()
+                .name(addEntityDto.getCategory())
+                .build();
+
+        categoryRepository.save(category);
+
+        buyCategoryRepository.save(BuyCategory.builder()
+                .buy(buy)
+                .category(category)
+                .build());
     }
 }

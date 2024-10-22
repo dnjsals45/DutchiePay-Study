@@ -60,7 +60,7 @@ public class CommerceController {
 
     @Operation(summary = "상품 문의내역 조회(구현중)")
     @GetMapping("/asks")
-    public ResponseEntity<List<BuyAskResponseDto>> getBuyAsks(@RequestParam("productId") Long buyId,
+    public ResponseEntity<List<BuyAskResponseDto>> getBuyAsks(@RequestParam("buyId") Long buyId,
                                                               Pageable pageable) {
         return ResponseEntity.ok(commerceService.getBuyAsks(buyId, pageable).getContent()
                 .stream().map(BuyAskResponseDto::toDto)
@@ -69,7 +69,7 @@ public class CommerceController {
 
     @Operation(summary = "결제 정보 불러오기(구현중)")
     @GetMapping("/delivery")
-    public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buypostid") Long buyId) {
+    public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buyId") Long buyId) {
         return ResponseEntity.ok(commerceService.getPaymentInfo(buyId));
     }
 

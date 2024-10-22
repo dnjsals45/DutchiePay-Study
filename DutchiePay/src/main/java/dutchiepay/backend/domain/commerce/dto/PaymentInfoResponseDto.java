@@ -18,10 +18,10 @@ public class PaymentInfoResponseDto {
 
     public static PaymentInfoResponseDto toDto(Buy buy) {
         return PaymentInfoResponseDto.builder()
-                .productName(buy.getProductId().getProductName())
-                .productImg(buy.getProductId().getProductImg())
-                .originalPrice(buy.getProductId().getOriginalPrice())
-                .salePrice(buy.getProductId().getSalePrice())
+                .productName(buy.getProduct().getProductName())
+                .productImg(buy.getProduct().getProductImg())
+                .originalPrice(buy.getProduct().getOriginalPrice())
+                .salePrice(buy.getProduct().getSalePrice())
                 .expireDate(buy.getDeadline())
                 .build();
     }

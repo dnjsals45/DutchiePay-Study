@@ -1,6 +1,6 @@
 package dutchiepay.backend.domain.commerce.dto;
 
-import dutchiepay.backend.domain.commerce.BuyCategory;
+import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ public class AddEntityDto {
     private int originalPrice;
     private int salePrice;
     private int discountPercent;
-    private BuyCategory category;
+    private String category;
     private int skeleton;
     private LocalDate deadline;
     private Long storeId;
