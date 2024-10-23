@@ -117,25 +117,23 @@ public class CommerceService {
                 .discountPercent(addEntityDto.getDiscountPercent())
                 .productImg(addEntityDto.getProductImg()).build());
 
-        Buy buy = Buy.builder()
+        Buy buy = buyRepository.save(Buy.builder()
                 .product(product)
                 .title(addEntityDto.getProductName())
                 .deadline(addEntityDto.getDeadline())
                 .skeleton(addEntityDto.getSkeleton())
                 .nowCount(0)
-                .build();
-
-        buyRepository.save(buy);
-
-        Category category = Category.builder()
-                .name(addEntityDto.getCategory())
-                .build();
-
-        categoryRepository.save(category);
-
-        buyCategoryRepository.save(BuyCategory.builder()
-                .buy(buy)
-                .category(category)
                 .build());
+
+        for (String c : addEntityDto.getCategory()) {
+            Category category = categoryRepository.findByName(c);
+            if (category == null)
+                category = categoryRepository.save(Category.builder().name(c).build());
+
+            buyCategoryRepository.save(BuyCategory.builder()
+                    .buy(buy)
+                    .category(category)
+                    .build());
+        }
     }
 }
