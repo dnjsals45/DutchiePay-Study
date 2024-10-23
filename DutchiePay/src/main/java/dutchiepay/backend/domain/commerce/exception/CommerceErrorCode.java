@@ -12,6 +12,7 @@ public enum CommerceErrorCode implements StatusCode {
     /**
      * 400 Bad Request
      */
+    AFTER_DUE_DATE(HttpStatus.BAD_REQUEST, "마감된 상품입니다."),
 
     /**
      * 404 Not Found

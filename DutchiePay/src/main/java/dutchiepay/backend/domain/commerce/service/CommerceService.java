@@ -25,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -90,8 +92,11 @@ public class CommerceService {
      * @return PaymentInfoResponseDto 상품의 특정 정보만 담을 dto
      */
     public PaymentInfoResponseDto getPaymentInfo(Long buyId) {
-        return PaymentInfoResponseDto.toDto(buyRepository.findById(buyId)
-                        .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)));
+        Buy buy = buyRepository.findById(buyId)
+                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
+        if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
+
+        return PaymentInfoResponseDto.toDto(buy);
     }
 
     @Transactional
