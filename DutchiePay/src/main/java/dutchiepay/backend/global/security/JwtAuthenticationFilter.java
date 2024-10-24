@@ -57,17 +57,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             User user = userRepository.findByEmailAndOauthProviderIsNull(requestDto.getEmail())
                 .orElseThrow(
-                    () -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)
+                    () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
                 );
 
             if (1 == user.getState()) {
                 throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
             } else if (2 == user.getState()) {
-                throw new UserErrorException(UserErrorCode.USER_TERMINATED);
+                throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
             }
 
             if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-                throw new UserErrorException(UserErrorCode.USER_INVALID_PASSWORD);
+                throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
             }
 
             // 인증 성공 시 UsernamePasswordAuthenticationToken 생성 및 반환
@@ -80,11 +80,27 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 authorities // authorities
             );
 
+        } catch (UserErrorException e) {
+            log.error(e.getMessage());
+
+            try {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                ObjectNode json = new ObjectMapper().createObjectNode();
+                json.put("message", e.getMessage());
+                String newResponse = new ObjectMapper().writeValueAsString(json);
+
+                response.setContentType("application/json");
+                response.setContentLength(newResponse.getBytes(StandardCharsets.UTF_8).length);
+                response.getOutputStream().write(newResponse.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+                throw new RuntimeException(ex.getMessage());
+            }
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new BadCredentialsException(e.getMessage());
         }
-
+        return null;
     }
 
     //로그인 성공
@@ -123,25 +139,5 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ObjectNode rootNode = objectMapper.valueToTree(userLoginResponseDto);
 
         objectMapper.writeValue(response.getWriter(), rootNode);
-    }
-
-    //로그인 실패
-    @Override
-    protected void unsuccessfulAuthentication(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        AuthenticationException failed
-    ) throws IOException {
-
-        log.error(failed.getMessage());
-
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        ObjectNode json = new ObjectMapper().createObjectNode();
-        json.put("message", failed.getMessage());
-        String newResponse = new ObjectMapper().writeValueAsString(json);
-
-        response.setContentType("application/json");
-        response.setContentLength(newResponse.getBytes(StandardCharsets.UTF_8).length);
-        response.getOutputStream().write(newResponse.getBytes(StandardCharsets.UTF_8));
     }
 }

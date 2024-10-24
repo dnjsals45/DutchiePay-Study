@@ -52,7 +52,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             else {
                 userService.unlinkNaver(new UserDetailsImpl(user, attributes));
             }
-            throw new UserErrorException(UserErrorCode.DELETED_USER);
+            throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
         }
 
         if (!user.getOauthProvider().equals(oAuthAttribute.getOauthProvider())) {

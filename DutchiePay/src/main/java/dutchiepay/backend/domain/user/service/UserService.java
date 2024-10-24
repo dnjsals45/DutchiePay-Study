@@ -90,7 +90,7 @@ public class UserService {
             if (now.getState() == 1) {
                 throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
             } else if (now.getState() == 2) {
-                throw new UserErrorException(UserErrorCode.USER_TERMINATED);
+                throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
             } else {
                 throw new UserErrorException(UserErrorCode.USER_EMAIL_ALREADY_EXISTS);
             }
@@ -109,7 +109,7 @@ public class UserService {
         if (user.getState() == 1) {
             throw new UserErrorException(UserErrorCode.USER_SUSPENDED);
         } else if (user.getState() == 2) {
-            throw new UserErrorException(UserErrorCode.USER_TERMINATED);
+            throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
         }
 
         return FindEmailResponseDto.of(userUtilService.maskEmail(user.getEmail()));
@@ -208,13 +208,13 @@ public class UserService {
     @Transactional
     public void deleteOauthUser(UserDetailsImpl userDetails) {
         userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
     }
 
     @Transactional
     public void deleteUser(UserDetailsImpl userDetails) {
         userRepository.findByEmailAndOauthProviderIsNull(userDetails.getEmail())
-            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_EMAIL_NOT_FOUND)).delete();
+            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
     }
 
     public UserLoginResponseDto userInfo(UserDetailsImpl userDetails) {
