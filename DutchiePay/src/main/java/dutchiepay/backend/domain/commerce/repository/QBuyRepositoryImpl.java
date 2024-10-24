@@ -5,10 +5,11 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
+import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
+import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -124,6 +125,10 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
     @Override
     public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, int end, Long cursor, int limit) {
+        if (cursor == null) {
+            cursor = 0L;
+        }
+
         BooleanExpression conditions = buy.buyId.gt(cursor);
 
         if (categoryName != null && !categoryName.isEmpty()) {
@@ -151,9 +156,11 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             case "discount":
                 orderBy = product.discountPercent.desc();
                 break;
-            default:
+            case "newest":
                 orderBy = buy.buyId.desc();
                 break;
+            default:
+                throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
         }
 
         List<Tuple> results = jpaQueryFactory
