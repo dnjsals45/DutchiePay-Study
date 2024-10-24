@@ -24,12 +24,12 @@ public class CommerceController {
     private final CommerceService commerceService;
 
     @Operation(summary = "공동구매 리스트 조회(구현중)")
-    @GetMapping(value = "/list", params = {"filter", "category", "end", "cursor", "limit"})
+    @GetMapping(value = "/list")
     public ResponseEntity<?> getBuyList(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         @RequestParam("filter") String filter,
-                                        @RequestParam("category") String category,
+                                        @RequestParam(value = "category", required = false) String category,
                                         @RequestParam("end") int end,
-                                        @RequestParam("cursor") Long cursor,
+                                        @RequestParam(value = "cursor", required = false) Long cursor,
                                         @RequestParam("limit") int limit) {
         return ResponseEntity.ok().body(commerceService.getBuyList(userDetails.getUser(), filter, category, end, cursor, limit));
     }
