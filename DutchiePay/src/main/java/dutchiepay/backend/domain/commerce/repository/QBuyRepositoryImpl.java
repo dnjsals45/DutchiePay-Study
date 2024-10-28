@@ -167,7 +167,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 }
                 break;
             case "endDate":
-                orderBy = buy.deadline.desc();
+                orderBy = buy.deadline.asc();
                 break;
             case "discount":
                 if (cursor < Long.MAX_VALUE) {
