@@ -26,13 +26,13 @@ public class GetBuyListResponseDto {
         private Long buyId;
         private String productName;
         private String productImg;
-        private int productPrice;
-        private int discountPrice;
-        private int discountPercent;
-        private int skeleton;
-        private int nowCount;
-        private int expireDate;
-        private boolean isLiked;
+        private Integer productPrice;
+        private Integer discountPrice;
+        private Integer discountPercent;
+        private Integer skeleton;
+        private Integer nowCount;
+        private Integer expireDate;
+        private Boolean isLiked;
     }
 }
 
