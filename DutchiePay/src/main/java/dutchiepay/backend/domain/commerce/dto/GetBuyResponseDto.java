@@ -27,4 +27,6 @@ public class GetBuyResponseDto {
     private Integer reviewCount;
     private Integer askCount;
     private Integer[] ratingCount;
+    private Double rating;
+    private String[] category;
 }

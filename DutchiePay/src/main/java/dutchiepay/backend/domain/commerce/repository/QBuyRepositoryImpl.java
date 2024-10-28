@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -82,11 +83,13 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         score.two,
                         score.three,
                         score.four,
-                        score.five
+                        score.five,
+                        review.rating
                 )
                 .from(buy)
                 .join(buy.product, product)
                 .join(product.store, store)
+                .leftJoin(review).on(review.buy.buyId.eq(buy.buyId))
                 .leftJoin(score).on(score.buy.buyId.eq(buy.buyId))
                 .where(buy.buyId.eq(buyId))
                 .fetchOne();
@@ -96,12 +99,21 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         }
 
         Integer[] ratingCount = new Integer[]{
-                result.get(17, Integer.class),
-                result.get(18, Integer.class),
-                result.get(19, Integer.class),
-                result.get(20, Integer.class),
-                result.get(21, Integer.class)
+                Optional.ofNullable(result.get(17, Integer.class)).orElse(0),
+                Optional.ofNullable(result.get(18, Integer.class)).orElse(0),
+                Optional.ofNullable(result.get(19, Integer.class)).orElse(0),
+                Optional.ofNullable(result.get(20, Integer.class)).orElse(0),
+                Optional.ofNullable(result.get(21, Integer.class)).orElse(0)
         };
+
+        List<String> categoryList = jpaQueryFactory
+                .select(category.name)
+                .from(buyCategory)
+                .join(buyCategory.category, category)
+                .where(buyCategory.buy.buyId.eq(buyId))
+                .fetch();
+
+        String[] categories = categoryList.toArray(new String[0]);
 
         return GetBuyResponseDto.builder()
                 .productName(result.get(0, String.class))
@@ -122,6 +134,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .reviewCount(result.get(15, Long.class).intValue())
                 .askCount(result.get(16, Long.class).intValue())
                 .ratingCount(ratingCount)
+                .rating(result.get(22, Double.class))
+                .category(categories)
                 .build();
     }
 
