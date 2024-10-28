@@ -3,7 +3,9 @@ package dutchiepay.backend.domain.commerce.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
@@ -126,44 +128,72 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     @Override
     public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, int end, Long cursor, int limit) {
         if (cursor == null) {
-            cursor = 0L;
+            cursor = Long.MAX_VALUE;
         }
 
-        BooleanExpression conditions = buy.buyId.gt(cursor);
+        BooleanExpression conditions = null;
 
         if (categoryName != null && !categoryName.isEmpty()) {
-            conditions = conditions.and(
-                    JPAExpressions
-                            .select(buyCategory.buy)
-                            .from(buyCategory)
-                            .where(buyCategory.category.name.eq(categoryName))
-                            .contains(buy)
-            );
+            conditions = JPAExpressions
+                    .select(buyCategory.buy)
+                    .from(buyCategory)
+                    .where(buyCategory.category.name.eq(categoryName))
+                    .contains(buy);
         }
 
         if (end == 0) {
-            conditions = conditions.and(buy.deadline.after(LocalDate.now()));
+            BooleanExpression dateCondition = buy.deadline.after(LocalDate.now());
+            conditions = conditions == null ? dateCondition : conditions.and(dateCondition);
         }
 
         OrderSpecifier<?> orderBy;
+        BooleanExpression cursorCondition = null;
         switch (filter) {
             case "like":
                 orderBy = likes.count().desc();
+                if (cursor < Long.MAX_VALUE) {
+                    Long cursorLike = jpaQueryFactory
+                            .select(likes.count())
+                            .from(likes)
+                            .join(likes.buy, buy)
+                            .where(buy.buyId.eq(cursor))
+                            .fetchOne();
+
+                    if (cursorLike != null) {
+                        cursorCondition = likes.count().lt(cursorLike)
+                                .or(likes.count().eq(cursorLike))
+                                .and(buy.buyId.loe(cursor));
+                    }
+                }
                 break;
             case "endDate":
                 orderBy = buy.deadline.desc();
                 break;
             case "discount":
+                if (cursor < Long.MAX_VALUE) {
+                    Integer cursorDiscount = jpaQueryFactory
+                            .select(product.discountPercent)
+                            .from(buy)
+                            .join(buy.product, product)
+                            .where(buy.buyId.eq(cursor))
+                            .fetchOne();
+
+                    if (cursorDiscount != null) {
+                        cursorCondition = product.discountPercent.lt(cursorDiscount)
+                                .or(product.discountPercent.eq(cursorDiscount));
+                    }
+                }
                 orderBy = product.discountPercent.desc();
                 break;
             case "newest":
                 orderBy = buy.buyId.desc();
+                conditions = conditions != null ? conditions.and(buy.buyId.loe(cursor)) : null;
                 break;
             default:
                 throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
         }
 
-        List<Tuple> results = jpaQueryFactory
+        JPAQuery<Tuple> query = jpaQueryFactory
                 .select(buy.buyId,
                         product.productName,
                         product.productImg,
@@ -182,10 +212,17 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .where(conditions)
                 .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,
                         product.salePrice, product.discountPercent, buy.skeleton, buy.nowCount, buy.deadline)
-                .orderBy(orderBy)
-                .limit(limit + 1)
-                .fetch();
+                .limit(limit + 1);
 
+        if (filter.equals("like")) {
+            query.having(cursorCondition);
+            query.orderBy(orderBy, buy.buyId.desc());
+        } else {
+            query.where(cursorCondition);
+            query.orderBy(orderBy);
+        }
+        
+        List<Tuple> results = query.fetch();
         List<GetBuyListResponseDto.ProductDto> products = new ArrayList<>();
         int count = 0;
         for (Tuple result : results) {
@@ -194,7 +231,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             }
 
             GetBuyListResponseDto.ProductDto dto = GetBuyListResponseDto.ProductDto.builder()
-                    .buyPostId(result.get(0, Long.class))
+                    .buyId(result.get(0, Long.class))
                     .productName(result.get(1, String.class))
                     .productImg(result.get(2, String.class))
                     .productPrice(result.get(3, Integer.class))
