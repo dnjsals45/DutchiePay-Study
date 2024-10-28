@@ -22,10 +22,10 @@ public class GetBuyResponseDto {
     private Integer skeleton;
     private Integer nowCount;
     private LocalDate deadline;
-    private Integer likeCount;
+    private Long likeCount;
     private Boolean isLiked;
-    private Integer reviewCount;
-    private Integer askCount;
+    private Long reviewCount;
+    private Long askCount;
     private Integer[] ratingCount;
     private Double rating;
     private String[] category;
