@@ -219,7 +219,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     }
 
     @Override
-    public GetProductReviewResponseDto getProductReview(Long productId, Long photo, PageRequest pageable) {
+    public GetProductReviewResponseDto getProductReview(Long buyId, Long photo, PageRequest pageable) {
         List<Tuple> result = jpaQueryFactory
                 .select(review.reviewId,
                         review.user.nickname,
@@ -230,7 +230,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .from(review)
                 .join(review.user, user)
                 .join(review.buy, buy)
-                .where(buy.product.productId.eq(productId))
+                .where(buy.buyId.eq(buyId))
                 .where(photoCondition(photo))
                 .orderBy(review.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -255,7 +255,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .select(review.rating.avg())
                 .from(review)
                 .join(review.buy, buy)
-                .where(buy.product.productId.eq(productId))
+                .where(buy.buyId.eq(buyId))
                 .fetchOne();
 
         return GetProductReviewResponseDto.from(avgRating, reviews);
