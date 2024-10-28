@@ -168,6 +168,19 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 break;
             case "endDate":
                 orderBy = buy.deadline.asc();
+                if (cursor < Long.MAX_VALUE) {
+                    LocalDate cursorEndDate = jpaQueryFactory
+                            .select(buy.deadline)
+                            .from(buy)
+                            .where(buy.buyId.eq(cursor))
+                            .fetchOne();
+
+                    if (cursorEndDate != null) {
+                        cursorCondition = buy.deadline.gt(cursorEndDate)
+                                .or(buy.deadline.eq(cursorEndDate))
+                                .and(buy.buyId.loe(cursor));
+                    }
+                }
                 break;
             case "discount":
                 if (cursor < Long.MAX_VALUE) {
@@ -219,7 +232,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             query.orderBy(orderBy, buy.buyId.desc());
         } else {
             query.where(cursorCondition);
-            query.orderBy(orderBy);
+            query.orderBy(orderBy, buy.buyId.desc());
         }
         
         List<Tuple> results = query.fetch();
