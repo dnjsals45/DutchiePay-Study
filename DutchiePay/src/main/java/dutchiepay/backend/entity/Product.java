@@ -20,7 +20,7 @@ public class Product extends Auditing {
     private Store store;
 
     // 상품 이름
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String productName;
 
     // 상세 내용
