@@ -23,7 +23,7 @@ public class GetBuyListResponseDto {
     @Getter
     @Builder
     public static class ProductDto {
-        private Long buyPostId;
+        private Long buyId;
         private String productName;
         private String productImg;
         private int productPrice;
