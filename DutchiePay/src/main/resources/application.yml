@@ -1,3 +1,6 @@
+host:
+  url: ${HOST_URL}
+
 spring:
   security:
     oauth2:
@@ -93,3 +96,8 @@ cloud:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
+
+payment:
+  kakao:
+    cid: ${KAKAO_PAY_CID}
+    secret: ${KAKAO_PAY_SECRET}
