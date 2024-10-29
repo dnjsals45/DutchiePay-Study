@@ -58,8 +58,8 @@ spring:
     allowed-origins: ${CORS_ORIGIN}
   data:
     redis:
-      host: ${REIDS_HOST}
-      port: ${REIDS_PORT}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
