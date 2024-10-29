@@ -83,13 +83,11 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         score.two,
                         score.three,
                         score.four,
-                        score.five,
-                        review.rating
+                        score.five
                 )
                 .from(buy)
                 .join(buy.product, product)
                 .join(product.store, store)
-                .leftJoin(review).on(review.buy.buyId.eq(buy.buyId))
                 .leftJoin(score).on(score.buy.buyId.eq(buy.buyId))
                 .where(buy.buyId.eq(buyId))
                 .fetchOne();
@@ -98,13 +96,21 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             return null;
         }
 
-        Integer[] ratingCount = new Integer[]{
-                Optional.ofNullable(result.get(17, Integer.class)).orElse(0),
-                Optional.ofNullable(result.get(18, Integer.class)).orElse(0),
-                Optional.ofNullable(result.get(19, Integer.class)).orElse(0),
-                Optional.ofNullable(result.get(20, Integer.class)).orElse(0),
-                Optional.ofNullable(result.get(21, Integer.class)).orElse(0)
-        };
+        Integer one = Optional.ofNullable(result.get(17, Integer.class)).orElse(0);
+        Integer two = Optional.ofNullable(result.get(18, Integer.class)).orElse(0);
+        Integer three = Optional.ofNullable(result.get(19, Integer.class)).orElse(0);
+        Integer four = Optional.ofNullable(result.get(20, Integer.class)).orElse(0);
+        Integer five = Optional.ofNullable(result.get(21, Integer.class)).orElse(0);
+
+        Integer[] ratingCount = new Integer[]{one, two, three, four, five};
+
+        double average;
+
+        if (one + two + three + four + five == 0) {
+            average = 0.0;
+        } else {
+            average = (one + two * 2 + three * 3 + four * 4 + five * 5) / (double) (one + two + three + four + five);
+        }
 
         List<String> categoryList = jpaQueryFactory
                 .select(category.name)
@@ -134,7 +140,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .reviewCount(result.get(15, Long.class))
                 .askCount(result.get(16, Long.class))
                 .ratingCount(ratingCount)
-                .rating(result.get(22, Double.class))
+                .rating(average)
                 .category(categories)
                 .build();
     }
@@ -248,7 +254,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             query.where(cursorCondition);
             query.orderBy(orderBy, buy.buyId.desc());
         }
-        
+
         List<Tuple> results = query.fetch();
         List<GetBuyListResponseDto.ProductDto> products = new ArrayList<>();
         int count = 0;

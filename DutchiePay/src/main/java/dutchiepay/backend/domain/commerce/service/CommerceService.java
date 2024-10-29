@@ -72,6 +72,10 @@ public class CommerceService {
 
 
     public GetBuyResponseDto getBuyPage(User user, Long buyId) {
+        if (!buyRepository.existsById(buyId)) {
+            throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
+        }
+
         return buyRepository.getBuyPageByBuyId(user.getUserId(), buyId);
     }
 
