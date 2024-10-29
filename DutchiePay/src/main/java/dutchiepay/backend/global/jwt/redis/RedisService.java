@@ -12,11 +12,11 @@ public class RedisService {
     private long refreshTokenExpiration;
     @Value("${jwt.access.token.expiration}")
     private long accessTokenExpiration;
-    private final RedisRepository redisRepository;
+    private final RefreshRepository refreshRepository;
     private final AccessRepository accessRepository;
 
     public void saveToken(Long userId, String refreshToken) {
-        redisRepository.save(RefreshToken.builder()
+        refreshRepository.save(RefreshToken.builder()
                 .userId(userId)
                 .refresh(refreshToken)
                 .expiration(refreshTokenExpiration)
