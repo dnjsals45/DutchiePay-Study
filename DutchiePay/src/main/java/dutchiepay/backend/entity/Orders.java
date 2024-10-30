@@ -45,6 +45,9 @@ public class Orders extends Auditing {
     @Column(length = 15, nullable = false)
     private String payment;
 
+    @Column
+    private String tid;
+
     @Column(nullable = false)
     private LocalDateTime orderedAt;
 
