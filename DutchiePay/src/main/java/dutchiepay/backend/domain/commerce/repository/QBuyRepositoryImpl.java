@@ -308,13 +308,14 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .fetch();
 
         List<GetProductReviewResponseDto.ReviewDto> reviews = new ArrayList<>();
+
         for (Tuple tuple : result) {
             GetProductReviewResponseDto.ReviewDto reviewDto = GetProductReviewResponseDto.ReviewDto.builder()
                     .reviewId(tuple.get(0, Long.class))
                     .nickname(tuple.get(1, String.class))
                     .content(tuple.get(2, String.class))
                     .rating(tuple.get(3, Integer.class))
-                    .reviewImg(tuple.get(4, String.class))
+                    .reviewImg(tuple.get(4, String.class) != null ? tuple.get(4, String.class).split(",") : new String[0])
                     .createdAt(tuple.get(5, LocalDateTime.class))
                     .build();
 
