@@ -77,7 +77,7 @@ jwt:
       key: ${JWT_REFRESH_KEY}
   access:
     token:
-      expiration: 1800000  # 30분
+      expiration: 604800000  # 7일 (30분 : 1800000)
   refresh:
     token:
       expiration: 604800000  # 7일
