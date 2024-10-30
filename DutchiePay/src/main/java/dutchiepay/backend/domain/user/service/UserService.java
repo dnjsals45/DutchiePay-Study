@@ -14,10 +14,12 @@ import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -43,6 +45,7 @@ public class UserService {
     private final OAuth2AuthorizedClientService oauthService;
     private final AccessTokenBlackListService accessTokenBlackListService;
     private final JwtUtil jwtUtil;
+    private final RedisService redisService;
 
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
@@ -71,7 +74,7 @@ public class UserService {
     public void logout(Long userId, String accessToken) {
         User user = userUtilService.findById(userId);
 
-        accessTokenBlackListService.addBlackList(accessToken);
+        redisService.addBlackList(userId, accessToken);
         user.deleteRefreshToken();
         userRepository.save(user);
     }
@@ -206,23 +209,17 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteOauthUser(UserDetailsImpl userDetails) {
+    public void deleteOauthUser(HttpServletRequest request, UserDetailsImpl userDetails) {
         userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
+        redisService.addBlackList(userDetails.getUserId(), request.getHeader("Authorization"));
+
     }
 
     @Transactional
     public void deleteUser(UserDetailsImpl userDetails) {
         userRepository.findByEmailAndOauthProviderIsNull(userDetails.getEmail())
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
-    }
-
-    public UserLoginResponseDto userInfo(UserDetailsImpl userDetails) {
-        User user = userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(),
-                userDetails.getEmail())
-            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-
-        return UserLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()));
     }
 
     public UserReLoginResponseDto reLogin(String refreshToken) {

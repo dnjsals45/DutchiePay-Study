@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AccessRepository extends CrudRepository<ATBlackList, Long> {
+    ATBlackList findByAccess(String accessToken);
 }

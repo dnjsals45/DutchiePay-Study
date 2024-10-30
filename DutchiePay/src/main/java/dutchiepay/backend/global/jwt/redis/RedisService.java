@@ -1,5 +1,7 @@
 package dutchiepay.backend.global.jwt.redis;
 
+import dutchiepay.backend.domain.user.exception.UserErrorCode;
+import dutchiepay.backend.domain.user.exception.UserErrorException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,5 +31,16 @@ public class RedisService {
                 .access(accessToken)
                 .expiration(accessTokenExpiration)
                 .build());
+    }
+
+    public boolean isTokenBlackListed(String accessToken) {
+        return accessRepository.findByAccess(accessToken) != null;
+    }
+
+    public String getRefreshToken(Long userId) {
+
+        return refreshRepository.findById(userId)
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND))
+                .getRefresh();
     }
 }
