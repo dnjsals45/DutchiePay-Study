@@ -61,11 +61,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         // refresh token 발급 후 저장
         String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
         redisService.saveToken(user.getUserId(), refreshToken);
-//        user.createRefreshToken(refreshToken);
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
-        System.out.println("access: " + accessToken);
-        System.out.println("refresh: " + refreshToken);
 
         String data = "   \"userId\": " + user.getUserId() + ",\n" +
                 "   \"type\": " + user.getOauthProvider() + ",\n" +
