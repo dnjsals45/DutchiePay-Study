@@ -3,6 +3,7 @@ package dutchiepay.backend.global.config;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.domain.user.service.AccessTokenBlackListService;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationEntryPoint;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
@@ -41,8 +42,8 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final UserDetailsServiceImpl userDetailsService;
-    private final AccessTokenBlackListService accessTokenBlackListService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final RedisService redisService;
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
@@ -62,7 +63,6 @@ public class SecurityConfig {
         "/health",
         "/commerce/asks",
         "/commerce/review",
-        "/commerce/asks",
         "/commerce/addition"
     };
 
@@ -92,8 +92,7 @@ public class SecurityConfig {
     //jwt 검증
     @Bean
     public JwtVerificationFilter jwtVerificationFilter() {
-        return new JwtVerificationFilter(jwtUtil, userRepository, userDetailsService,
-            accessTokenBlackListService);
+        return new JwtVerificationFilter(jwtUtil, userDetailsService, redisService);
     }
 
     @Bean
@@ -122,7 +121,7 @@ public class SecurityConfig {
 //                UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
             .addFilterBefore(
-                new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder()),
+                new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),
                 UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(exception ->
                 exception

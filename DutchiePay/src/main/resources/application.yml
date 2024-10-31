@@ -56,6 +56,11 @@ spring:
     show-sql: true
   cors:
     allowed-origins: ${CORS_ORIGIN}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
