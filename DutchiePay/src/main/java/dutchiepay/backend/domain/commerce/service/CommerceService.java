@@ -15,7 +15,6 @@ import dutchiepay.backend.domain.order.repository.AskRepository;
 import dutchiepay.backend.domain.order.repository.LikesRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.*;
-import dutchiepay.backend.global.converter.BuyCategoryConverter;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
