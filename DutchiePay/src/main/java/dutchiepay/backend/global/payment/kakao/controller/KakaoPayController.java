@@ -1,26 +1,43 @@
 package dutchiepay.backend.global.payment.kakao.controller;
 
-import dutchiepay.backend.global.payment.kakao.dto.ApproveRequestDto;
+import dutchiepay.backend.global.payment.kakao.dto.ApproveResponseDto;
 import dutchiepay.backend.global.payment.kakao.dto.ReadyRequestDto;
 import dutchiepay.backend.global.payment.kakao.service.KakaoPayService;
+import dutchiepay.backend.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/pay/kakao")
 @RequiredArgsConstructor
+@Slf4j
 public class KakaoPayController {
+    private final String PAYMENT_APPROVE_STATUS = "PAYMENT_APPROVED";
+    private final String PAYMENT_CANCEL_STATUS = "PAYMENT_CANCELED";
+    private final String PAYMENT_FAIL_STATUS = "PAYMENT_FAILED";
     private final KakaoPayService kakaoPayService;
 
-    @GetMapping("/ready")
-    public ResponseEntity<?> ready(@RequestBody ReadyRequestDto dto) {
-        return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(dto));
+    @PostMapping("/ready")
+    public ResponseEntity<?> ready(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                   @RequestBody ReadyRequestDto req) {
+        return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(userDetails.getUser(), req));
     }
 
     @GetMapping("/approve")
-    public ResponseEntity<?> approve(@RequestParam("pg_token") String pgToken, @RequestBody ApproveRequestDto req) {
-        return ResponseEntity.ok().body(kakaoPayService.kakaoPayApprove(pgToken, req));
+    public void approve(HttpServletResponse response,
+                        @RequestParam("pg_token") String pgToken,
+                        @RequestParam("orderNum") String orderNum) throws IOException {
+        ApproveResponseDto result = kakaoPayService.kakaoPayApprove(pgToken, orderNum);
+
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write(kakaoPayService.makeApproveHtml(orderNum, result.getAmount().getTotal(), PAYMENT_APPROVE_STATUS));
+        response.getWriter().flush();
     }
 
     @GetMapping("/cancel")

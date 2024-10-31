@@ -67,4 +67,9 @@ public class Orders extends Auditing {
     public void cancelPurchase() {
         this.state = "주문취소";
     }
+
+    public void readyPurchase(String tid) {
+        this.tid = tid;
+        this.state = "결제준비";
+    }
 }

@@ -3,6 +3,8 @@ package dutchiepay.backend.global.payment.kakao.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Date;
+
 @Getter
 @AllArgsConstructor
 public class ApproveResponseDto {
@@ -17,8 +19,8 @@ public class ApproveResponseDto {
     private CardInfo cardInfo;
     private String item_name;
     private Integer quantity;
-    private Integer created_at;
-    private Integer approved_at;
+    private Date created_at;
+    private Date approved_at;
     private String payload;
 
     @Getter

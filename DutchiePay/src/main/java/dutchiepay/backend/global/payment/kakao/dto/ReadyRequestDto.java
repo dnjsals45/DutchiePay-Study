@@ -7,8 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReadyRequestDto {
-    private String partnerOrderId;
-    private String partnerUserId;
+    private Long buyId;
     private String itemName;
     private Integer quantity;
     private Integer totalAmount;

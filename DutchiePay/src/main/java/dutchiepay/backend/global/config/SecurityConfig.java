@@ -64,7 +64,9 @@ public class SecurityConfig {
         "/commerce/review",
         "/commerce/asks",
         "/commerce/addition",
-        "/pay/kakao/**"
+        "/pay/kakao/approve",
+        "/pay/kakao/fail",
+        "/pay/kakao/cancel"
     };
 
     private final String[] readOnlyUrl = {
