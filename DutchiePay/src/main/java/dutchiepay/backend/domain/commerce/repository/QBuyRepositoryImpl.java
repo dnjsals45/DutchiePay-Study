@@ -3,7 +3,6 @@ package dutchiepay.backend.domain.commerce.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -235,14 +234,18 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         product.discountPercent,
                         buy.skeleton,
                         buy.nowCount,
-                        buy.deadline,
-                        likes.count().gt(0L).as("isLiked"))
+                        buy.deadline)
                 .from(buy)
                 .join(buy.product, product)
                 .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
-                .leftJoin(category).on(buyCategory.category.eq(category))
-                .leftJoin(likes).on(likes.buy.eq(buy).and(likes.user.eq(user)))
-                .where(conditions)
+                .leftJoin(category).on(buyCategory.category.eq(category));
+
+        if (user != null) {
+            query.leftJoin(likes).on(likes.buy.eq(buy).and(likes.user.eq(user)))
+                    .select(likes.count().gt(0L).as("isLiked"));
+        }
+
+        query.where(conditions)
                 .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,
                         product.salePrice, product.discountPercent, buy.skeleton, buy.nowCount, buy.deadline)
                 .limit(limit + 1);
@@ -263,7 +266,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 break;
             }
 
-            GetBuyListResponseDto.ProductDto dto = GetBuyListResponseDto.ProductDto.builder()
+            GetBuyListResponseDto.ProductDto.ProductDtoBuilder dtoBuilder = GetBuyListResponseDto.ProductDto.builder()
                     .buyId(result.get(0, Long.class))
                     .productName(result.get(1, String.class))
                     .productImg(result.get(2, String.class))
@@ -272,11 +275,12 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                     .discountPercent(result.get(5, Integer.class))
                     .skeleton(result.get(6, Integer.class))
                     .nowCount(result.get(7, Integer.class))
-                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)))
-                    .isLiked(result.get(9, Boolean.class))
-                    .build();
+                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)));
 
-            products.add(dto);
+            if (user != null) {
+                dtoBuilder.isLiked(result.get(9, Boolean.class));
+            }
+            products.add(dtoBuilder.build());
             count++;
         }
 

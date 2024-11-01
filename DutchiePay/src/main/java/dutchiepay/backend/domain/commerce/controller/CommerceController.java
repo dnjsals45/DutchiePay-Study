@@ -4,13 +4,16 @@ import dutchiepay.backend.domain.commerce.dto.AddEntityDto;
 import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
 import dutchiepay.backend.domain.commerce.service.CommerceService;
 import dutchiepay.backend.domain.commerce.dto.BuyAskResponseDto;
+import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,13 +30,19 @@ public class CommerceController {
     @Operation(summary = "공동구매 리스트 조회(구현중)")
     @GetMapping(value = "/list")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<?> getBuyList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                        @RequestParam("filter") String filter,
+    public ResponseEntity<?> getBuyList(@RequestParam("filter") String filter,
                                         @RequestParam(value = "category", required = false) String category,
                                         @RequestParam("end") int end,
                                         @RequestParam(value = "cursor", required = false) Long cursor,
                                         @RequestParam("limit") int limit) {
-        return ResponseEntity.ok().body(commerceService.getBuyList(userDetails.getUser(), filter, category, end, cursor, limit));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl userDetails) {
+            user = userDetails.getUser();
+        }
+
+        return ResponseEntity.ok().body(commerceService.getBuyList(user, filter, category, end, cursor, limit));
     }
 
     @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
