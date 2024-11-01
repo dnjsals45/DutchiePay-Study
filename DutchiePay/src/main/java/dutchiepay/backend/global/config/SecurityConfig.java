@@ -1,14 +1,12 @@
 package dutchiepay.backend.global.config;
 
 import dutchiepay.backend.domain.user.repository.UserRepository;
-import dutchiepay.backend.domain.user.service.AccessTokenBlackListService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationEntryPoint;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
-//import dutchiepay.backend.global.security.NicknameQueryParamFilter;
 import dutchiepay.backend.global.security.UserDetailsServiceImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
