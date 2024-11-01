@@ -63,17 +63,16 @@ public class CommerceController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "상품 문의내역 조회(구현중)")
+    @Operation(summary = "상품 문의내역 조회(구현 완료)")
     @GetMapping("/asks")
     @PreAuthorize("permitAll()")
     public ResponseEntity<List<BuyAskResponseDto>> getBuyAsks(@RequestParam("buyId") Long buyId,
-                                                              Pageable pageable) {
-        return ResponseEntity.ok(commerceService.getBuyAsks(buyId, pageable).getContent()
-                .stream().map(BuyAskResponseDto::toDto)
-                .collect(Collectors.toList()));
+                                                              @RequestParam("page") int page,
+                                                              @RequestParam("limit") int limit) {
+        return ResponseEntity.ok(commerceService.getBuyAsks(buyId, page, limit));
     }
 
-    @Operation(summary = "결제 정보 불러오기(구현중)")
+    @Operation(summary = "결제 정보 불러오기(구현 완료)")
     @GetMapping("/delivery")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buyId") Long buyId) {
