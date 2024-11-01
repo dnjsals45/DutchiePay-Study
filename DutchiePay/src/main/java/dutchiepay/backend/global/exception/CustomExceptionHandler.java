@@ -3,6 +3,7 @@ package dutchiepay.backend.global.exception;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.delivery.exception.DeliveryErrorException;
 import dutchiepay.backend.domain.order.exception.OrdersErrorException;
+import dutchiepay.backend.domain.order.exception.ReviewErrorException;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,13 @@ public class CustomExceptionHandler {
         log.warn("handleCommerceException : {}", e.getMessage());
         final ErrorMessage message = ErrorMessage.of(e.getMessage());
         return ResponseEntity.status(e.getCommerceErrorCode().getHttpStatus()).body(message);
+    }
+
+    @ExceptionHandler(ReviewErrorException.class)
+    protected ResponseEntity<?> handleReviewErrorException(ReviewErrorException e) {
+        log.warn("handleReviewErrorException : {}", e.getMessage());
+        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        return ResponseEntity.status(e.getReviewErrorCode().getHttpStatus()).body(message);
     }
 
     /**
