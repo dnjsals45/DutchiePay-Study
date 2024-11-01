@@ -64,11 +64,11 @@ public class ProfileController {
         return ResponseEntity.ok().body(profileService.getMyReviews(userDetails.getUser()));
     }
 
-    @Operation(summary = "후기 1개 조회 (구현 완료)")
+    @Operation(summary = "후기 1개 조회 (구현 완료)", description = "reviewId 입력하지 않을 시 내가 쓴 후기 전체 조회")
     @GetMapping(value = "/reviews", params = "reviewId")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getOneReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                         @RequestParam(name = "reviewId") Long reviewId) {
+                                         @RequestParam(name = "reviewId", required = false) Long reviewId) {
         return ResponseEntity.ok().body(profileService.getOneReview(userDetails.getUser(), reviewId));
     }
 
