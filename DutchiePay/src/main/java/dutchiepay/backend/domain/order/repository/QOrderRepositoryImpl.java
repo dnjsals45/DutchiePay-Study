@@ -15,20 +15,20 @@ public class QOrderRepositoryImpl implements QOrderRepository{
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    QOrder orders = QOrder.order;
+    QOrder order = QOrder.order;
     QBuy buy = QBuy.buy;
 
     @Override
     public Long countByUserPurchase(User user, String state) {
         return jpaQueryFactory
-                .select(orders.count())
-                .from(orders)
-                .join(orders.buy, buy)
-                .where(orders.user.eq(user))
-                .where(orders.state.eq(state))
-                .where(orders.deletedAt.isNull())
+                .select(order.count())
+                .from(order)
+                .join(order.buy, buy)
+                .where(order.user.eq(user))
+                .where(order.state.eq(state))
+                .where(order.deletedAt.isNull())
                 .where(buy.deletedAt.isNull())
-                .orderBy(orders.createdAt.desc())
+                .orderBy(order.createdAt.desc())
                 .fetchOne();
     }
 }
