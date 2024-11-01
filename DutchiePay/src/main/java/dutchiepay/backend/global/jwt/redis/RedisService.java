@@ -43,4 +43,12 @@ public class RedisService {
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND))
                 .getRefresh();
     }
+
+    public Long findUserIdFromRefreshToken(String refresh) {
+        System.out.println("findUserIdFromRefreshToken");
+        RefreshToken refreshToken = refreshRepository.findByRefresh(refresh)
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
+        System.out.println(refreshToken.getUserId());
+        return refreshToken.getUserId();
+    }
 }
