@@ -1,6 +1,9 @@
 package dutchiepay.backend.domain.profile.service;
 
-import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
+import dutchiepay.backend.domain.order.exception.OrdersErrorCode;
+import dutchiepay.backend.domain.order.exception.OrdersErrorException;
+import dutchiepay.backend.domain.order.exception.ReviewErrorCode;
+import dutchiepay.backend.domain.order.exception.ReviewErrorException;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
@@ -72,15 +75,20 @@ public class ProfileService {
 
     @Transactional
     public void createReview(User user, CreateReviewRequestDto req) {
-        Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
+        Orders order = ordersRepository.findById(req.getOrderId())
+                .orElseThrow(() -> new OrdersErrorException(OrdersErrorCode.INVALID_ORDER));
 
         if (user != order.getUser()) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
         }
 
+        if (reviewRepository.existsByUserAndOrder(user, order)) {
+            throw new ReviewErrorException(ReviewErrorCode.ALREADY_EXIST);
+        }
+
         Review newReview = Review.builder()
                 .user(user)
-                .buy(order.getBuy())
+                .order(order)
                 .contents(req.getContent())
                 .rating(req.getRating())
                 .build();
