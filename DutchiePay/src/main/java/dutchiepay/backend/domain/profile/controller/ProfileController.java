@@ -53,9 +53,8 @@ public class ProfileController {
     @Operation(summary = "좋아요 누른 상품 조회 (구현 완료)")
     @GetMapping("/like")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> myLike(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                    @RequestParam(name = "category") String category) {
-        return ResponseEntity.ok().body(profileService.getMyLike(userDetails.getUser(), category));
+    public ResponseEntity<?> myLike(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok().body(profileService.getMyLike(userDetails.getUser()));
     }
 
     @Operation(summary = "내가 쓴 후기 조회 (구현 완료)")

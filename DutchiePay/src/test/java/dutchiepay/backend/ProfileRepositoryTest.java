@@ -282,8 +282,8 @@ class ProfileRepositoryTest {
 
 
         // when
-        List<GetMyLikesResponseDto> result = profileRepository.getMyLike(user, "디지털/가전");
-        
+        List<GetMyLikesResponseDto> result = profileRepository.getMyLike(user);
+
         // then
         GetMyLikesResponseDto likeResult = result.get(0);
         System.out.println("카테고리 = " + likeResult.getCategory());

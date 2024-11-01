@@ -46,12 +46,8 @@ public class ProfileService {
     }
 
 
-    public List<GetMyLikesResponseDto> getMyLike(User user, String category) {
-        if (!BuyCategoryEnum.isExist(category)) {
-            throw new ProfileErrorException(ProfileErrorCode.INVALID_CATEGORY);
-        }
-
-        return profileRepository.getMyLike(user, category);
+    public List<GetMyLikesResponseDto> getMyLike(User user) {
+        return profileRepository.getMyLike(user);
     }
 
     public List<GetMyReviewResponseDto> getMyReviews(User user) {
