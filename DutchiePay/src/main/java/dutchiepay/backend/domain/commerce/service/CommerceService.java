@@ -75,7 +75,7 @@ public class CommerceService {
             throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
         }
 
-        return buyRepository.getBuyPageByBuyId(user.getUserId(), buyId);
+        return buyRepository.getBuyPageByBuyId(user, buyId);
     }
 
     public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {

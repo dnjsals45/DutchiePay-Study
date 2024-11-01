@@ -44,7 +44,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     QCategory category = QCategory.category;
 
     @Override
-    public GetBuyResponseDto getBuyPageByBuyId(Long userId, Long buyId) {
+    public GetBuyResponseDto getBuyPageByBuyId(User user, Long buyId) {
         Tuple result = jpaQueryFactory
                 .select(
                         product.productName,
@@ -64,12 +64,12 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                                 .select(likes.count())
                                 .from(likes)
                                 .where(likes.buy.buyId.eq(buyId)),
-                        JPAExpressions
+                        user != null ? JPAExpressions
                                 .selectOne()
                                 .from(likes)
-                                .where(likes.user.userId.eq(userId)
+                                .where(likes.user.eq(user)
                                         .and(likes.buy.buyId.eq(buyId)))
-                                .exists(),
+                                .exists() : null,
                         JPAExpressions
                                 .select(review.count())
                                 .from(review)
@@ -135,7 +135,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .nowCount(result.get(11, Integer.class))
                 .deadline(result.get(12, LocalDate.class))
                 .likeCount(result.get(13, Long.class))
-                .isLiked(result.get(14, Boolean.class))
+                .isLiked(user != null ? result.get(14, Boolean.class) : null)
                 .reviewCount(result.get(15, Long.class))
                 .askCount(result.get(16, Long.class))
                 .ratingCount(ratingCount)

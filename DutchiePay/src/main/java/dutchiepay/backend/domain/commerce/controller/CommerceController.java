@@ -48,9 +48,15 @@ public class CommerceController {
     @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
     @GetMapping(value = "", params = "buyId")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getBuyPage(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                        @RequestParam("buyId") Long buyId) {
-        return ResponseEntity.ok().body(commerceService.getBuyPage(userDetails.getUser(), buyId));
+    public ResponseEntity<?> getBuyPage(@RequestParam("buyId") Long buyId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        User user = null;
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl userDetails) {
+            user = userDetails.getUser();
+        }
+
+        return ResponseEntity.ok().body(commerceService.getBuyPage(user, buyId));
     }
 
     @Operation(summary = "상품 후기 조회(구현중)")
