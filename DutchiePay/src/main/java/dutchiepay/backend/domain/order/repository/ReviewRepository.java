@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.order.repository;
 
+import dutchiepay.backend.entity.Orders;
 import dutchiepay.backend.entity.Review;
 import dutchiepay.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Modifying
     @Query("update Review r set r.deletedAt = current_timestamp where r = ?1")
     void softDelete(Review review);
+
+    boolean existsByUserAndOrder(User user, Orders order);
 }
