@@ -15,7 +15,6 @@ import dutchiepay.backend.domain.order.repository.AskRepository;
 import dutchiepay.backend.domain.order.repository.LikesRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.*;
-import dutchiepay.backend.global.converter.BuyCategoryConverter;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +71,10 @@ public class CommerceService {
 
 
     public GetBuyResponseDto getBuyPage(User user, Long buyId) {
+        if (!buyRepository.existsById(buyId)) {
+            throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
+        }
+
         return buyRepository.getBuyPageByBuyId(user.getUserId(), buyId);
     }
 
@@ -79,11 +82,11 @@ public class CommerceService {
         return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
     }
 
-    public GetProductReviewResponseDto getProductReview(Long productId, Long photo, Long page, Long limit) {
-        if (!productRepository.existsById(productId)) {
+    public GetProductReviewResponseDto getProductReview(Long buyId, Long photo, Long page, Long limit) {
+        if (!buyRepository.existsById(buyId)) {
             throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
         }
-        return buyRepository.getProductReview(productId, photo, PageRequest.of(page.intValue() - 1, limit.intValue()));
+        return buyRepository.getProductReview(buyId, photo, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 
     /**
