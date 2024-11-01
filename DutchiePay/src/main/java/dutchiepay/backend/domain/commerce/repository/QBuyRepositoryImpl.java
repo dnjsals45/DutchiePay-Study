@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -76,7 +75,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         JPAExpressions
                                 .select(review.count())
                                 .from(review)
-                                .where(review.buy.buyId.eq(buyId)),
+                                .where(review.order.buy.buyId.eq(buyId)),
                         JPAExpressions
                                 .select(ask.count())
                                 .from(ask)
@@ -307,7 +306,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         review.createdAt)
                 .from(review)
                 .join(review.user, user)
-                .join(review.buy, buy)
+                .join(review.order.buy, buy)
                 .where(buy.buyId.eq(buyId))
                 .where(photoCondition(photo))
                 .orderBy(review.createdAt.desc())
@@ -333,7 +332,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         Double avgRating = jpaQueryFactory
                 .select(review.rating.avg())
                 .from(review)
-                .join(review.buy, buy)
+                .join(review.order.buy, buy)
                 .where(buy.buyId.eq(buyId))
                 .fetchOne();
 
