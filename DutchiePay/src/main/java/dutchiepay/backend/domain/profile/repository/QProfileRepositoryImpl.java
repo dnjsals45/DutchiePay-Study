@@ -41,8 +41,8 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     QBuy buy = QBuy.buy;
     QProduct product = QProduct.product;
     QScore score = QScore.score;
-    QLikes like = QLikes.likes;
-    QOrders orders = QOrders.orders;
+    QLike like = QLike.like;
+    QOrder orders = QOrder.order;
     QStore store = QStore.store;
     QFree free = QFree.free;
     QComment comment = QComment.comment;

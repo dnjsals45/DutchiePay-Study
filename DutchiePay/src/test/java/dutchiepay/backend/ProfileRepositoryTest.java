@@ -1,11 +1,10 @@
 package dutchiepay.backend;
 
-import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
 import dutchiepay.backend.domain.commerce.repository.*;
 import dutchiepay.backend.domain.coupon.repository.CouponRepository;
 import dutchiepay.backend.domain.coupon.repository.UsersCouponRepository;
-import dutchiepay.backend.domain.order.repository.LikesRepository;
-import dutchiepay.backend.domain.order.repository.OrdersRepository;
+import dutchiepay.backend.domain.order.repository.LikeRepository;
+import dutchiepay.backend.domain.order.repository.OrderRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
@@ -45,7 +44,7 @@ class ProfileRepositoryTest {
     private BuyRepository buyRepository;
 
     @Autowired
-    private LikesRepository likesRepository;
+    private LikeRepository likeRepository;
 
     @Autowired
     private ProductRepository productRepository;
@@ -57,7 +56,7 @@ class ProfileRepositoryTest {
     private ScoreRepository scoreRepository;
 
     @Autowired
-    private OrdersRepository ordersRepository;
+    private OrderRepository orderRepository;
 
     @Autowired
     private FreeRepository freeRepository;
@@ -194,7 +193,7 @@ class ProfileRepositoryTest {
         usersCouponRepository.save(users_coupon3);
 
         // 주문
-        Orders orders1 = Orders.builder()
+        Order orders1 = Order.builder()
                 .user(user)
                 .product(product1)
                 .buy(buy1)
@@ -206,7 +205,7 @@ class ProfileRepositoryTest {
                 .state("결제 완료")
                 .amount(2)
                 .build();
-        ordersRepository.save(orders1);
+        orderRepository.save(orders1);
 
         // when
         MyPageResponseDto dto = profileService.myPage(user);
@@ -263,11 +262,11 @@ class ProfileRepositoryTest {
                 .build();
         buyRepository.save(buy);
 
-        Likes like = Likes.builder()
+        Like like = Like.builder()
                 .user(user)
                 .buy(buy)
                 .build();
-        likesRepository.save(like);
+        likeRepository.save(like);
 
         Score score = Score.builder()
                 .buy(buy)
@@ -366,7 +365,7 @@ class ProfileRepositoryTest {
 
 
         // 주문
-        Orders orders1 = Orders.builder()
+        Order orders1 = Order.builder()
                 .user(user)
                 .product(product1)
                 .buy(buy1)
@@ -380,7 +379,7 @@ class ProfileRepositoryTest {
                 .amount(2)
                 .build();
 
-        Orders orders2 = Orders.builder()
+        Order orders2 = Order.builder()
                 .user(user)
                 .product(product2)
                 .buy(buy2)
@@ -393,8 +392,8 @@ class ProfileRepositoryTest {
                 .state("0")
                 .amount(5)
                 .build();
-        ordersRepository.save(orders1);
-        ordersRepository.save(orders2);
+        orderRepository.save(orders1);
+        orderRepository.save(orders2);
 
         // when
         List<MyGoodsResponseDto> result = profileRepository.getMyGoods(user, PageRequest.of(0, 1));

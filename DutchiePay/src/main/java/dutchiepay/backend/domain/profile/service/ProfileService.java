@@ -1,7 +1,7 @@
 package dutchiepay.backend.domain.profile.service;
 
-import dutchiepay.backend.domain.order.exception.OrdersErrorCode;
-import dutchiepay.backend.domain.order.exception.OrdersErrorException;
+import dutchiepay.backend.domain.order.exception.OrderErrorCode;
+import dutchiepay.backend.domain.order.exception.OrderErrorException;
 import dutchiepay.backend.domain.order.exception.ReviewErrorCode;
 import dutchiepay.backend.domain.order.exception.ReviewErrorException;
 import dutchiepay.backend.domain.order.repository.*;
@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-    private final OrdersRepository ordersRepository;
+    private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
     private final AskRepository askRepository;
     private final ProfileRepository profileRepository;
@@ -75,8 +75,8 @@ public class ProfileService {
 
     @Transactional
     public void createReview(User user, CreateReviewRequestDto req) {
-        Orders order = ordersRepository.findById(req.getOrderId())
-                .orElseThrow(() -> new OrdersErrorException(OrdersErrorCode.INVALID_ORDER));
+        Order order = orderRepository.findById(req.getOrderId())
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
         if (user != order.getUser()) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
@@ -98,7 +98,7 @@ public class ProfileService {
 
     @Transactional
     public void createAsk(User user, CreateAskRequestDto req) {
-        Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
+        Order order = orderRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
 
         if (user != order.getUser()) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);

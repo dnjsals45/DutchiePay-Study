@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public enum OrdersErrorCode implements StatusCode {
+public enum OrderErrorCode implements StatusCode {
     /**
      * 400 BAD_REQUEST
      */

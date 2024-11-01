@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Orders extends Auditing {
+public class Order extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,7 +2,7 @@ package dutchiepay.backend.domain.order.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.entity.QBuy;
-import dutchiepay.backend.entity.QOrders;
+import dutchiepay.backend.entity.QOrder;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ public class QOrderRepositoryImpl implements QOrderRepository{
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    QOrders orders = QOrders.orders;
+    QOrder orders = QOrder.order;
     QBuy buy = QBuy.buy;
 
     @Override

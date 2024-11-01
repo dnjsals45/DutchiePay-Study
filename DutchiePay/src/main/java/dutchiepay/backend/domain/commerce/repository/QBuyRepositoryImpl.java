@@ -37,7 +37,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     QProduct product = QProduct.product;
     QStore store = QStore.store;
     QReview review = QReview.review;
-    QLikes likes = QLikes.likes;
+    QLike like = QLike.like;
     QAsk ask = QAsk.ask;
     QScore score = QScore.score;
     QBuyCategory buyCategory = QBuyCategory.buyCategory;
@@ -61,15 +61,15 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.nowCount,
                         buy.deadline,
                         JPAExpressions
-                                .select(likes.count())
-                                .from(likes)
-                                .where(likes.buy.buyId.eq(buyId)),
+                                .select(like.count())
+                                .from(like)
+                                .where(like.buy.buyId.eq(buyId)),
                         user != null ?
                                 JPAExpressions
                                         .selectOne()
-                                        .from(likes)
-                                        .where(likes.user.eq(user)
-                                                .and(likes.buy.buyId.eq(buyId)))
+                                        .from(like)
+                                        .where(like.user.eq(user)
+                                                .and(like.buy.buyId.eq(buyId)))
                                         .exists()
                                 : Expressions.nullExpression(),
                         JPAExpressions
@@ -172,18 +172,18 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         BooleanExpression cursorCondition = null;
         switch (filter) {
             case "like":
-                orderBy = likes.count().desc();
+                orderBy = like.count().desc();
                 if (cursor < Long.MAX_VALUE) {
                     Long cursorLike = jpaQueryFactory
-                            .select(likes.count())
-                            .from(likes)
-                            .join(likes.buy, buy)
+                            .select(like.count())
+                            .from(like)
+                            .join(like.buy, buy)
                             .where(buy.buyId.eq(cursor))
                             .fetchOne();
 
                     if (cursorLike != null) {
-                        cursorCondition = likes.count().lt(cursorLike)
-                                .or(likes.count().eq(cursorLike))
+                        cursorCondition = like.count().lt(cursorLike)
+                                .or(like.count().eq(cursorLike))
                                 .and(buy.buyId.loe(cursor));
                     }
                 }
@@ -244,8 +244,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .leftJoin(category).on(buyCategory.category.eq(category));
 
         if (user != null) {
-            query.leftJoin(likes).on(likes.buy.eq(buy).and(likes.user.eq(user)))
-                    .select(likes.count().gt(0L).as("isLiked"));
+            query.leftJoin(like).on(like.buy.eq(buy).and(like.user.eq(user)))
+                    .select(like.count().gt(0L).as("isLiked"));
         }
 
         query.where(conditions)

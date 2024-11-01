@@ -26,7 +26,7 @@ public class Refund extends Auditing {
 
     @OneToOne
     @JoinColumn(name = "order_id")
-    private Orders orders;
+    private Order order;
 
     @Column(length = 10, nullable = false)
     private String category;

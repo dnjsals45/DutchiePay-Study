@@ -12,7 +12,7 @@ import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.commerce.repository.CategoryRepository;
 import dutchiepay.backend.domain.commerce.repository.StoreRepository;
 import dutchiepay.backend.domain.order.repository.AskRepository;
-import dutchiepay.backend.domain.order.repository.LikesRepository;
+import dutchiepay.backend.domain.order.repository.LikeRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.*;
 import dutchiepay.backend.global.security.UserDetailsImpl;
@@ -32,7 +32,7 @@ import java.time.LocalDate;
 public class CommerceService {
 
     private final BuyRepository buyRepository;
-    private final LikesRepository likesRepository;
+    private final LikeRepository likeRepository;
     private final AskRepository askRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
@@ -48,11 +48,11 @@ public class CommerceService {
     public void likes(UserDetailsImpl userDetails, Long buyId) {
         Buy buy = buyRepository.findById(buyId)
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
-        Likes likes = likesRepository.findByUserAndBuy(userDetails.getUser(), buy);
-        if (likes == null) {
-            likesRepository.save(Likes.builder().user(userDetails.getUser()).buy(buy).build());
+        Like like = likeRepository.findByUserAndBuy(userDetails.getUser(), buy);
+        if (like == null) {
+            likeRepository.save(Like.builder().user(userDetails.getUser()).buy(buy).build());
         } else {
-            likesRepository.delete(likes);
+            likeRepository.delete(like);
         }
     }
 

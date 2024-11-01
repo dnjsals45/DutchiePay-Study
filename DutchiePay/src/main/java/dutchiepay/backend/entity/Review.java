@@ -24,7 +24,7 @@ public class Review extends Auditing {
     //공구게시글 ID
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Orders order;
+    private Order order;
 
     //내용
     @Column(nullable = false, length = 1000)

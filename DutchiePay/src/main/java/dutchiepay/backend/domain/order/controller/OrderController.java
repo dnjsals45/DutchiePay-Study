@@ -3,7 +3,7 @@ package dutchiepay.backend.domain.order.controller;
 import dutchiepay.backend.domain.order.dto.CancelPurchaseRequestDto;
 import dutchiepay.backend.domain.order.dto.ConfirmPurchaseRequestDto;
 import dutchiepay.backend.domain.order.dto.ExchangeRequestDto;
-import dutchiepay.backend.domain.order.service.OrdersService;
+import dutchiepay.backend.domain.order.service.OrderService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -16,15 +16,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-public class OrdersController {
-    private final OrdersService ordersService;
+public class OrderController {
+    private final OrderService orderService;
 
     @Operation(summary = "환불/교환 신청 (구현 완료)")
     @PostMapping("/exchange")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> applyExchange(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                            @Valid @RequestBody ExchangeRequestDto req) {
-        ordersService.applyExchange(userDetails.getUser(), req);
+        orderService.applyExchange(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
 
@@ -33,7 +33,7 @@ public class OrdersController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> confirmPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @Valid @RequestBody ConfirmPurchaseRequestDto req) {
-        ordersService.confirmPurchase(userDetails.getUser(), req.getOrderId());
+        orderService.confirmPurchase(userDetails.getUser(), req.getOrderId());
         return ResponseEntity.ok().build();
     }
 
@@ -42,7 +42,7 @@ public class OrdersController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> cancelPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                             @Valid @RequestBody CancelPurchaseRequestDto req) {
-        ordersService.cancelPurchase(userDetails.getUser(), req);
+        orderService.cancelPurchase(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
 }
