@@ -48,24 +48,6 @@ public class SecurityConfig {
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
 
-    private final String[] permitAllUrl = {
-        "/users/login",
-        "/users/signup",
-        "/users/pwd",
-        "/users/pwd-nonuser",
-        "/users/auth",
-        "/users/test",
-        "/users/relogin",
-        "/users/reissue",
-        "/users/email",
-        "/oauth/signup",
-        "/image",
-        "/health",
-        "/commerce/asks",
-        "/commerce/review",
-        "/commerce/addition"
-    };
-
     private final String[] readOnlyUrl = {
         "/favicon.ico",
         "/api-docs/**",
@@ -113,12 +95,9 @@ public class SecurityConfig {
                 authorizeHttpRequests
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
-                    .requestMatchers(permitAllUrl).permitAll()
-                    .anyRequest().authenticated())
+                    .anyRequest().permitAll())
             .oauth2Login(oauth2 ->
                 oauth2.successHandler(customOAuth2SuccessHandler))
-//            .addFilterBefore(new NicknameQueryParamFilter(),
-//                UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
             .addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),
