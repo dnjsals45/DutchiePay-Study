@@ -3,6 +3,7 @@ package dutchiepay.backend.domain.commerce.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -45,7 +46,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
     @Override
     public GetBuyResponseDto getBuyPageByBuyId(User user, Long buyId) {
-        Tuple result = jpaQueryFactory
+        JPAQuery<Tuple> query = jpaQueryFactory
                 .select(
                         product.productName,
                         product.productImg,
@@ -64,12 +65,14 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                                 .select(likes.count())
                                 .from(likes)
                                 .where(likes.buy.buyId.eq(buyId)),
-                        user != null ? JPAExpressions
-                                .selectOne()
-                                .from(likes)
-                                .where(likes.user.eq(user)
-                                        .and(likes.buy.buyId.eq(buyId)))
-                                .exists() : null,
+                        user != null ?
+                                JPAExpressions
+                                        .selectOne()
+                                        .from(likes)
+                                        .where(likes.user.eq(user)
+                                                .and(likes.buy.buyId.eq(buyId)))
+                                        .exists()
+                                : Expressions.nullExpression(),
                         JPAExpressions
                                 .select(review.count())
                                 .from(review)
@@ -88,8 +91,9 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .join(buy.product, product)
                 .join(product.store, store)
                 .leftJoin(score).on(score.buy.buyId.eq(buy.buyId))
-                .where(buy.buyId.eq(buyId))
-                .fetchOne();
+                .where(buy.buyId.eq(buyId));
+
+        Tuple result = query.fetchOne();
 
         if (result == null) {
             return null;

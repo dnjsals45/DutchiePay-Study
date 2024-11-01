@@ -47,7 +47,7 @@ public class CommerceController {
 
     @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
     @GetMapping(value = "", params = "buyId")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<?> getBuyPage(@RequestParam("buyId") Long buyId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
