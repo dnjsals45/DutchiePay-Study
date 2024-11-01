@@ -5,6 +5,7 @@ import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ public class OauthController {
 
     @Operation(summary = "소셜 로그인(구현 완료)")
     @GetMapping("/signup")
+    @PreAuthorize("permitAll()")
     public String signup(@RequestParam String type) {
 
         return "redirect:/oauth2/authorization/" + type;
@@ -26,6 +28,7 @@ public class OauthController {
 
     @Operation(summary = "소셜 회원 탈퇴(구현 완료)")
     @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unlink(HttpServletRequest request,
                                  @AuthenticationPrincipal UserDetailsImpl userDetails, @RequestParam String type){
         if (type.equals("kakao")) {

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class CommerceController {
 
     @Operation(summary = "공동구매 리스트 조회(구현중)")
     @GetMapping(value = "/list")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<?> getBuyList(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         @RequestParam("filter") String filter,
                                         @RequestParam(value = "category", required = false) String category,
@@ -36,6 +38,7 @@ public class CommerceController {
 
     @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
     @GetMapping(value = "", params = "buyId")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getBuyPage(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         @RequestParam("buyId") Long buyId) {
         return ResponseEntity.ok().body(commerceService.getBuyPage(userDetails.getUser(), buyId));
@@ -43,6 +46,7 @@ public class CommerceController {
 
     @Operation(summary = "상품 후기 조회(구현중)")
     @GetMapping("/review")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<?> getProductReview(@RequestParam("buyId") Long buyId,
                                               @RequestParam("photo") Long photo,
                                               @RequestParam("page") Long page,
@@ -52,6 +56,7 @@ public class CommerceController {
 
     @Operation(summary = "상품 좋아요 기능(구현중)")
     @PatchMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> likes(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                 @RequestBody Map<String, Long> requestBody) {
         commerceService.likes(userDetails, requestBody.get("buyId"));
@@ -60,6 +65,7 @@ public class CommerceController {
 
     @Operation(summary = "상품 문의내역 조회(구현중)")
     @GetMapping("/asks")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<BuyAskResponseDto>> getBuyAsks(@RequestParam("buyId") Long buyId,
                                                               Pageable pageable) {
         return ResponseEntity.ok(commerceService.getBuyAsks(buyId, pageable).getContent()
@@ -69,11 +75,13 @@ public class CommerceController {
 
     @Operation(summary = "결제 정보 불러오기(구현중)")
     @GetMapping("/delivery")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buyId") Long buyId) {
         return ResponseEntity.ok(commerceService.getPaymentInfo(buyId));
     }
 
     @PostMapping("/addition")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> addEntity(@RequestBody AddEntityDto addEntityDto) {
         commerceService.addEntity(addEntityDto);
         return ResponseEntity.ok().build();
