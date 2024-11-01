@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserReissueRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "액세스 토큰을 입력해주세요.")
     private String access;
 
-    @NotBlank
+    @NotBlank(message = "리프레시 토큰을 입력해주세요.")
     private String refresh;
 }
