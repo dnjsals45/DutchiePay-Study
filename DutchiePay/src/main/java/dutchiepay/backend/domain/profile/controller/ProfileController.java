@@ -140,6 +140,15 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "후기 수정")
+    @PatchMapping("/reviews")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                          @Valid @RequestBody UpdateReviewRequestDto request) {
+        profileService.updateReview(userDetails.getUser(), request);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * DELETE
      */

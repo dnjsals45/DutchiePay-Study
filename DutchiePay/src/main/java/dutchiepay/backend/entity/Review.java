@@ -41,4 +41,11 @@ public class Review extends Auditing {
     //수정 횟수, 최대 2번 가능
     @Column(nullable = false)
     private int updateCount;
+
+    public void update(String content, Integer rating, String reviewImg) {
+        this.contents = content;
+        this.rating = rating;
+        this.reviewImg = reviewImg;
+        this.updateCount++;
+    }
 }

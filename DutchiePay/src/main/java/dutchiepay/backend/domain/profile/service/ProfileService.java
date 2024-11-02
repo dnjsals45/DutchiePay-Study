@@ -14,10 +14,13 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -102,6 +105,7 @@ public class ProfileService {
                 .contents(req.getContent())
                 .rating(req.getRating())
                 .reviewImg(reviewImg)
+                .updateCount(0)
                 .build();
 
         reviewRepository.save(newReview);
@@ -179,5 +183,34 @@ public class ProfileService {
         }
 
         reviewRepository.softDelete(review);
+    }
+
+
+    public void updateReview(User user, UpdateReviewRequestDto req) {
+        StringBuilder sb = new StringBuilder();
+
+        Review review = reviewRepository.findById(req.getReviewId())
+                .orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
+
+        if (review.getUser() != user) {
+            throw new ProfileErrorException(ProfileErrorCode.UPDATE_REVIEW_USER_MISSMATCH);
+        }
+
+        long dayBetween = ChronoUnit.DAYS.between(review.getCreatedAt().toLocalDate(), LocalDate.now());
+        if (dayBetween > 30) {
+            throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_30DAYS);
+        } else if (review.getUpdateCount() == 2) {
+            throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_COUNT);
+        } else {
+            String reviewImg = null;
+            if (req.getReviewImg() != null) {
+                for (String img : req.getReviewImg()) {
+                    sb.append(img).append(",");
+                }
+                reviewImg = sb.substring(0, sb.length() - 1);
+            }
+
+            review.update(req.getContent(), req.getRating(), reviewImg);
+        }
     }
 }
