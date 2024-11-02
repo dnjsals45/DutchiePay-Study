@@ -73,10 +73,6 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                                         .exists()
                                 : Expressions.nullExpression(),
                         JPAExpressions
-                                .select(review.count())
-                                .from(review)
-                                .where(review.order.buy.buyId.eq(buyId)),
-                        JPAExpressions
                                 .select(ask.count())
                                 .from(ask)
                                 .where(ask.buy.buyId.eq(buyId)),
@@ -98,11 +94,26 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             return null;
         }
 
-        Integer one = Optional.ofNullable(result.get(17, Integer.class)).orElse(0);
-        Integer two = Optional.ofNullable(result.get(18, Integer.class)).orElse(0);
-        Integer three = Optional.ofNullable(result.get(19, Integer.class)).orElse(0);
-        Integer four = Optional.ofNullable(result.get(20, Integer.class)).orElse(0);
-        Integer five = Optional.ofNullable(result.get(21, Integer.class)).orElse(0);
+        List<Review> reviews = jpaQueryFactory
+                .selectFrom(review)
+                .where(review.order.buy.buyId.eq(buyId))
+                .fetch();
+
+        long reviewCount = 0;
+        long photoReviewCount = 0;
+
+        for (Review review : reviews) {
+            reviewCount++;
+            if (review.getReviewImg() != null) {
+                photoReviewCount++;
+            }
+        }
+
+        Integer one = Optional.ofNullable(result.get(16, Integer.class)).orElse(0);
+        Integer two = Optional.ofNullable(result.get(17, Integer.class)).orElse(0);
+        Integer three = Optional.ofNullable(result.get(18, Integer.class)).orElse(0);
+        Integer four = Optional.ofNullable(result.get(19, Integer.class)).orElse(0);
+        Integer five = Optional.ofNullable(result.get(20, Integer.class)).orElse(0);
 
         Integer[] ratingCount = new Integer[]{one, two, three, four, five};
 
@@ -139,8 +150,9 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .deadline(result.get(12, LocalDate.class))
                 .likeCount(result.get(13, Long.class))
                 .isLiked(user != null ? result.get(14, Boolean.class) : null)
-                .reviewCount(result.get(15, Long.class))
-                .askCount(result.get(16, Long.class))
+                .reviewCount(reviewCount)
+                .photoReviewCount(photoReviewCount)
+                .askCount(result.get(15, Long.class))
                 .ratingCount(ratingCount)
                 .rating(average)
                 .category(categories)
