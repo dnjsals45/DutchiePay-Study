@@ -147,7 +147,7 @@ public class ProfileController {
     @DeleteMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @RequestParam(name = "reviewid") Long reviewId) {
+                                       @RequestParam(name = "reviewId") Long reviewId) {
         profileService.deleteReview(userDetails.getUser(), reviewId);
         return ResponseEntity.ok().build();
     }
