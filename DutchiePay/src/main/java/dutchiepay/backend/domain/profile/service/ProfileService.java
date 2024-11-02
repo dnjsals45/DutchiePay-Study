@@ -14,7 +14,6 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.*;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -113,7 +112,7 @@ public class ProfileService {
 
     @Transactional
     public void createAsk(User user, CreateAskRequestDto req) {
-        Order order = orderRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
+        Order order = orderRepository.findById(req.getOrderId()).orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
         if (user != order.getUser()) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
