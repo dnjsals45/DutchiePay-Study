@@ -58,7 +58,7 @@ public class Order extends Auditing {
     private int amount;
 
     public void confirmPurchase() {
-        this.state = "주문확정";
+        this.state = "구매확정";
     }
 
     public void cancelPurchase() {
