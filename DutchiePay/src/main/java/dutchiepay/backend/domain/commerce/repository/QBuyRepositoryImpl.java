@@ -115,7 +115,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         Integer four = Optional.ofNullable(result.get(19, Integer.class)).orElse(0);
         Integer five = Optional.ofNullable(result.get(20, Integer.class)).orElse(0);
 
-        Integer[] ratingCount = new Integer[]{one, two, three, four, five};
+        Integer[] ratingCount = new Integer[]{five, four, three, two, one};
 
         double average;
 
