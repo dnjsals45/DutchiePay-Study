@@ -165,7 +165,7 @@ public class ProfileController {
     @DeleteMapping("/asks")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @RequestParam(name = "askid") Long askId) {
+                                       @RequestParam(name = "askId") Long askId) {
         profileService.deleteAsk(userDetails.getUser(), askId);
         return ResponseEntity.ok().build();
     }
