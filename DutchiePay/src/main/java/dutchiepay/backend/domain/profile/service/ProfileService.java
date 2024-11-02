@@ -172,7 +172,7 @@ public class ProfileService {
     }
 
     public void deleteReview(User user, Long reviewId) {
-        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_REVIEW));
+        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
 
         if (review.getUser() != user) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
