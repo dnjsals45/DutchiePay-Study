@@ -1,10 +1,6 @@
 package dutchiepay.backend.domain.commerce.service;
 
-import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
-import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
-import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
-import dutchiepay.backend.domain.commerce.dto.AddEntityDto;
-import dutchiepay.backend.domain.commerce.dto.PaymentInfoResponseDto;
+import dutchiepay.backend.domain.commerce.dto.*;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.commerce.repository.BuyCategoryRepository;
@@ -25,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -60,13 +58,15 @@ public class CommerceService {
      * 상품의 문의 내역 목록을 조회
      * Pagination 구현
      * @param buyId 조회할 상품의 게시글 Id
-     * @param pageable pageable 객체
+     * @param page 페이지
+     * @param limit 한 페이지 개수
      * @return BuyAskResponseDto 문의 내역 dto
      */
-    public Page<Ask> getBuyAsks(Long buyId, Pageable pageable) {
+    public List<BuyAskResponseDto> getBuyAsks(Long buyId, int page, int limit) {
 
         return askRepository.findByBuyAndDeletedAtIsNull(buyRepository.findById(buyId)
-                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)), pageable);
+                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)), PageRequest.of(page, limit))
+                .stream().map(BuyAskResponseDto::toDto).collect(Collectors.toList());
     }
 
 
