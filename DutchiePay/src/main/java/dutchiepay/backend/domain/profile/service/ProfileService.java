@@ -75,6 +75,8 @@ public class ProfileService {
 
     @Transactional
     public void createReview(User user, CreateReviewRequestDto req) {
+        StringBuilder sb  = new StringBuilder();
+
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
@@ -86,11 +88,20 @@ public class ProfileService {
             throw new ReviewErrorException(ReviewErrorCode.ALREADY_EXIST);
         }
 
+        String reviewImg = null;
+        if (req.getReviewImg() != null) {
+            for (String img : req.getReviewImg()) {
+                sb.append(img).append(",");
+            }
+            reviewImg = sb.substring(0, sb.length() - 1);
+        }
+
         Review newReview = Review.builder()
                 .user(user)
                 .order(order)
                 .contents(req.getContent())
                 .rating(req.getRating())
+                .reviewImg(reviewImg)
                 .build();
 
         reviewRepository.save(newReview);
