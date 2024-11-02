@@ -26,7 +26,7 @@ public class GetMyReviewResponseDto {
                 .rating(review.getRating())
                 .content(review.getContents())
                 .createdAt(review.getCreatedAt())
-                .isPossible(true)
+                .isPossible(review.getUpdateCount() != 2)
                 .reviewImg(review.getReviewImg())
                 .build();
     }
