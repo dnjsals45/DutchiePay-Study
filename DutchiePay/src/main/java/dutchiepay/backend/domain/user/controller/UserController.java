@@ -70,7 +70,7 @@ public class UserController {
 
     @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
     @PostMapping("/pwd")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto req) {
         userService.findPassword(req);
         return ResponseEntity.ok().build();
@@ -78,7 +78,7 @@ public class UserController {
 
     @Operation(summary = "비회원 비밀번호 재설정(구현 완료)")
     @PatchMapping("/pwd-nonuser")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> changePasswordNonUser(
         @Valid @RequestBody NonUserChangePasswordRequestDto req) {
         userService.changeNonUserPassword(req);
@@ -103,7 +103,7 @@ public class UserController {
 
     @Operation(summary = "회원가입(구현 완료)")
     @PostMapping("/signup")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
         userService.signup(requestDto);
         return ResponseEntity.ok().build();

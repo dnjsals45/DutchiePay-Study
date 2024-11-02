@@ -1,14 +1,12 @@
 package dutchiepay.backend.global.config;
 
 import dutchiepay.backend.domain.user.repository.UserRepository;
-import dutchiepay.backend.domain.user.service.AccessTokenBlackListService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationEntryPoint;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
-//import dutchiepay.backend.global.security.NicknameQueryParamFilter;
 import dutchiepay.backend.global.security.UserDetailsServiceImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -47,24 +45,6 @@ public class SecurityConfig {
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
-
-    private final String[] permitAllUrl = {
-        "/users/login",
-        "/users/signup",
-        "/users/pwd",
-        "/users/pwd-nonuser",
-        "/users/auth",
-        "/users/test",
-        "/users/relogin",
-        "/users/reissue",
-        "/users/email",
-        "/oauth/signup",
-        "/image",
-        "/health",
-        "/commerce/asks",
-        "/commerce/review",
-        "/commerce/addition"
-    };
 
     private final String[] readOnlyUrl = {
         "/favicon.ico",
@@ -113,12 +93,9 @@ public class SecurityConfig {
                 authorizeHttpRequests
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
-                    .requestMatchers(permitAllUrl).permitAll()
-                    .anyRequest().authenticated())
+                    .anyRequest().permitAll())
             .oauth2Login(oauth2 ->
                 oauth2.successHandler(customOAuth2SuccessHandler))
-//            .addFilterBefore(new NicknameQueryParamFilter(),
-//                UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
             .addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),

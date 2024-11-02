@@ -53,9 +53,8 @@ public class ProfileController {
     @Operation(summary = "좋아요 누른 상품 조회 (구현 완료)")
     @GetMapping("/like")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> myLike(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                    @RequestParam(name = "category") String category) {
-        return ResponseEntity.ok().body(profileService.getMyLike(userDetails.getUser(), category));
+    public ResponseEntity<?> myLike(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok().body(profileService.getMyLike(userDetails.getUser()));
     }
 
     @Operation(summary = "내가 쓴 후기 조회 (구현 완료)")
@@ -65,11 +64,11 @@ public class ProfileController {
         return ResponseEntity.ok().body(profileService.getMyReviews(userDetails.getUser()));
     }
 
-    @Operation(summary = "후기 1개 조회 (구현 완료)")
+    @Operation(summary = "후기 1개 조회 (구현 완료)", description = "reviewId 입력하지 않을 시 내가 쓴 후기 전체 조회")
     @GetMapping(value = "/reviews", params = "reviewId")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getOneReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                         @RequestParam(name = "reviewId") Long reviewId) {
+                                         @RequestParam(name = "reviewId", required = false) Long reviewId) {
         return ResponseEntity.ok().body(profileService.getOneReview(userDetails.getUser(), reviewId));
     }
 
@@ -141,6 +140,15 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "후기 수정")
+    @PatchMapping("/reviews")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                          @Valid @RequestBody UpdateReviewRequestDto request) {
+        profileService.updateReview(userDetails.getUser(), request);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * DELETE
      */
@@ -148,7 +156,7 @@ public class ProfileController {
     @DeleteMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @RequestParam(name = "reviewid") Long reviewId) {
+                                       @RequestParam(name = "reviewId") Long reviewId) {
         profileService.deleteReview(userDetails.getUser(), reviewId);
         return ResponseEntity.ok().build();
     }
@@ -157,7 +165,7 @@ public class ProfileController {
     @DeleteMapping("/asks")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                       @RequestParam(name = "askid") Long askId) {
+                                       @RequestParam(name = "askId") Long askId) {
         profileService.deleteAsk(userDetails.getUser(), askId);
         return ResponseEntity.ok().build();
     }

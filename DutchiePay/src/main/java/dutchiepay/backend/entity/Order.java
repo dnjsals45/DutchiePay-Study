@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Orders extends Auditing {
+public class Order extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +58,7 @@ public class Orders extends Auditing {
     private int amount;
 
     public void confirmPurchase() {
-        this.state = "주문확정";
+        this.state = "구매확정";
     }
 
     public void cancelPurchase() {

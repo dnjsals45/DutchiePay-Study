@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserReLoginRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "리프레쉬 토큰을 입력해주세요.")
     private String refresh;
 }

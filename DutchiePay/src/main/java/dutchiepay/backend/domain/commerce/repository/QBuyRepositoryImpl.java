@@ -3,7 +3,7 @@ package dutchiepay.backend.domain.commerce.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -38,15 +37,15 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     QProduct product = QProduct.product;
     QStore store = QStore.store;
     QReview review = QReview.review;
-    QLikes likes = QLikes.likes;
+    QLike like = QLike.like;
     QAsk ask = QAsk.ask;
     QScore score = QScore.score;
     QBuyCategory buyCategory = QBuyCategory.buyCategory;
     QCategory category = QCategory.category;
 
     @Override
-    public GetBuyResponseDto getBuyPageByBuyId(Long userId, Long buyId) {
-        Tuple result = jpaQueryFactory
+    public GetBuyResponseDto getBuyPageByBuyId(User user, Long buyId) {
+        JPAQuery<Tuple> query = jpaQueryFactory
                 .select(
                         product.productName,
                         product.productImg,
@@ -62,19 +61,17 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.nowCount,
                         buy.deadline,
                         JPAExpressions
-                                .select(likes.count())
-                                .from(likes)
-                                .where(likes.buy.buyId.eq(buyId)),
-                        JPAExpressions
-                                .selectOne()
-                                .from(likes)
-                                .where(likes.user.userId.eq(userId)
-                                        .and(likes.buy.buyId.eq(buyId)))
-                                .exists(),
-                        JPAExpressions
-                                .select(review.count())
-                                .from(review)
-                                .where(review.buy.buyId.eq(buyId)),
+                                .select(like.count())
+                                .from(like)
+                                .where(like.buy.buyId.eq(buyId)),
+                        user != null ?
+                                JPAExpressions
+                                        .selectOne()
+                                        .from(like)
+                                        .where(like.user.eq(user)
+                                                .and(like.buy.buyId.eq(buyId)))
+                                        .exists()
+                                : Expressions.nullExpression(),
                         JPAExpressions
                                 .select(ask.count())
                                 .from(ask)
@@ -89,20 +86,36 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .join(buy.product, product)
                 .join(product.store, store)
                 .leftJoin(score).on(score.buy.buyId.eq(buy.buyId))
-                .where(buy.buyId.eq(buyId))
-                .fetchOne();
+                .where(buy.buyId.eq(buyId));
+
+        Tuple result = query.fetchOne();
 
         if (result == null) {
             return null;
         }
 
-        Integer one = Optional.ofNullable(result.get(17, Integer.class)).orElse(0);
-        Integer two = Optional.ofNullable(result.get(18, Integer.class)).orElse(0);
-        Integer three = Optional.ofNullable(result.get(19, Integer.class)).orElse(0);
-        Integer four = Optional.ofNullable(result.get(20, Integer.class)).orElse(0);
-        Integer five = Optional.ofNullable(result.get(21, Integer.class)).orElse(0);
+        List<Review> reviews = jpaQueryFactory
+                .selectFrom(review)
+                .where(review.order.buy.buyId.eq(buyId))
+                .fetch();
 
-        Integer[] ratingCount = new Integer[]{one, two, three, four, five};
+        long reviewCount = 0;
+        long photoReviewCount = 0;
+
+        for (Review review : reviews) {
+            reviewCount++;
+            if (review.getReviewImg() != null) {
+                photoReviewCount++;
+            }
+        }
+
+        Integer one = Optional.ofNullable(result.get(16, Integer.class)).orElse(0);
+        Integer two = Optional.ofNullable(result.get(17, Integer.class)).orElse(0);
+        Integer three = Optional.ofNullable(result.get(18, Integer.class)).orElse(0);
+        Integer four = Optional.ofNullable(result.get(19, Integer.class)).orElse(0);
+        Integer five = Optional.ofNullable(result.get(20, Integer.class)).orElse(0);
+
+        Integer[] ratingCount = new Integer[]{five, four, three, two, one};
 
         double average;
 
@@ -136,9 +149,10 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .nowCount(result.get(11, Integer.class))
                 .deadline(result.get(12, LocalDate.class))
                 .likeCount(result.get(13, Long.class))
-                .isLiked(result.get(14, Boolean.class))
-                .reviewCount(result.get(15, Long.class))
-                .askCount(result.get(16, Long.class))
+                .isLiked(user != null ? result.get(14, Boolean.class) : null)
+                .reviewCount(reviewCount)
+                .photoReviewCount(photoReviewCount)
+                .askCount(result.get(15, Long.class))
                 .ratingCount(ratingCount)
                 .rating(average)
                 .category(categories)
@@ -170,18 +184,18 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         BooleanExpression cursorCondition = null;
         switch (filter) {
             case "like":
-                orderBy = likes.count().desc();
+                orderBy = like.count().desc();
                 if (cursor < Long.MAX_VALUE) {
                     Long cursorLike = jpaQueryFactory
-                            .select(likes.count())
-                            .from(likes)
-                            .join(likes.buy, buy)
+                            .select(like.count())
+                            .from(like)
+                            .join(like.buy, buy)
                             .where(buy.buyId.eq(cursor))
                             .fetchOne();
 
                     if (cursorLike != null) {
-                        cursorCondition = likes.count().lt(cursorLike)
-                                .or(likes.count().eq(cursorLike))
+                        cursorCondition = like.count().lt(cursorLike)
+                                .or(like.count().eq(cursorLike))
                                 .and(buy.buyId.loe(cursor));
                     }
                 }
@@ -235,14 +249,18 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         product.discountPercent,
                         buy.skeleton,
                         buy.nowCount,
-                        buy.deadline,
-                        likes.count().gt(0L).as("isLiked"))
+                        buy.deadline)
                 .from(buy)
                 .join(buy.product, product)
                 .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
-                .leftJoin(category).on(buyCategory.category.eq(category))
-                .leftJoin(likes).on(likes.buy.eq(buy).and(likes.user.eq(user)))
-                .where(conditions)
+                .leftJoin(category).on(buyCategory.category.eq(category));
+
+        if (user != null) {
+            query.leftJoin(like).on(like.buy.eq(buy).and(like.user.eq(user)))
+                    .select(like.count().gt(0L).as("isLiked"));
+        }
+
+        query.where(conditions)
                 .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,
                         product.salePrice, product.discountPercent, buy.skeleton, buy.nowCount, buy.deadline)
                 .limit(limit + 1);
@@ -263,7 +281,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 break;
             }
 
-            GetBuyListResponseDto.ProductDto dto = GetBuyListResponseDto.ProductDto.builder()
+            GetBuyListResponseDto.ProductDto.ProductDtoBuilder dtoBuilder = GetBuyListResponseDto.ProductDto.builder()
                     .buyId(result.get(0, Long.class))
                     .productName(result.get(1, String.class))
                     .productImg(result.get(2, String.class))
@@ -272,11 +290,12 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                     .discountPercent(result.get(5, Integer.class))
                     .skeleton(result.get(6, Integer.class))
                     .nowCount(result.get(7, Integer.class))
-                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)))
-                    .isLiked(result.get(9, Boolean.class))
-                    .build();
+                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)));
 
-            products.add(dto);
+            if (user != null) {
+                dtoBuilder.isLiked(result.get(9, Boolean.class));
+            }
+            products.add(dtoBuilder.build());
             count++;
         }
 
@@ -299,7 +318,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         review.createdAt)
                 .from(review)
                 .join(review.user, user)
-                .join(review.buy, buy)
+                .join(review.order.buy, buy)
                 .where(buy.buyId.eq(buyId))
                 .where(photoCondition(photo))
                 .orderBy(review.createdAt.desc())
@@ -325,7 +344,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         Double avgRating = jpaQueryFactory
                 .select(review.rating.avg())
                 .from(review)
-                .join(review.buy, buy)
+                .join(review.order.buy, buy)
                 .where(buy.buyId.eq(buyId))
                 .fetchOne();
 
