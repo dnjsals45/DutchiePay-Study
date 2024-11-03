@@ -65,10 +65,6 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                 log.error("토큰이 만료되었습니다: " + e.getMessage());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
-            } catch (Exception e) {
-                log.error("잘못된 토큰입니다: " + e.getMessage() + "  " + e.getCause());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
             }
         }
 
