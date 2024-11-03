@@ -234,7 +234,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 break;
             case "newest":
                 orderBy = buy.buyId.desc();
-                conditions = conditions != null ? conditions.and(buy.buyId.loe(cursor)) : null;
+                conditions = conditions != null ? conditions.and(buy.buyId.loe(cursor)) : buy.buyId.loe(cursor);
                 break;
             default:
                 throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
@@ -249,15 +249,15 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         product.discountPercent,
                         buy.skeleton,
                         buy.nowCount,
-                        buy.deadline)
+                        buy.deadline,
+                        user != null ? like.count().gt(0L) : Expressions.constant(false))
                 .from(buy)
                 .join(buy.product, product)
                 .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
                 .leftJoin(category).on(buyCategory.category.eq(category));
 
         if (user != null) {
-            query.leftJoin(like).on(like.buy.eq(buy).and(like.user.eq(user)))
-                    .select(like.count().gt(0L).as("isLiked"));
+            query.leftJoin(like).on(like.buy.eq(buy).and(like.user.eq(user)));
         }
 
         query.where(conditions)
@@ -290,11 +290,9 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                     .discountPercent(result.get(5, Integer.class))
                     .skeleton(result.get(6, Integer.class))
                     .nowCount(result.get(7, Integer.class))
-                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)));
+                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)))
+                    .isLiked(result.get(9, Boolean.class));
 
-            if (user != null) {
-                dtoBuilder.isLiked(result.get(9, Boolean.class));
-            }
             products.add(dtoBuilder.build());
             count++;
         }
@@ -348,7 +346,15 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .where(buy.buyId.eq(buyId))
                 .fetchOne();
 
-        return GetProductReviewResponseDto.from(avgRating, reviews);
+        Long total = jpaQueryFactory
+                .select(review.count())
+                .from(review)
+                .join(review.order.buy, buy)
+                .where(buy.buyId.eq(buyId))
+                .where(photoCondition(photo))
+                .fetchOne();
+
+        return GetProductReviewResponseDto.from(avgRating, total, reviews);
     }
 
     private int calculateExpireDate(LocalDate deadline) {

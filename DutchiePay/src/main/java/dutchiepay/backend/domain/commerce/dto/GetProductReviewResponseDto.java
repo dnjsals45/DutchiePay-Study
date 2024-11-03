@@ -11,13 +11,13 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetProductReviewResponseDto {
     private Double avg;
-    private Integer total;
+    private Long total;
     private List<ReviewDto> reviews;
 
-    public static GetProductReviewResponseDto from(Double avg, List<ReviewDto> reviews) {
+    public static GetProductReviewResponseDto from(Double avg, Long total, List<ReviewDto> reviews) {
         return GetProductReviewResponseDto.builder()
                 .avg(avg)
-                .total(reviews.size())
+                .total(total)
                 .reviews(reviews)
                 .build();
     }
