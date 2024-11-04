@@ -14,6 +14,7 @@ import dutchiepay.backend.entity.*;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,8 +65,10 @@ public class CommerceService {
      */
     public List<BuyAskResponseDto> getBuyAsks(Long buyId, int page, int limit) {
 
-        return askRepository.findByBuyAndDeletedAtIsNull(buyRepository.findById(buyId)
-                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)), PageRequest.of(page, limit))
+        Buy buy = buyRepository.findById(buyId)
+                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
+        if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
+        return askRepository.findByBuyAndDeletedAtIsNull(buy, PageRequest.of(page, limit))
                 .stream().map(BuyAskResponseDto::toDto).collect(Collectors.toList());
     }
 
@@ -99,7 +102,8 @@ public class CommerceService {
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
         if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
 
-        return PaymentInfoResponseDto.toDto(buy);
+        return PaymentInfoResponseDto.toDto(buy, productRepository.findById(buy.getProduct().getProductId())
+                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)).getStore().getStoreName());
     }
 
     @Transactional
