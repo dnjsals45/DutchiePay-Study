@@ -102,7 +102,8 @@ public class CommerceService {
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
         if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
 
-        return PaymentInfoResponseDto.toDto(buy);
+        return PaymentInfoResponseDto.toDto(buy, productRepository.findById(buy.getProduct().getProductId())
+                .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)).getStore().getStoreName());
     }
 
     @Transactional
