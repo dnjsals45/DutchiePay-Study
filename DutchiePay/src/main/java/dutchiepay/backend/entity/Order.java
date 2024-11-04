@@ -80,4 +80,8 @@ public class Order extends Auditing {
     public void cancelPayment() {
         this.state = "결제취소";
     }
+
+    public void failPayment() {
+        this.state = "결제실패";
+    }
 }

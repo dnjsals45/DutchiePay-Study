@@ -277,4 +277,10 @@ public class KakaoPayService {
     }
 
 
+    public void kakaoPayFail(String orderNum) {
+        Order order = ordersRepository.findByOrderNum(orderNum)
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
+
+        order.failPayment();
+    }
 }

@@ -76,6 +76,7 @@ public class KakaoPayController {
         String status = kakaoPayService.kakaPayCheckStatus(orderNum);
 
         if (status.equals("FAIL_PAYMENT")) {
+            kakaoPayService.kakaoPayFail(orderNum);
             response.setContentType(POST_MESSAGE_CONTENT_TYPE);
             response.getWriter().write(kakaoPayService.makeFailHtml(orderNum, PAYMENT_FAIL_STATUS));
             response.getWriter().flush();
