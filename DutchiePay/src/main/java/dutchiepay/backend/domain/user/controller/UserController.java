@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/users")
 public class UserController {
 
-    private final JwtUtil jwtUtil;
     private final UserService userService;
     private final SmsService smsService;
 
@@ -116,17 +115,16 @@ public class UserController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         HttpServletRequest request) {
 
-        String accessToken = jwtUtil.getJwtFromHeader(request);
-        userService.logout(userDetails.getUserId(), accessToken);
-
+        userService.logout(userDetails.getUserId(), request);
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "회원 탈퇴(추가 수정 필요)", description = "개인정보 삭제 범위, 재가입 불가 구분용 정보 필요")
+    @Operation(summary = "회원 탈퇴(구현 완료)")
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        userService.deleteUser(userDetails);
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                           HttpServletRequest request) {
+        userService.deleteUser(userDetails, request);
         return ResponseEntity.ok().build();
     }
 
