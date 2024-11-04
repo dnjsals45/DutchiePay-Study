@@ -8,6 +8,7 @@ import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,12 +35,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisService redisService;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository,
-        PasswordEncoder passwordEncoder) {
+                                   PasswordEncoder passwordEncoder, RedisService redisService) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.redisService = redisService;
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/users/login", "POST"));
     }
 
@@ -117,10 +120,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
         String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
 
-        user.createRefreshToken(refreshToken);
+        redisService.saveToken(userDetails.getUserId(), refreshToken);
         userRepository.save(user);
 
-        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken));
+        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken, refreshToken));
 
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(

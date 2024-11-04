@@ -1,13 +1,12 @@
 package dutchiepay.backend.global.config;
 
 import dutchiepay.backend.domain.user.repository.UserRepository;
-import dutchiepay.backend.domain.user.service.AccessTokenBlackListService;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationEntryPoint;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
 import dutchiepay.backend.global.security.JwtVerificationFilter;
-//import dutchiepay.backend.global.security.NicknameQueryParamFilter;
 import dutchiepay.backend.global.security.UserDetailsServiceImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -41,33 +40,11 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final UserDetailsServiceImpl userDetailsService;
-    private final AccessTokenBlackListService accessTokenBlackListService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final RedisService redisService;
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
-
-    private final String[] permitAllUrl = {
-        "/users/login",
-        "/users/signup",
-        "/users/pwd",
-        "/users/pwd-nonuser",
-        "/users/auth",
-        "/users/test",
-        "/users/relogin",
-        "/users/reissue",
-        "/users/email",
-        "/oauth/signup",
-        "/image",
-        "/health",
-        "/commerce/asks",
-        "/commerce/review",
-        "/commerce/asks",
-        "/commerce/addition",
-        "/pay/kakao/approve",
-        "/pay/kakao/fail",
-        "/pay/kakao/cancel"
-    };
 
     private final String[] readOnlyUrl = {
         "/favicon.ico",
@@ -95,8 +72,7 @@ public class SecurityConfig {
     //jwt 검증
     @Bean
     public JwtVerificationFilter jwtVerificationFilter() {
-        return new JwtVerificationFilter(jwtUtil, userRepository, userDetailsService,
-            accessTokenBlackListService);
+        return new JwtVerificationFilter(jwtUtil, userDetailsService, redisService);
     }
 
     @Bean
@@ -107,29 +83,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .formLogin(AbstractHttpConfigurer::disable)
-            .logout(AbstractHttpConfigurer::disable)
-            .cors(cors -> corsConfigurationSource())
-            .sessionManagement(sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorizeHttpRequests ->
-                authorizeHttpRequests
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
-                    .requestMatchers(permitAllUrl).permitAll()
-                    .anyRequest().authenticated())
-            .oauth2Login(oauth2 ->
-                oauth2.successHandler(customOAuth2SuccessHandler))
-//            .addFilterBefore(new NicknameQueryParamFilter(),
-//                UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
-            .addFilterBefore(
-                new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder()),
-                UsernamePasswordAuthenticationFilter.class)
-            .exceptionHandling(exception ->
-                exception
-                    .authenticationEntryPoint(authenticationEntryPoint()));
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .cors(cors -> corsConfigurationSource())
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorizeHttpRequests ->
+                        authorizeHttpRequests
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
+                                .anyRequest().permitAll())
+                .oauth2Login(oauth2 ->
+                        oauth2.successHandler(customOAuth2SuccessHandler))
+                .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),
+                        UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(authenticationEntryPoint()));
 
         return http.build();
     }

@@ -25,6 +25,7 @@ public class GetBuyResponseDto {
     private Long likeCount;
     private Boolean isLiked;
     private Long reviewCount;
+    private Long photoReviewCount;
     private Long askCount;
     private Integer[] ratingCount;
     private Double rating;

@@ -41,8 +41,8 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     QBuy buy = QBuy.buy;
     QProduct product = QProduct.product;
     QScore score = QScore.score;
-    QLikes like = QLikes.likes;
-    QOrders orders = QOrders.orders;
+    QLike like = QLike.like;
+    QOrder orders = QOrder.order;
     QStore store = QStore.store;
     QFree free = QFree.free;
     QComment comment = QComment.comment;
@@ -51,7 +51,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
 
     @Override
-    public List<GetMyLikesResponseDto> getMyLike(User user, String categoryName) {
+    public List<GetMyLikesResponseDto> getMyLike(User user) {
         LocalDate now = LocalDate.now();
 
         return jpaQueryFactory
@@ -88,11 +88,9 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .join(like.buy, buy)
                 .join(buy.product, product)
                 .join(buyCategory).on(buyCategory.buy.eq(buy))
-                .join(category).on(buyCategory.category.eq(category))
                 .leftJoin(score).on(score.buy.eq(buy))
                 .where(buy.deletedAt.isNull())
                 .where(like.user.eq(user))
-                .where(categoryEq(categoryName))
                 .orderBy(like.createdAt.desc())
                 .fetch();
     }

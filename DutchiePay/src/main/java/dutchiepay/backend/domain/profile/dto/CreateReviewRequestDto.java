@@ -14,5 +14,5 @@ public class CreateReviewRequestDto {
     private String content;
     @NotBlank(message = "평점을 입력해주세요.")
     private Integer rating;
-    private String reviewImg;
+    private String[] reviewImg;
 }

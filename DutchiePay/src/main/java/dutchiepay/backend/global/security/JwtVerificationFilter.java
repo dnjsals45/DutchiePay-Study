@@ -2,10 +2,8 @@ package dutchiepay.backend.global.security;
 
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
-import dutchiepay.backend.domain.user.repository.UserRepository;
-import dutchiepay.backend.domain.user.service.AccessTokenBlackListService;
-import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -25,9 +23,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final UserDetailsServiceImpl userDetailsService;
-    private final AccessTokenBlackListService accessTokenBlackListService;
+    private final RedisService redisService;
 
     @Override
     protected void doFilterInternal(
@@ -44,9 +41,9 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                 String tokenType = claims.get("tokenType", String.class);
 
                 if ("access".equals(tokenType)) {
-                    if (accessTokenBlackListService.isTokenBlackListed(token)) {
-                        return;
-                    }
+                    if (redisService.isTokenBlackListed(token)) // 블랙리스트 된 토큰이면 ExpiredJwtException 발생
+                        throw new ExpiredJwtException(null, claims, null);
+
                     UserDetailsImpl userDetails = getUserDetails(token);
                     setAuthenticationUser(userDetails, request);
                     filterChain.doFilter(request, response);
@@ -54,15 +51,8 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                 } else if ("refresh".equals(tokenType)) {
                     Long userId = claims.get("userId", Long.class);
 
-                    //날짜 비교 로직 필요X getUserInfoFromToken -> 만료된 토큰 시 ExpiredJwtException 던짐
-                    User user = userRepository.findById(userId).orElseThrow(
-                        () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
-                    );
-
-                    String storedRefreshToken = user.getRefreshToken();
-
                     // 저장된 리프레시 토큰과 일치하는지 확인
-                    if (token.equals(storedRefreshToken)) {
+                    if (token.equals(redisService.getRefreshToken(userId))) {
                         // 새 액세스 토큰 발급
                         String newAccessToken = jwtUtil.createAccessToken(userId);
                         response.addHeader("Authorization", "Bearer " + newAccessToken);
@@ -73,10 +63,6 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
             } catch (ExpiredJwtException e) {
                 log.error("토큰이 만료되었습니다: " + e.getMessage());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            } catch (Exception e) {
-                log.error("잘못된 토큰입니다: " + e.getMessage());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }

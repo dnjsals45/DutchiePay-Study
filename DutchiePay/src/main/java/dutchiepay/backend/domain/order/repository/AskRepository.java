@@ -19,5 +19,5 @@ public interface AskRepository extends JpaRepository<Ask, Long> {
 
     List<Ask> findAllByUser(User user);
 
-    Page<Ask> findByBuyAndDeletedAtIsNull(Buy buy, Pageable pageable);
+    List<Ask> findByBuyAndDeletedAtIsNull(Buy buy, Pageable pageable);
 }

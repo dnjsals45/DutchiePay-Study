@@ -8,6 +8,7 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.JwtUtil;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
@@ -33,6 +34,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final RedisService redisService;
     private static String ENCRYPT_SECRET_KEY;
     private static String ALGORITHM;
 
@@ -58,7 +60,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         // refresh token 발급 후 저장
         String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
-        user.createRefreshToken(refreshToken);
+        redisService.saveToken(user.getUserId(), refreshToken);
 
         String accessToken = jwtUtil.createAccessToken(user.getUserId());
 

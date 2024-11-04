@@ -14,10 +14,12 @@ import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -41,8 +43,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OAuth2AuthorizedClientService oauthService;
-    private final AccessTokenBlackListService accessTokenBlackListService;
     private final JwtUtil jwtUtil;
+    private final RedisService redisService;
 
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
@@ -71,7 +73,7 @@ public class UserService {
     public void logout(Long userId, String accessToken) {
         User user = userUtilService.findById(userId);
 
-        accessTokenBlackListService.addBlackList(accessToken);
+        redisService.addBlackList(userId, accessToken);
         user.deleteRefreshToken();
         userRepository.save(user);
     }
@@ -206,9 +208,11 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteOauthUser(UserDetailsImpl userDetails) {
+    public void deleteOauthUser(HttpServletRequest request, UserDetailsImpl userDetails) {
         userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(), userDetails.getEmail())
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
+        redisService.addBlackList(userDetails.getUserId(), request.getHeader("Authorization"));
+
     }
 
     @Transactional
@@ -217,82 +221,29 @@ public class UserService {
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
     }
 
-    public UserLoginResponseDto userInfo(UserDetailsImpl userDetails) {
-        User user = userRepository.findByOauthProviderAndEmail(userDetails.getOAuthProvider(),
-                userDetails.getEmail())
-            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-
-        return UserLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()));
-    }
-
     public UserReLoginResponseDto reLogin(String refreshToken) {
-        User user = userRepository.findByRefreshToken(refreshToken)
-            .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
+        Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        if (user.getPhone() == null) {
-            return UserReLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()), false);
-        }
-        return UserReLoginResponseDto.toDto(user, reissueAccessToken(user.getUserId()), true);
+        return UserReLoginResponseDto.toDto(user, reissueAccessToken(userId), user.getPhone() != null);
     }
 
-    public String reissueAccessToken(Long userId) {
+    private String reissueAccessToken(Long userId) {
         return jwtUtil.createAccessToken(userId);
     }
 
     @Transactional
     public UserReissueResponseDto reissue(UserReissueRequestDto requestDto) {
+
+        Long userId = redisService.findUserIdFromRefreshToken(requestDto.getRefresh());
+
         String accessToken = requestDto.getAccess();
-        if (!accessTokenBlackListService.isTokenBlackListed(accessToken)) {
-            accessTokenBlackListService.addBlackList(accessToken);
+        if (!redisService.isTokenBlackListed(accessToken)) {
+            redisService.addBlackList(userId, accessToken);
         }
 
-        User user = userRepository.findByRefreshToken(requestDto.getRefresh())
-            .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
-
-        return UserReissueResponseDto.toDto(reissueAccessToken(user.getUserId()));
+        return UserReissueResponseDto.toDto(reissueAccessToken(userId));
     }
 
-
-    @Transactional
-    public String checkToken(String accessToken, String refreshToken) {
-
-        if (accessToken != null && !accessToken.trim().isEmpty()) {
-
-            try {
-                if (accessTokenBlackListService.isTokenBlackListed(accessToken)) {
-                    throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
-                }
-
-                final JwtUtil jwtUtil = new JwtUtil();
-                Claims claims = jwtUtil.getUserInfoFromToken(accessToken);
-
-                return accessToken;
-            } catch (ExpiredJwtException | UserErrorException e) {
-                if (e instanceof ExpiredJwtException) {
-                    accessTokenBlackListService.addBlackList(accessToken);
-                }
-                if (refreshToken == null && refreshToken.trim().isEmpty()) {
-                    throw new UserErrorException(UserErrorCode.INVALID_ACCESS_TOKEN);
-                }
-            }
-
-        } else if (refreshToken != null && !refreshToken.trim().isEmpty()) {
-
-            final JwtUtil jwtUtil = new JwtUtil();
-            Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
-            Long userId = claims.get("userId", Long.class);
-
-            User user = userRepository.findById(userId).orElseThrow(
-                () -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)
-            );
-
-            if (refreshToken.equals(user.getRefreshToken())) {
-                return jwtUtil.createAccessToken(userId);
-            } else {
-                throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
-            }
-
-        }
-        throw new IllegalArgumentException("액세스 토큰 또는 리프레시 토큰이 제공되어야 합니다.");
-    }
 }
