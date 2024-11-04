@@ -72,4 +72,12 @@ public class Order extends Auditing {
         this.tid = tid;
         this.state = "결제준비";
     }
+
+    public void approvePayment() {
+        this.state = "결제완료";
+    }
+
+    public void cancelPayment() {
+        this.state = "결제취소";
+    }
 }

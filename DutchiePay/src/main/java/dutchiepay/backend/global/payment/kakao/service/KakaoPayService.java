@@ -1,10 +1,12 @@
 package dutchiepay.backend.global.payment.kakao.service;
 
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
-import dutchiepay.backend.domain.order.repository.OrdersRepository;
+import dutchiepay.backend.domain.order.exception.OrderErrorCode;
+import dutchiepay.backend.domain.order.exception.OrderErrorException;
+import dutchiepay.backend.domain.order.repository.OrderRepository;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.Buy;
-import dutchiepay.backend.entity.Orders;
+import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.Product;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.payment.kakao.dto.*;
@@ -17,13 +19,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URL;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -32,7 +32,7 @@ public class KakaoPayService {
 
     private final ProductRepository productRepository;
     private final BuyRepository buyRepository;
-    private final OrdersRepository ordersRepository;
+    private final OrderRepository ordersRepository;
     @Value("${host.url}")
     private String host;
 
@@ -42,19 +42,15 @@ public class KakaoPayService {
     @Value("${payment.kakao.secret}")
     private String secretKey;
 
-    private String tid;
-
-    @Transactional
     // 카카오페이 결제를 시작하기 위해 결제정보를 카카오페이 서버에 전달하고 결제 고유번호(TID)와 URL을 응답받는 단계
+    @Transactional
     public ReadyResponseDto kakaoPayReady(User user, ReadyRequestDto req) {
-        String orderNum = "ABCDEF12345";
-
         Product product = productRepository.findByProductName(req.getItemName())
                 .orElseThrow(() -> new IllegalArgumentException("상품명이 존재하지 않습니다."));
         Buy buy = buyRepository.findById(req.getBuyId())
                 .orElseThrow(() -> new IllegalArgumentException("구매 정보가 존재하지 않습니다."));
 
-        Orders newOrder = Orders.builder()
+        Order newOrder = Order.builder()
                 .user(user)
                 .product(product)
                 .buy(buy)
@@ -65,7 +61,7 @@ public class KakaoPayService {
                 .orderedAt(LocalDateTime.now())
                 .state("주문완료")
                 .amount(req.getQuantity())
-                .orderNum(orderNum)
+                .orderNum(generateOrderNumber())
                 .build();
 
         ordersRepository.save(newOrder);
@@ -76,15 +72,15 @@ public class KakaoPayService {
 
         KakaoPayReadyRequest body = KakaoPayReadyRequest.builder()
                 .cid(cid) // 가맹점 코드(테스트용은 TC0ONETIME)
-                .partnerOrderId(orderNum) // 가맹점 주문번호
+                .partnerOrderId(newOrder.getOrderNum()) // 가맹점 주문번호
                 .partnerUserId(user.getNickname()) // 회원 id
                 .itemName(req.getItemName()) // 상품명
                 .quantity(req.getQuantity()) // 수량
                 .totalAmount(req.getTotalAmount()) // 상품 총액
                 .taxFreeAmount(req.getTaxFreeAmount()) // 비과세 금액
-                .approvalUrl(host + "/pay/kakao/approve?orderNum=" + orderNum) // 결제 성공시 redirect url
-                .cancelUrl(host + "/pay/kakao/cancel") // 결제 취소시 redirect url
-                .failUrl(host + "/pay/kakao/fail") // 결제 실패시 redirect url
+                .approvalUrl(host + "/pay/kakao/approve?orderNum=" + newOrder.getOrderNum()) // 결제 성공시 redirect url
+                .cancelUrl(host + "/pay/kakao/cancel?orderNum=" + newOrder.getOrderNum()) // 결제 취소시 redirect url
+                .failUrl(host + "/pay/kakao/fail?orderNum=" + newOrder.getOrderNum()) // 결제 실패시 redirect url
                 .build();
 
         HttpEntity<KakaoPayReadyRequest> requestEntity = new HttpEntity<>(body, httpHeaders);
@@ -105,9 +101,10 @@ public class KakaoPayService {
     // 인증완료 시 응답받은 pg_token과 tid로 최종 승인요청합니다.
     // 결제 승인 API를 호출하면 결제 준비 단계에서 시작된 결제 건이 승인으로 완료 처리됩니다.
     // 결제 승인 요청이 실패하면 카드사 등 결제 수단의 실패 정보가 필요에 따라 포함될 수 있습니다.
+    @Transactional
     public ApproveResponseDto kakaoPayApprove(String pgToken, String orderNum) {
-        Orders order = ordersRepository.findByOrderNum(orderNum)
-                .orElseThrow(() -> new IllegalArgumentException("주문 정보가 존재하지 않습니다."));
+        Order order = ordersRepository.findByOrderNum(orderNum)
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "SECRET_KEY " + secretKey);
@@ -129,10 +126,74 @@ public class KakaoPayService {
                     ApproveResponseDto.class
             );
 
+            order.approvePayment();
+
             return response.getBody();
         } catch (HttpStatusCodeException ex) {
             return null;
         }
+    }
+
+    @Transactional
+    public void kakaoPayCancel(String orderNum) {
+        Order order = ordersRepository.findByOrderNum(orderNum)
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "SECRET_KEY " + secretKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        KakaoPayCancelRequest cancelRequest = KakaoPayCancelRequest.builder()
+                .cid(cid)
+                .tid(order.getTid())
+                .cancelAmount(String.valueOf(order.getTotalPrice()))
+                .cancelTaxFreeAmount("0")
+                .build();
+
+        HttpEntity<KakaoPayCancelRequest> entityMap = new HttpEntity<>(cancelRequest, headers);
+
+        try {
+            ResponseEntity<CancelResponseDto> response = new RestTemplate().postForEntity(
+                    "https://open-api.kakaopay.com/online/v1/payment/cancel",
+                    entityMap,
+                    CancelResponseDto.class
+            );
+
+            order.cancelPayment();
+            log.info("response: {}", response.getBody());
+        } catch (HttpStatusCodeException ex) {
+            log.error("카카오페이 결제 취소 실패: Status code: {}, Response body: {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+        }
+    }
+
+    public String kakaPayCheckStatus(String orderNum) {
+        Order order = ordersRepository.findByOrderNum(orderNum)
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "SECRET_KEY " + secretKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        KakaoPayCheckStatusRequest request = KakaoPayCheckStatusRequest.builder()
+                .cid(cid)
+                .tid(order.getTid())
+                .build();
+
+        HttpEntity<KakaoPayCheckStatusRequest> entityMap = new HttpEntity<>(request, headers);
+
+        try {
+            ResponseEntity<KakaoPayCheckStatusResponse> response = new RestTemplate().postForEntity(
+                    "https://open-api.kakaopay.com/online/v1/payment/order",
+                    entityMap,
+                    KakaoPayCheckStatusResponse.class
+            );
+
+            return response.getBody().getStatus();
+        } catch (HttpStatusCodeException ex) {
+            log.error("카카오페이 결제 상태 조회 실패");
+        }
+
+        return null;
     }
 
     public String makeApproveHtml(String orderNum, Integer total, String paymentStatus) {
@@ -158,4 +219,62 @@ public class KakaoPayService {
                     paymentStatus
             );
     }
+
+    public String makeCancelHtml(String orderNum, String paymentStatus) {
+        return String.format("""
+                <html>
+                <body>
+                <script>
+                    window.opener.postMessage({
+                        type: 'PAYMENT_CANCEL',
+                        payload: {
+                            orderNum: '%s',
+                            paymentStatus: '%s'
+                        }
+                    }, 'http://localhost:3000/order/cancel');
+                    window.close();
+                </script>
+                </body>
+                </html>
+                """,
+                    orderNum,
+                    paymentStatus
+            );
+    }
+
+    public String makeFailHtml(String orderNum, String paymentStatus) {
+        return String.format("""
+                <html>
+                <body>
+                <script>
+                    window.opener.postMessage({
+                        type: 'PAYMENT_FAIL',
+                        payload: {
+                            orderNum: '%s',
+                            paymentStatus: '%s'
+                        }
+                    }, 'http://localhost:3000/order/fail');
+                    window.close();
+                </script>
+                </body>
+                </html>
+                """,
+                    orderNum,
+                    paymentStatus
+            );
+    }
+
+    private String generateOrderNumber() {
+        Random random = new Random();
+        String orderNum;
+        do {
+            String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+            int randomNum = 10000 + random.nextInt(90000);
+            orderNum = dateStr + randomNum;
+        } while (ordersRepository.existsByOrderNum(orderNum)); // 중복 체크
+
+        return orderNum;
+    }
+
+
 }
