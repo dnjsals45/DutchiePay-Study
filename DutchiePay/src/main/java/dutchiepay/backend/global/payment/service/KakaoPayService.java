@@ -201,13 +201,13 @@ public class KakaoPayService {
         return null;
     }
 
-    public String makeApproveHtml(String orderNum) {
+    public String makeApproveHtml(String orderNum, String paymentStatus) {
         return String.format("""
                 <html>
                 <body>
                 <script>
                     window.opener.postMessage({
-                        type: 'PAYMENT_APPROVED',
+                        type: '%s',
                         orderId: '%s',
                     }, 'http://localhost:3000/order');
                     window.close();
@@ -215,17 +215,18 @@ public class KakaoPayService {
                 </body>
                 </html>
                 """,
+                    paymentStatus,
                     orderNum
             );
     }
 
-    public String makeCancelHtml(String orderNum) {
+    public String makeCancelHtml(String orderNum, String paymentStatus) {
         return String.format("""
                 <html>
                 <body>
                 <script>
                     window.opener.postMessage({
-                        type: 'PAYMENT_CANCEL',
+                        type: '%s',
                         orderNum: '%s',
                     }, 'http://localhost:3000/order/cancel');
                     window.close();
@@ -233,25 +234,26 @@ public class KakaoPayService {
                 </body>
                 </html>
                 """,
+                    paymentStatus,
                     orderNum
             );
     }
 
-    public String makeFailHtml(String orderNum) {
+    public String makeFailHtml(String orderNum, String paymentStatus) {
         return String.format("""
                 <html>
                 <body>
                 <script>
                     window.opener.postMessage({
-                        type: 'PAYMENT_FAIL',
+                        type: '%s',
                         orderNum: '%s',
-                        paymentStatus: '%s'
                     }, 'http://localhost:3000/order/fail');
                     window.close();
                 </script>
                 </body>
                 </html>
                 """,
+                    paymentStatus,
                     orderNum
             );
     }

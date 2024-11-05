@@ -45,7 +45,7 @@ public class PaymentController {
         ApproveResponseDto result = kakaoPayService.kakaoPayApprove(pgToken, orderNum);
 
         response.setContentType(POST_MESSAGE_CONTENT_TYPE);
-        response.getWriter().write(kakaoPayService.makeApproveHtml(orderNum, result.getAmount().getTotal(), PAYMENT_APPROVE_STATUS));
+        response.getWriter().write(kakaoPayService.makeApproveHtml(orderNum, PAYMENT_APPROVE_STATUS));
         response.getWriter().flush();
     }
 
