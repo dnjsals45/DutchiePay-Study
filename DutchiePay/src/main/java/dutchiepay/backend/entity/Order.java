@@ -35,9 +35,17 @@ public class Order extends Auditing {
     private Coupon coupon;
 
     @Column(nullable = false)
+    private String receiver;
+
+    @Column(length = 5, nullable = false)
+    private String zipCode;
+
+    @Column(nullable = false)
     private String address;
 
     private String detail;
+
+    private String message;
 
     @Column(nullable = false)
     private int totalPrice;
