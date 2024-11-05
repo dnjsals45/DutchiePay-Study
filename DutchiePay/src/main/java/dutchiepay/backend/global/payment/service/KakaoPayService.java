@@ -201,7 +201,7 @@ public class KakaoPayService {
         return null;
     }
 
-    public String makeApproveHtml(String orderNum, Integer total, String paymentStatus) {
+    public String makeApproveHtml(String orderNum) {
         return String.format("""
                 <html>
                 <body>
@@ -209,21 +209,17 @@ public class KakaoPayService {
                     window.opener.postMessage({
                         type: 'PAYMENT_APPROVED',
                         orderId: '%s',
-                        amount: %d,
-                        paymentStatus: '%s'
                     }, 'http://localhost:3000/order');
                     window.close();
                 </script>
                 </body>
                 </html>
                 """,
-                    orderNum,
-                    total,
-                    paymentStatus
+                    orderNum
             );
     }
 
-    public String makeCancelHtml(String orderNum, String paymentStatus) {
+    public String makeCancelHtml(String orderNum) {
         return String.format("""
                 <html>
                 <body>
@@ -231,19 +227,17 @@ public class KakaoPayService {
                     window.opener.postMessage({
                         type: 'PAYMENT_CANCEL',
                         orderNum: '%s',
-                        paymentStatus: '%s'
                     }, 'http://localhost:3000/order/cancel');
                     window.close();
                 </script>
                 </body>
                 </html>
                 """,
-                    orderNum,
-                    paymentStatus
+                    orderNum
             );
     }
 
-    public String makeFailHtml(String orderNum, String paymentStatus) {
+    public String makeFailHtml(String orderNum) {
         return String.format("""
                 <html>
                 <body>
@@ -258,8 +252,7 @@ public class KakaoPayService {
                 </body>
                 </html>
                 """,
-                    orderNum,
-                    paymentStatus
+                    orderNum
             );
     }
 
