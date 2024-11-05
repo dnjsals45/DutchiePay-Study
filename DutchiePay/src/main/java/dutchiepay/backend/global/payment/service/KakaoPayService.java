@@ -204,27 +204,7 @@ public class KakaoPayService {
         return null;
     }
 
-    public String makeApproveHtml(String orderNum, String paymentStatus) {
-        return String.format("""
-                <html>
-                <body>
-                <script>
-                    window.opener.postMessage({
-                        type: '%s',
-                        orderId: '%s',
-                    }, '%s/order');
-                    window.close();
-                </script>
-                </body>
-                </html>
-                """,
-                    frontendHost,
-                    paymentStatus,
-                    orderNum
-            );
-    }
-
-    public String makeCancelHtml(String orderNum, String paymentStatus) {
+    public String makePostMessage(String orderNum, String paymentStatus) {
         return String.format("""
                 <html>
                 <body>
@@ -238,29 +218,9 @@ public class KakaoPayService {
                 </body>
                 </html>
                 """,
-                    frontendHost,
                     paymentStatus,
-                    orderNum
-            );
-    }
-
-    public String makeFailHtml(String orderNum, String paymentStatus) {
-        return String.format("""
-                <html>
-                <body>
-                <script>
-                    window.opener.postMessage({
-                        type: '%s',
-                        orderNum: '%s',
-                    }, '%s/order');
-                    window.close();
-                </script>
-                </body>
-                </html>
-                """,
-                    frontendHost,
-                    paymentStatus,
-                    orderNum
+                    orderNum,
+                    frontendHost
             );
     }
 
