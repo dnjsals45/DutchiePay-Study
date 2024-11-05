@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReadyRequestDto {
     private Long buyId;
-    private String itemName;
+    private String productName;
     private Integer quantity;
     private Integer totalAmount;
     private Integer taxFreeAmount;

@@ -44,18 +44,21 @@ public class KakaoPayService {
 
     // 카카오페이 결제를 시작하기 위해 결제정보를 카카오페이 서버에 전달하고 결제 고유번호(TID)와 URL을 응답받는 단계
     @Transactional
-    public ReadyResponseDto kakaoPayReady(User user, ReadyRequestDto req) {
-        Product product = productRepository.findByProductName(req.getItemName())
+    public KakaoPayReadyResponseDto kakaoPayReady(User user, ReadyRequestDto req) {
+        Product product = productRepository.findByProductName(req.getProductName())
                 .orElseThrow(() -> new IllegalArgumentException("상품명이 존재하지 않습니다."));
-        Buy buy = buyRepository.findById(req.getBuyId())
+        Buy buy = buyRepository.findByProduct(product)
                 .orElseThrow(() -> new IllegalArgumentException("구매 정보가 존재하지 않습니다."));
 
         Order newOrder = Order.builder()
                 .user(user)
                 .product(product)
                 .buy(buy)
+                .receiver(req.getReceiver())
+                .zipCode(req.getZipCode())
                 .address("서울시")
                 .detail("어딘가")
+                .message(req.getMessage())
                 .totalPrice(req.getTotalAmount())
                 .payment("카카오페이")
                 .orderedAt(LocalDateTime.now())
@@ -74,7 +77,7 @@ public class KakaoPayService {
                 .cid(cid) // 가맹점 코드(테스트용은 TC0ONETIME)
                 .partnerOrderId(newOrder.getOrderNum()) // 가맹점 주문번호
                 .partnerUserId(user.getNickname()) // 회원 id
-                .itemName(req.getItemName()) // 상품명
+                .itemName(req.getProductName()) // 상품명
                 .quantity(req.getQuantity()) // 수량
                 .totalAmount(req.getTotalAmount()) // 상품 총액
                 .taxFreeAmount(req.getTaxFreeAmount()) // 비과세 금액
@@ -94,7 +97,7 @@ public class KakaoPayService {
 
         newOrder.readyPurchase(readyResponse.getTid());
 
-        return readyResponse;
+        return KakaoPayReadyResponseDto.from(readyResponse.getNext_redirect_pc_url());
     }
 
     // 사용자가 결제 수단을 선택하고 비밀번호를 입력해 결제 인증을 완료한 뒤, 최종적으로 결제 완료 처리를 하는 단계입니다.
@@ -203,12 +206,10 @@ public class KakaoPayService {
                 <script>
                     window.opener.postMessage({
                         type: 'PAYMENT_APPROVED',
-                        payload: {
-                            orderId: '%s',
-                            amount: %d,
-                            paymentStatus: '%s'
-                        }
-                    }, 'http://localhost:3000/order/success');
+                        orderId: '%s',
+                        amount: %d,
+                        paymentStatus: '%s'
+                    }, 'http://localhost:3000/order');
                     window.close();
                 </script>
                 </body>
@@ -227,10 +228,8 @@ public class KakaoPayService {
                 <script>
                     window.opener.postMessage({
                         type: 'PAYMENT_CANCEL',
-                        payload: {
-                            orderNum: '%s',
-                            paymentStatus: '%s'
-                        }
+                        orderNum: '%s',
+                        paymentStatus: '%s'
                     }, 'http://localhost:3000/order/cancel');
                     window.close();
                 </script>
@@ -249,10 +248,8 @@ public class KakaoPayService {
                 <script>
                     window.opener.postMessage({
                         type: 'PAYMENT_FAIL',
-                        payload: {
-                            orderNum: '%s',
-                            paymentStatus: '%s'
-                        }
+                        orderNum: '%s',
+                        paymentStatus: '%s'
                     }, 'http://localhost:3000/order/fail');
                     window.close();
                 </script>

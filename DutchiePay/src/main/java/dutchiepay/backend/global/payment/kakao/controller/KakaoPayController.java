@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/pay/kakao")
+@RequestMapping("/pay")
 @RequiredArgsConstructor
 @Slf4j
 public class KakaoPayController {
@@ -30,11 +30,16 @@ public class KakaoPayController {
     @PostMapping("/ready")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> ready(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                        @RequestBody ReadyRequestDto req) {
-        return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(userDetails.getUser(), req));
+                                   @RequestBody ReadyRequestDto req,
+                                   @RequestParam String type) {
+        if (type.equals("kakao")) {
+            return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(userDetails.getUser(), req));
+        }
+
+        return ResponseEntity.badRequest().build();
     }
 
-    @GetMapping("/approve")
+    @GetMapping("/kakao/approve")
     @PreAuthorize("permitAll()")
     public void approve(HttpServletResponse response,
                         @RequestParam("pg_token") String pgToken,
@@ -46,9 +51,9 @@ public class KakaoPayController {
         response.getWriter().flush();
     }
 
-    @GetMapping("/cancel")
+    @GetMapping("/kakao/cancel")
     @PreAuthorize("permitAll()")
-    public String cancel(HttpServletResponse response,
+    public void cancel(HttpServletResponse response,
                          @RequestParam("orderNum") String orderNum) throws IOException {
         // 결제내역조회(/v1/payment/status) api에서 status를 확인한다.
         String status = kakaoPayService.kakaPayCheckStatus(orderNum);
@@ -63,15 +68,12 @@ public class KakaoPayController {
             response.getWriter().write(kakaoPayService.makeCancelHtml(orderNum, PAYMENT_CANCEL_STATUS));
             response.getWriter().flush();
         } else if (status.equals("CANCEL_PAYMENT")) {
-            return "";
         }
-
-        return "";
     }
 
-    @GetMapping("/fail")
+    @GetMapping("/kakao/fail")
     @PreAuthorize("permitAll()")
-    public String fail(HttpServletResponse response,
+    public void fail(HttpServletResponse response,
                        @RequestParam("orderNum") String orderNum) throws IOException {
         String status = kakaoPayService.kakaPayCheckStatus(orderNum);
 
@@ -81,6 +83,5 @@ public class KakaoPayController {
             response.getWriter().write(kakaoPayService.makeFailHtml(orderNum, PAYMENT_FAIL_STATUS));
             response.getWriter().flush();
         }
-        return "";
     }
 }
