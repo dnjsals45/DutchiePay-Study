@@ -35,15 +35,26 @@ public class Order extends Auditing {
     private Coupon coupon;
 
     @Column(nullable = false)
+    private String receiver;
+
+    @Column(length = 5, nullable = false)
+    private String zipCode;
+
+    @Column(nullable = false)
     private String address;
 
     private String detail;
+
+    private String message;
 
     @Column(nullable = false)
     private int totalPrice;
 
     @Column(length = 15, nullable = false)
     private String payment;
+
+    @Column
+    private String tid;
 
     @Column(nullable = false)
     private LocalDateTime orderedAt;
@@ -63,5 +74,22 @@ public class Order extends Auditing {
 
     public void cancelPurchase() {
         this.state = "주문취소";
+    }
+
+    public void readyPurchase(String tid) {
+        this.tid = tid;
+        this.state = "결제준비";
+    }
+
+    public void approvePayment() {
+        this.state = "결제완료";
+    }
+
+    public void cancelPayment() {
+        this.state = "결제취소";
+    }
+
+    public void failPayment() {
+        this.state = "결제실패";
     }
 }

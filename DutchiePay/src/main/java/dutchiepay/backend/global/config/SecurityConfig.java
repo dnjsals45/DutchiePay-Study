@@ -83,26 +83,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .formLogin(AbstractHttpConfigurer::disable)
-            .logout(AbstractHttpConfigurer::disable)
-            .cors(cors -> corsConfigurationSource())
-            .sessionManagement(sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorizeHttpRequests ->
-                authorizeHttpRequests
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
-                    .anyRequest().permitAll())
-            .oauth2Login(oauth2 ->
-                oauth2.successHandler(customOAuth2SuccessHandler))
-            .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
-            .addFilterBefore(
-                new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),
-                UsernamePasswordAuthenticationFilter.class)
-            .exceptionHandling(exception ->
-                exception
-                    .authenticationEntryPoint(authenticationEntryPoint()));
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .cors(cors -> corsConfigurationSource())
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorizeHttpRequests ->
+                        authorizeHttpRequests
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
+                                .anyRequest().permitAll())
+                .oauth2Login(oauth2 ->
+                        oauth2.successHandler(customOAuth2SuccessHandler))
+                .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),
+                        UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(authenticationEntryPoint()));
 
         return http.build();
     }
