@@ -6,6 +6,7 @@ import dutchiepay.backend.domain.order.exception.OrderErrorException;
 import dutchiepay.backend.domain.order.exception.ReviewErrorException;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
+import dutchiepay.backend.global.payment.exception.PaymentErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -64,6 +65,13 @@ public class CustomExceptionHandler {
         log.warn("handleReviewErrorException : {}", e.getMessage());
         final ErrorMessage message = ErrorMessage.of(e.getMessage());
         return ResponseEntity.status(e.getReviewErrorCode().getHttpStatus()).body(message);
+    }
+
+    @ExceptionHandler(PaymentErrorException.class)
+    protected ResponseEntity<?> handlePaymentErrorException(PaymentErrorException e) {
+        log.warn("handlePaymentErrorException : {}", e.getMessage());
+        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        return ResponseEntity.status(e.getPaymentErrorCode().getHttpStatus()).body(message);
     }
 
     /**

@@ -9,6 +9,8 @@ import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.Product;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.payment.exception.PaymentErrorCode;
+import dutchiepay.backend.global.payment.exception.PaymentErrorException;
 import dutchiepay.backend.global.payment.kakao.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,9 +48,9 @@ public class KakaoPayService {
     @Transactional
     public KakaoPayReadyResponseDto kakaoPayReady(User user, ReadyRequestDto req) {
         Product product = productRepository.findByProductName(req.getProductName())
-                .orElseThrow(() -> new IllegalArgumentException("상품명이 존재하지 않습니다."));
+                .orElseThrow(() -> new PaymentErrorException(PaymentErrorCode.INVALID_PRODUCT));
         Buy buy = buyRepository.findByProduct(product)
-                .orElseThrow(() -> new IllegalArgumentException("구매 정보가 존재하지 않습니다."));
+                .orElseThrow(() -> new PaymentErrorException(PaymentErrorCode.INVALID_BUY));
 
         Order newOrder = Order.builder()
                 .user(user)
