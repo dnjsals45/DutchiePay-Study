@@ -45,7 +45,7 @@ public class PaymentController {
         ApproveResponseDto result = kakaoPayService.kakaoPayApprove(pgToken, orderNum);
 
         response.setContentType(POST_MESSAGE_CONTENT_TYPE);
-        response.getWriter().write(kakaoPayService.makeApproveHtml(orderNum, PAYMENT_APPROVE_STATUS));
+        response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_APPROVE_STATUS));
         response.getWriter().flush();
     }
 
@@ -63,7 +63,7 @@ public class PaymentController {
             kakaoPayService.kakaoPayCancel(orderNum);
 
             response.setContentType(POST_MESSAGE_CONTENT_TYPE);
-            response.getWriter().write(kakaoPayService.makeCancelHtml(orderNum, PAYMENT_CANCEL_STATUS));
+            response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_CANCEL_STATUS));
             response.getWriter().flush();
         } else if (status.equals("CANCEL_PAYMENT")) {
         }
@@ -78,7 +78,7 @@ public class PaymentController {
         if (status.equals("FAIL_PAYMENT")) {
             kakaoPayService.kakaoPayFail(orderNum);
             response.setContentType(POST_MESSAGE_CONTENT_TYPE);
-            response.getWriter().write(kakaoPayService.makeFailHtml(orderNum, PAYMENT_FAIL_STATUS));
+            response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_FAIL_STATUS));
             response.getWriter().flush();
         }
     }
