@@ -1,5 +1,6 @@
 host:
-  url: ${HOST_URL}
+  backend: ${BACKEND_HOST}
+  frontend: ${FRONTEND_HOST}
 
 spring:
   security:

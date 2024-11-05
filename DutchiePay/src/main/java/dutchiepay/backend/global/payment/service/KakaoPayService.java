@@ -35,8 +35,11 @@ public class KakaoPayService {
     private final ProductRepository productRepository;
     private final BuyRepository buyRepository;
     private final OrderRepository ordersRepository;
-    @Value("${host.url}")
-    private String host;
+    @Value("${host.backend}")
+    private String backendHost;
+
+    @Value("${host.frontend}")
+    private String frontendHost;
 
     @Value("${payment.kakao.cid}")
     private String cid;
@@ -83,9 +86,9 @@ public class KakaoPayService {
                 .quantity(req.getQuantity()) // 수량
                 .totalAmount(req.getTotalAmount()) // 상품 총액
                 .taxFreeAmount(req.getTaxFreeAmount()) // 비과세 금액
-                .approvalUrl(host + "/pay/kakao/approve?orderNum=" + newOrder.getOrderNum()) // 결제 성공시 redirect url
-                .cancelUrl(host + "/pay/kakao/cancel?orderNum=" + newOrder.getOrderNum()) // 결제 취소시 redirect url
-                .failUrl(host + "/pay/kakao/fail?orderNum=" + newOrder.getOrderNum()) // 결제 실패시 redirect url
+                .approvalUrl(backendHost + "/pay/kakao/approve?orderNum=" + newOrder.getOrderNum()) // 결제 성공시 redirect url
+                .cancelUrl(backendHost + "/pay/kakao/cancel?orderNum=" + newOrder.getOrderNum()) // 결제 취소시 redirect url
+                .failUrl(backendHost + "/pay/kakao/fail?orderNum=" + newOrder.getOrderNum()) // 결제 실패시 redirect url
                 .build();
 
         HttpEntity<KakaoPayReadyRequest> requestEntity = new HttpEntity<>(body, httpHeaders);
@@ -209,12 +212,13 @@ public class KakaoPayService {
                     window.opener.postMessage({
                         type: '%s',
                         orderId: '%s',
-                    }, 'http://localhost:3000/order');
+                    }, '%s/order');
                     window.close();
                 </script>
                 </body>
                 </html>
                 """,
+                    frontendHost,
                     paymentStatus,
                     orderNum
             );
@@ -228,12 +232,13 @@ public class KakaoPayService {
                     window.opener.postMessage({
                         type: '%s',
                         orderNum: '%s',
-                    }, 'http://localhost:3000/order/cancel');
+                    }, '%s/order');
                     window.close();
                 </script>
                 </body>
                 </html>
                 """,
+                    frontendHost,
                     paymentStatus,
                     orderNum
             );
@@ -247,12 +252,13 @@ public class KakaoPayService {
                     window.opener.postMessage({
                         type: '%s',
                         orderNum: '%s',
-                    }, 'http://localhost:3000/order/fail');
+                    }, '%s/order');
                     window.close();
                 </script>
                 </body>
                 </html>
                 """,
+                    frontendHost,
                     paymentStatus,
                     orderNum
             );
