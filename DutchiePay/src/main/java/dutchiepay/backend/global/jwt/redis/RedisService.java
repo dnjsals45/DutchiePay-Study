@@ -5,8 +5,10 @@ import dutchiepay.backend.domain.user.exception.UserErrorException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RedisService {
 
@@ -17,6 +19,7 @@ public class RedisService {
     private final RefreshRepository refreshRepository;
     private final AccessRepository accessRepository;
 
+    @Transactional
     public void saveToken(Long userId, String refreshToken) {
         refreshRepository.save(RefreshToken.builder()
                 .userId(userId)
@@ -25,6 +28,7 @@ public class RedisService {
                 .build());
     }
 
+    @Transactional
     public void addBlackList(Long userId, String accessToken) {
         accessRepository.save(ATBlackList.builder()
                 .userId(userId)
@@ -45,10 +49,14 @@ public class RedisService {
     }
 
     public Long findUserIdFromRefreshToken(String refresh) {
-        System.out.println("findUserIdFromRefreshToken");
         RefreshToken refreshToken = refreshRepository.findByRefresh(refresh)
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN));
-        System.out.println(refreshToken.getUserId());
         return refreshToken.getUserId();
+    }
+
+    @Transactional
+    public void deleteRefreshToken(String refresh) {
+        refreshRepository.delete(refreshRepository.findByRefresh(refresh)
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN)));
     }
 }

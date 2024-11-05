@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -62,8 +63,11 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                 }
 
             } catch (ExpiredJwtException e) {
-                log.error("토큰이 만료되었습니다: " + e.getMessage());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                log.error("토큰이 만료되었습니다.");
+                response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write(String.format("{\"message\": \"%s\"}", UserErrorCode.EXPIRED_ACCESS_TOKEN.getMessage()));
+
                 return;
             }
         }

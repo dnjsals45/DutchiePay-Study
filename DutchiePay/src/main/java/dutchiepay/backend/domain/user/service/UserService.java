@@ -70,10 +70,10 @@ public class UserService {
     }
 
     @Transactional
-    public void logout(Long userId, String accessToken) {
+    public void logout(Long userId, HttpServletRequest request) {
         User user = userUtilService.findById(userId);
 
-        redisService.addBlackList(userId, accessToken);
+        redisService.addBlackList(userId, jwtUtil.getJwtFromHeader(request));
         user.deleteRefreshToken();
         userRepository.save(user);
     }
@@ -215,8 +215,16 @@ public class UserService {
 
     }
 
+    /**
+     * 이메일 회원 탈퇴
+     * AT는 BlackList 처리, RT는 삭제 처리
+     * @param userDetails
+     * @param request
+     */
     @Transactional
-    public void deleteUser(UserDetailsImpl userDetails) {
+    public void deleteUser(UserDetailsImpl userDetails, HttpServletRequest request) {
+        redisService.addBlackList(userDetails.getUserId(), jwtUtil.getJwtFromHeader(request));
+        redisService.deleteRefreshToken(redisService.getRefreshToken(userDetails.getUserId()));
         userRepository.findByEmailAndOauthProviderIsNull(userDetails.getEmail())
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
     }
