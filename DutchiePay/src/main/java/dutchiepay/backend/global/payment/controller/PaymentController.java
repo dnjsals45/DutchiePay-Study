@@ -1,11 +1,9 @@
-package dutchiepay.backend.global.payment.kakao.controller;
+package dutchiepay.backend.global.payment.controller;
 
-import dutchiepay.backend.global.payment.kakao.dto.ApproveResponseDto;
-import dutchiepay.backend.global.payment.kakao.dto.ReadyRequestDto;
-import dutchiepay.backend.global.payment.kakao.dto.ReadyResponseDto;
-import dutchiepay.backend.global.payment.kakao.service.KakaoPayService;
+import dutchiepay.backend.global.payment.dto.kakao.ApproveResponseDto;
+import dutchiepay.backend.global.payment.dto.kakao.ReadyRequestDto;
+import dutchiepay.backend.global.payment.service.KakaoPayService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +18,7 @@ import java.io.IOException;
 @RequestMapping("/pay")
 @RequiredArgsConstructor
 @Slf4j
-public class KakaoPayController {
+public class PaymentController {
     private final String PAYMENT_APPROVE_STATUS = "PAYMENT_APPROVED";
     private final String PAYMENT_CANCEL_STATUS = "PAYMENT_CANCEL";
     private final String PAYMENT_FAIL_STATUS = "PAYMENT_FAIL";

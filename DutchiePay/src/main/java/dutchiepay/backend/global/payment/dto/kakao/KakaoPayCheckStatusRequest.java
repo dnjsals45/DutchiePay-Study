@@ -1,4 +1,4 @@
-package dutchiepay.backend.global.payment.kakao.dto;
+package dutchiepay.backend.global.payment.dto.kakao;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -10,9 +10,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class KakaoPayCancelRequest {
+public class KakaoPayCheckStatusRequest {
     private String cid;
     private String tid;
-    private String cancelAmount;
-    private String cancelTaxFreeAmount;
 }

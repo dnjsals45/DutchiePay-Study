@@ -1,4 +1,4 @@
-package dutchiepay.backend.global.payment.kakao.dto;
+package dutchiepay.backend.global.payment.dto.kakao;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

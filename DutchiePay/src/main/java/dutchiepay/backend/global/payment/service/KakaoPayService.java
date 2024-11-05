@@ -1,4 +1,4 @@
-package dutchiepay.backend.global.payment.kakao.service;
+package dutchiepay.backend.global.payment.service;
 
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.order.exception.OrderErrorCode;
@@ -9,9 +9,9 @@ import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.Product;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.payment.dto.kakao.*;
 import dutchiepay.backend.global.payment.exception.PaymentErrorCode;
 import dutchiepay.backend.global.payment.exception.PaymentErrorException;
-import dutchiepay.backend.global.payment.kakao.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
