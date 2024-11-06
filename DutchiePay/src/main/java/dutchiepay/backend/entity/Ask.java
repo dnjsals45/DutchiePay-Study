@@ -33,9 +33,6 @@ public class Ask extends Auditing {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    //주문번호
-    private String orderNum;
-
     //문의내용
     @Column(nullable = false, length = 1000)
     private String contents;

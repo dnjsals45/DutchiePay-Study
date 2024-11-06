@@ -7,13 +7,16 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetMyLikesResponseDto {
-    private String category;
-    private String title;
+    private Long buyId;
+    private String[] category;
+    private String productName;
     private Integer originalPrice;
     private Integer salePrice;
     private Integer discountPercent;
-    private String thumbnail;
-    private Double average;
+    private String productImg;
+    private Double rating;
     private Integer reviewCount;
     private Integer expireDate;
+    private Integer skeleton;
+    private Integer nowCount;
 }

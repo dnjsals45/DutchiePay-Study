@@ -37,6 +37,9 @@ public class Order extends Auditing {
     @Column(nullable = false)
     private String receiver;
 
+    @Column(nullable = false)
+    private String phone;
+
     @Column(length = 5, nullable = false)
     private String zipCode;
 
@@ -66,7 +69,7 @@ public class Order extends Auditing {
     private String state;
 
     @Column(nullable = false)
-    private int amount;
+    private int quantity;
 
     public void confirmPurchase() {
         this.state = "구매확정";

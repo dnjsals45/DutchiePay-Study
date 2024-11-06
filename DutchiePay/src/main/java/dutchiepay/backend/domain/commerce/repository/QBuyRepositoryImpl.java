@@ -306,7 +306,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     }
 
     @Override
-    public GetProductReviewResponseDto getProductReview(Long buyId, Long photo, PageRequest pageable) {
+    public List<GetProductReviewResponseDto> getProductReview(Long buyId, Long photo, PageRequest pageable) {
         List<Tuple> result = jpaQueryFactory
                 .select(review.reviewId,
                         review.user.nickname,
@@ -324,37 +324,22 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        List<GetProductReviewResponseDto.ReviewDto> reviews = new ArrayList<>();
+        List<GetProductReviewResponseDto> reviews = new ArrayList<>();
 
         for (Tuple tuple : result) {
-            GetProductReviewResponseDto.ReviewDto reviewDto = GetProductReviewResponseDto.ReviewDto.builder()
+            GetProductReviewResponseDto reviewDto = GetProductReviewResponseDto.builder()
                     .reviewId(tuple.get(0, Long.class))
                     .nickname(tuple.get(1, String.class))
                     .content(tuple.get(2, String.class))
                     .rating(tuple.get(3, Integer.class))
                     .reviewImg(tuple.get(4, String.class) != null ? tuple.get(4, String.class).split(",") : new String[0])
-                    .createdAt(tuple.get(5, LocalDateTime.class))
+                    .createdAt(tuple.get(5, LocalDateTime.class).toLocalDate())
                     .build();
 
             reviews.add(reviewDto);
         }
 
-        Double avgRating = jpaQueryFactory
-                .select(review.rating.avg())
-                .from(review)
-                .join(review.order.buy, buy)
-                .where(buy.buyId.eq(buyId))
-                .fetchOne();
-
-        Long total = jpaQueryFactory
-                .select(review.count())
-                .from(review)
-                .join(review.order.buy, buy)
-                .where(buy.buyId.eq(buyId))
-                .where(photoCondition(photo))
-                .fetchOne();
-
-        return GetProductReviewResponseDto.from(avgRating, total, reviews);
+        return reviews;
     }
 
     private int calculateExpireDate(LocalDate deadline) {

@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface AskRepository extends JpaRepository<Ask, Long> {
+public interface AskRepository extends JpaRepository<Ask, Long>, QAskRepository {
 
     @Modifying
     @Query("update Ask a set a.deletedAt = current_timestamp where a = ?1")

@@ -2,7 +2,7 @@ package dutchiepay.backend.domain.profile.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Builder
@@ -11,16 +11,20 @@ import java.time.LocalDateTime;
 public class MyGoodsResponseDto {
     private Long orderId;
     private String orderNum;
-    private Long productId;
-    private LocalDateTime orderDate;
+    private Long buyId;
+    private LocalDate orderDate;
     private String productName;
-    private Integer count;
+    private Integer quantity;
     private Integer productPrice;
-    private Integer totalPrice;
     private Integer discountPercent;
+    private Integer totalPrice;
     private String payment;
-    private String deliveryAddress;
+    private String address;
+    private String zipCode;
+    private String detail;
+    private String phone;
     private String deliveryState;
     private String productImg;
     private String storeName;
+    private String message;
 }

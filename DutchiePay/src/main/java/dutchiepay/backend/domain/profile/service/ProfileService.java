@@ -1,9 +1,7 @@
 package dutchiepay.backend.domain.profile.service;
 
-import dutchiepay.backend.domain.order.exception.OrderErrorCode;
-import dutchiepay.backend.domain.order.exception.OrderErrorException;
-import dutchiepay.backend.domain.order.exception.ReviewErrorCode;
-import dutchiepay.backend.domain.order.exception.ReviewErrorException;
+import dutchiepay.backend.domain.commerce.repository.BuyRepository;
+import dutchiepay.backend.domain.order.exception.*;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
@@ -30,6 +28,7 @@ public class ProfileService {
     private final AskRepository askRepository;
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final BuyRepository buyRepository;
 
     public MyPageResponseDto myPage(User user) {
         return MyPageResponseDto.from(user);
@@ -56,9 +55,7 @@ public class ProfileService {
     }
 
     public List<GetMyReviewResponseDto> getMyReviews(User user) {
-        List<Review> reviews = reviewRepository.findAllByUser(user);
-
-        return GetMyReviewResponseDto.from(reviews);
+        return reviewRepository.getMyReviews(user);
     }
 
     public GetMyReviewResponseDto getOneReview(User user, Long reviewId) {
@@ -70,9 +67,7 @@ public class ProfileService {
 
 
     public List<GetMyAskResponseDto> getMyAsks(User user) {
-        List<Ask> asks = askRepository.findAllByUser(user);
-
-        return GetMyAskResponseDto.from(asks);
+        return askRepository.getMyAsks(user);
     }
 
     @Transactional
@@ -112,17 +107,12 @@ public class ProfileService {
 
     @Transactional
     public void createAsk(User user, CreateAskRequestDto req) {
-        Order order = orderRepository.findById(req.getOrderId()).orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
-
-        if (user != order.getUser()) {
-            throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
-        }
+        Buy buy = buyRepository.findById(req.getBuyId()).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_BUY));
 
         Ask newAsk = Ask.builder()
                 .user(user)
-                .buy(order.getBuy())
-                .product(order.getProduct())
-                .orderNum(order.getOrderNum())
+                .buy(buy)
+                .product(buy.getProduct())
                 .contents(req.getContent())
                 .secret(req.getIsSecret())
                 .answer(null)
@@ -165,7 +155,7 @@ public class ProfileService {
 
     @Transactional
     public void deleteAsk(User user, Long askId) {
-        Ask ask = askRepository.findById(askId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ASK));
+        Ask ask = askRepository.findById(askId).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_ASK));
 
         if (ask.getUser() != user) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_ASK_USER_MISSMATCH);

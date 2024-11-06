@@ -85,7 +85,7 @@ public class CommerceService {
         return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
     }
 
-    public GetProductReviewResponseDto getProductReview(Long buyId, Long photo, Long page, Long limit) {
+    public List<GetProductReviewResponseDto> getProductReview(Long buyId, Long photo, Long page, Long limit) {
         if (!buyRepository.existsById(buyId)) {
             throw new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT);
         }

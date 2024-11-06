@@ -60,15 +60,16 @@ public class KakaoPayService {
                 .product(product)
                 .buy(buy)
                 .receiver(req.getReceiver())
+                .phone(req.getPhone())
                 .zipCode(req.getZipCode())
                 .address(req.getAddress())
                 .detail(req.getDetail())
                 .message(req.getMessage())
                 .totalPrice(req.getTotalAmount())
-                .payment("카카오페이")
+                .payment("kakao")
                 .orderedAt(LocalDateTime.now())
                 .state("주문완료")
-                .amount(req.getQuantity())
+                .quantity(req.getQuantity())
                 .orderNum(generateOrderNumber())
                 .build();
 

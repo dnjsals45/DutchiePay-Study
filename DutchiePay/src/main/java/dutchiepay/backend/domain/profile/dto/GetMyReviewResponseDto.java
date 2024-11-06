@@ -3,9 +3,8 @@ package dutchiepay.backend.domain.profile.dto;
 import dutchiepay.backend.entity.Review;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Getter
 @Builder
@@ -13,38 +12,28 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetMyReviewResponseDto {
     private Long reviewId;
+    private Long buyId;
+    private String productName;
     private Integer rating;
     private String content;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
     private Boolean isPossible;
     private String reviewImg;
 
 
     public static GetMyReviewResponseDto from(Review review) {
+        LocalDate createdAt = review.getCreatedAt().toLocalDate();
+        long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
+
         return GetMyReviewResponseDto.builder()
                 .reviewId(review.getReviewId())
+                .buyId(review.getOrder().getBuy().getBuyId())
+                .productName(review.getOrder().getProduct().getProductName())
                 .rating(review.getRating())
                 .content(review.getContents())
-                .createdAt(review.getCreatedAt())
-                .isPossible(review.getUpdateCount() != 2)
+                .createdAt(createdAt)
+                .isPossible(daysBetween <= 30 && review.getUpdateCount() != 3)
                 .reviewImg(review.getReviewImg())
                 .build();
-    }
-
-    public static List<GetMyReviewResponseDto> from(List<Review> reviews) {
-        List<GetMyReviewResponseDto> response = new ArrayList<>();
-
-        for (Review review : reviews) {
-            response.add(GetMyReviewResponseDto.builder()
-                    .reviewId(review.getReviewId())
-                    .rating(review.getRating())
-                    .content(review.getContents())
-                    .createdAt(review.getCreatedAt())
-                    .isPossible(true)
-                    .reviewImg(review.getReviewImg())
-                    .build());
-        }
-
-        return response;
     }
 }
