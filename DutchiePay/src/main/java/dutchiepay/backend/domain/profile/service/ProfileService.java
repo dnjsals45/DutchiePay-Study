@@ -68,9 +68,7 @@ public class ProfileService {
 
 
     public List<GetMyAskResponseDto> getMyAsks(User user) {
-        List<Ask> asks = askRepository.findAllByUser(user);
-
-        return GetMyAskResponseDto.from(asks);
+        return askRepository.getMyAsks(user);
     }
 
     @Transactional
