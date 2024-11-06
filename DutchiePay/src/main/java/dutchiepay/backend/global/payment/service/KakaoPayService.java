@@ -60,6 +60,7 @@ public class KakaoPayService {
                 .product(product)
                 .buy(buy)
                 .receiver(req.getReceiver())
+                .phone(req.getPhone())
                 .zipCode(req.getZipCode())
                 .address(req.getAddress())
                 .detail(req.getDetail())
