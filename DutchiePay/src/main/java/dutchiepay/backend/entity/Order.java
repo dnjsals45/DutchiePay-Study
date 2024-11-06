@@ -69,7 +69,7 @@ public class Order extends Auditing {
     private String state;
 
     @Column(nullable = false)
-    private int amount;
+    private int quantity;
 
     public void confirmPurchase() {
         this.state = "구매확정";

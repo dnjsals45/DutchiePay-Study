@@ -69,7 +69,7 @@ public class KakaoPayService {
                 .payment("카카오페이")
                 .orderedAt(LocalDateTime.now())
                 .state("주문완료")
-                .amount(req.getQuantity())
+                .quantity(req.getQuantity())
                 .orderNum(generateOrderNumber())
                 .build();
 
