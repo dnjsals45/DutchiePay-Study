@@ -37,6 +37,9 @@ public class Order extends Auditing {
     @Column(nullable = false)
     private String receiver;
 
+    @Column(nullable = false)
+    private String phone;
+
     @Column(length = 5, nullable = false)
     private String zipCode;
 
