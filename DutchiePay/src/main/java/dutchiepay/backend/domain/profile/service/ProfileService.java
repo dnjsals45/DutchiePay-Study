@@ -155,7 +155,7 @@ public class ProfileService {
 
     @Transactional
     public void deleteAsk(User user, Long askId) {
-        Ask ask = askRepository.findById(askId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ASK));
+        Ask ask = askRepository.findById(askId).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_ASK));
 
         if (ask.getUser() != user) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_ASK_USER_MISSMATCH);
