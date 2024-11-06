@@ -25,7 +25,6 @@ public class QAskRepositoryImpl implements QAskRepository{
                 .select(
                         ask.askId,
                         ask.product.store.storeName,
-                        ask.orderNum,
                         ask.buy.buyId,
                         ask.product.productName,
                         ask.contents,
@@ -50,7 +49,6 @@ public class QAskRepositoryImpl implements QAskRepository{
             result.add(GetMyAskResponseDto.builder()
                     .askId(t.get(ask.askId))
                     .storeName(t.get(ask.product.store.storeName))
-                    .orderNum(t.get(ask.orderNum))
                     .buyId(t.get(ask.buy.buyId))
                     .productName(t.get(ask.product.productName))
                     .content(t.get(ask.contents))

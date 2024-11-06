@@ -150,22 +150,23 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
     @Override
     public List<MyGoodsResponseDto> getMyGoods(User user, Pageable pageable) {
-        return jpaQueryFactory
-                .select(Projections.constructor(MyGoodsResponseDto.class,
-                        orders.orderId,
+        List<Tuple> tuple =  jpaQueryFactory
+                .select(orders.orderId,
                         orders.orderNum,
-                        product.productId,
-                        orders.orderedAt.as("orderDate"),
+                        buy.buyId,
+                        orders.orderedAt,
                         product.productName,
-                        orders.amount.as("count"),
-                        product.salePrice.as("productPrice"),
-                        orders.totalPrice,
+                        orders.quantity,
+                        product.salePrice,
                         product.discountPercent,
+                        orders.totalPrice,
                         orders.payment,
-                        orders.address.as("deliveryAddress"),
-                        orders.state.as("deliveryState"),
+                        orders.address,
+                        orders.zipCode,
+                        orders.detail,
+                        orders.state,
                         product.productImg,
-                        store.storeName))
+                        store.storeName)
                 .from(orders)
                 .join(orders.product, product)
                 .join(product.store, store)
@@ -174,6 +175,38 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        List<MyGoodsResponseDto> result = new ArrayList<>();
+
+        if (tuple.isEmpty()) {
+            return result;
+        }
+
+        for (Tuple t : tuple) {
+            MyGoodsResponseDto dto = MyGoodsResponseDto.builder()
+                    .orderId(t.get(orders.orderId))
+                    .orderNum(t.get(orders.orderNum))
+                    .buyId(t.get(buy.buyId))
+                    .orderDate(t.get(orders.orderedAt).toLocalDate())
+                    .productName(t.get(product.productName))
+                    .quantity(t.get(orders.quantity))
+                    .productPrice(t.get(product.salePrice))
+                    .discountPercent(t.get(product.discountPercent))
+                    .totalPrice(t.get(orders.totalPrice))
+                    .payment(t.get(orders.payment))
+                    .address(t.get(orders.address))
+                    .zipCode(t.get(orders.zipCode))
+                    .detail(t.get(orders.detail))
+                    .deliveryState(t.get(orders.state))
+                    .productImg(t.get(product.productImg))
+                    .storeName(t.get(store.storeName))
+                    .message(t.get(orders.message))
+                    .build();
+
+            result.add(dto);
+        }
+
+        return result;
     }
 
     // QueryDsl 은 union 작성이 안된다.. native로 작성해야할까?
