@@ -56,9 +56,7 @@ public class ProfileService {
     }
 
     public List<GetMyReviewResponseDto> getMyReviews(User user) {
-        List<Review> reviews = reviewRepository.findAllByUser(user);
-
-        return GetMyReviewResponseDto.from(reviews);
+        return reviewRepository.getMyReviews(user);
     }
 
     public GetMyReviewResponseDto getOneReview(User user, Long reviewId) {
