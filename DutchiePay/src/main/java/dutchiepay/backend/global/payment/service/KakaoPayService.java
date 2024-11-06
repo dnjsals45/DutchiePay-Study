@@ -66,7 +66,7 @@ public class KakaoPayService {
                 .detail(req.getDetail())
                 .message(req.getMessage())
                 .totalPrice(req.getTotalAmount())
-                .payment("카카오페이")
+                .payment("kakao")
                 .orderedAt(LocalDateTime.now())
                 .state("주문완료")
                 .quantity(req.getQuantity())
