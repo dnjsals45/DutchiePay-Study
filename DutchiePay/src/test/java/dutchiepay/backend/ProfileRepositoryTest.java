@@ -203,7 +203,7 @@ class ProfileRepositoryTest {
                 .orderedAt(LocalDateTime.now())
                 .address("연세대학교 1층 로비")
                 .state("결제 완료")
-                .amount(2)
+                .quantity(2)
                 .build();
         orderRepository.save(orders1);
 
@@ -286,12 +286,11 @@ class ProfileRepositoryTest {
         // then
         GetMyLikesResponseDto likeResult = result.get(0);
         System.out.println("카테고리 = " + likeResult.getCategory());
-        System.out.println("제목 = " + likeResult.getTitle());
         System.out.println("원래 가격 = " + likeResult.getOriginalPrice());
         System.out.println("세일 가격 = " + likeResult.getSalePrice());
         System.out.println("할인율 = " + likeResult.getDiscountPercent());
-        System.out.println("썸네일 = " + likeResult.getThumbnail());
-        System.out.println("평균 별점 = " + likeResult.getAverage());
+        System.out.println("썸네일 = " + likeResult.getProductImg());
+        System.out.println("평균 별점 = " + likeResult.getRating());
         System.out.println("리뷰 수 = " + likeResult.getReviewCount());
         System.out.println("마감 날짜 = " + likeResult.getExpireDate());
     }
@@ -370,13 +369,12 @@ class ProfileRepositoryTest {
                 .product(product1)
                 .buy(buy1)
                 .orderNum("2021090001")
-                .amount(1)
                 .totalPrice(18000)
                 .payment("카드결제")
                 .orderedAt(LocalDateTime.now())
                 .address("연세대학교 1층 로비")
                 .state("0")
-                .amount(2)
+                .quantity(2)
                 .build();
 
         Order orders2 = Order.builder()
@@ -384,13 +382,12 @@ class ProfileRepositoryTest {
                 .product(product2)
                 .buy(buy2)
                 .orderNum("2021090002")
-                .amount(1)
                 .totalPrice(22500)
                 .payment("카드결제")
                 .orderedAt(LocalDateTime.now())
                 .address("지나가던 버스 정류장 앞")
                 .state("0")
-                .amount(5)
+                .quantity(5)
                 .build();
         orderRepository.save(orders1);
         orderRepository.save(orders2);
@@ -402,15 +399,14 @@ class ProfileRepositoryTest {
         for (MyGoodsResponseDto dto : result) {
             System.out.println("주문Id = " + dto.getOrderId());
             System.out.println("주문 번호 = " + dto.getOrderNum());
-            System.out.println("상품Id = " + dto.getProductId());
             System.out.println("주문 날짜/시간 = " + dto.getOrderDate());
             System.out.println("상품 이름 = " + dto.getProductName());
-            System.out.println("수량 = " + dto.getCount());
+            System.out.println("수량 = " + dto.getQuantity());
             System.out.println("상품 가격 = " + dto.getProductPrice());
             System.out.println("총 가격 = " + dto.getTotalPrice());
             System.out.println("할인율 = " + dto.getDiscountPercent());
             System.out.println("결제 방법 = " + dto.getPayment());
-            System.out.println("주문 배송지 = " + dto.getDeliveryAddress());
+            System.out.println("주문 배송지 = " + dto.getAddress());
             System.out.println("배송 상태 = " + dto.getDeliveryState());
             System.out.println("상품 이미지 = " + dto.getProductImg());
             System.out.println("업체 이름 = " + dto.getStoreName());
