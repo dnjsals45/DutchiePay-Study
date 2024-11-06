@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 public class GetMyAskResponseDto {
     private Long askId;
     private String storeName;
-    private String orderNum;
     private Long buyId;
     private String productName;
     private String content;
