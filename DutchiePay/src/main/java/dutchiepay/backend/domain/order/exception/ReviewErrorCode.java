@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.order.exception;
 
+import dutchiepay.backend.global.exception.StatusCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public enum ReviewErrorCode {
+public enum ReviewErrorCode implements StatusCode {
     /**
      * 400 BAD_REQUEST
      */
