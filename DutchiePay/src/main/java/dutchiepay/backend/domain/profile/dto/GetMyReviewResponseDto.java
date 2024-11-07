@@ -33,7 +33,7 @@ public class GetMyReviewResponseDto {
                 .content(review.getContents())
                 .createdAt(createdAt)
                 .isPossible(daysBetween <= 30 && review.getUpdateCount() != 3)
-                .reviewImg(review.getReviewImg().split(","))
+                .reviewImg(review.getReviewImg() != null ? review.getReviewImg().split(",") : new String[0])
                 .build();
     }
 }
