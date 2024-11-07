@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,9 +35,12 @@ public class NoticeService {
 
     private void sendUnradNotification(User user) {
         List<Notice> notices = noticeRepository.findByUserAndIsReadFalseAndCreatedAtAfter(user, LocalDateTime.now().minusDays(7));
-        List<NoticeDto> sendNotice = notices.stream()
-                .map(NoticeDto::toDto)
-                .toList();
+        List<NoticeDto> sendNotice = new ArrayList<>();
+
+        for (Notice notice : notices) {
+            sendNotice.add(NoticeDto.toDto(notice));
+        }
+
         SseEmitter sseEmitter = emitters.get(user.getUserId());
 
         if (sseEmitter != null) {
