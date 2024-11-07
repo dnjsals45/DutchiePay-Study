@@ -10,7 +10,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Likes extends Auditing {
+public class Like extends Auditing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

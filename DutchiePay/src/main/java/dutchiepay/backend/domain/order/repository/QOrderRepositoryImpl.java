@@ -2,7 +2,7 @@ package dutchiepay.backend.domain.order.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.entity.QBuy;
-import dutchiepay.backend.entity.QOrders;
+import dutchiepay.backend.entity.QOrder;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,20 +15,20 @@ public class QOrderRepositoryImpl implements QOrderRepository{
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    QOrders orders = QOrders.orders;
+    QOrder order = QOrder.order;
     QBuy buy = QBuy.buy;
 
     @Override
     public Long countByUserPurchase(User user, String state) {
         return jpaQueryFactory
-                .select(orders.count())
-                .from(orders)
-                .join(orders.buy, buy)
-                .where(orders.user.eq(user))
-                .where(orders.state.eq(state))
-                .where(orders.deletedAt.isNull())
+                .select(order.count())
+                .from(order)
+                .join(order.buy, buy)
+                .where(order.user.eq(user))
+                .where(order.state.eq(state))
+                .where(order.deletedAt.isNull())
                 .where(buy.deletedAt.isNull())
-                .orderBy(orders.createdAt.desc())
+                .orderBy(order.createdAt.desc())
                 .fetchOne();
     }
 }

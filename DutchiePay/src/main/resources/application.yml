@@ -1,3 +1,7 @@
+host:
+  backend: ${BACKEND_HOST}
+  frontend: ${FRONTEND_HOST}
+
 spring:
   security:
     oauth2:
@@ -56,6 +60,11 @@ spring:
     show-sql: true
   cors:
     allowed-origins: ${CORS_ORIGIN}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
@@ -93,3 +102,8 @@ cloud:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
+
+payment:
+  kakao:
+    cid: ${KAKAO_PAY_CID}
+    secret: ${KAKAO_PAY_SECRET}

@@ -6,10 +6,12 @@ import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
 import dutchiepay.backend.entity.User;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.List;
+
 public interface QBuyRepository {
-    GetBuyResponseDto getBuyPageByBuyId(Long userId, Long buyId);
+    GetBuyResponseDto getBuyPageByBuyId(User user, Long buyId);
 
     GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit);
 
-    GetProductReviewResponseDto getProductReview(Long buyId, Long photo, PageRequest pageable);
+    List<GetProductReviewResponseDto> getProductReview(Long buyId, Long photo, PageRequest pageable);
 }

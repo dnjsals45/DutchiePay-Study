@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.profile.service;
 
-import dutchiepay.backend.domain.commerce.BuyCategoryEnum;
+import dutchiepay.backend.domain.commerce.repository.BuyRepository;
+import dutchiepay.backend.domain.order.exception.*;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
@@ -15,16 +16,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-    private final OrdersRepository ordersRepository;
+    private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
     private final AskRepository askRepository;
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final BuyRepository buyRepository;
 
     public MyPageResponseDto myPage(User user) {
         return MyPageResponseDto.from(user);
@@ -46,18 +50,12 @@ public class ProfileService {
     }
 
 
-    public List<GetMyLikesResponseDto> getMyLike(User user, String category) {
-        if (!BuyCategoryEnum.isExist(category)) {
-            throw new ProfileErrorException(ProfileErrorCode.INVALID_CATEGORY);
-        }
-
-        return profileRepository.getMyLike(user, category);
+    public List<GetMyLikesResponseDto> getMyLike(User user) {
+        return profileRepository.getMyLike(user);
     }
 
     public List<GetMyReviewResponseDto> getMyReviews(User user) {
-        List<Review> reviews = reviewRepository.findAllByUser(user);
-
-        return GetMyReviewResponseDto.from(reviews);
+        return reviewRepository.getMyReviews(user);
     }
 
     public GetMyReviewResponseDto getOneReview(User user, Long reviewId) {
@@ -69,24 +67,39 @@ public class ProfileService {
 
 
     public List<GetMyAskResponseDto> getMyAsks(User user) {
-        List<Ask> asks = askRepository.findAllByUser(user);
-
-        return GetMyAskResponseDto.from(asks);
+        return askRepository.getMyAsks(user);
     }
 
     @Transactional
     public void createReview(User user, CreateReviewRequestDto req) {
-        Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
+        StringBuilder sb  = new StringBuilder();
+
+        Order order = orderRepository.findById(req.getOrderId())
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
         if (user != order.getUser()) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
         }
 
+        if (reviewRepository.existsByUserAndOrder(user, order)) {
+            throw new ReviewErrorException(ReviewErrorCode.ALREADY_EXIST);
+        }
+
+        String reviewImg = null;
+        if (req.getReviewImg() != null) {
+            for (String img : req.getReviewImg()) {
+                sb.append(img).append(",");
+            }
+            reviewImg = sb.substring(0, sb.length() - 1);
+        }
+
         Review newReview = Review.builder()
                 .user(user)
-                .buy(order.getBuy())
+                .order(order)
                 .contents(req.getContent())
                 .rating(req.getRating())
+                .reviewImg(reviewImg)
+                .updateCount(0)
                 .build();
 
         reviewRepository.save(newReview);
@@ -94,17 +107,12 @@ public class ProfileService {
 
     @Transactional
     public void createAsk(User user, CreateAskRequestDto req) {
-        Orders order = ordersRepository.findById(req.getOrderId()).orElseThrow(() -> new IllegalArgumentException("주문 정보가 없습니다."));
-
-        if (user != order.getUser()) {
-            throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
-        }
+        Buy buy = buyRepository.findById(req.getBuyId()).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_BUY));
 
         Ask newAsk = Ask.builder()
                 .user(user)
-                .buy(order.getBuy())
-                .product(order.getProduct())
-                .orderNum(order.getOrderNum())
+                .buy(buy)
+                .product(buy.getProduct())
                 .contents(req.getContent())
                 .secret(req.getIsSecret())
                 .answer(null)
@@ -147,7 +155,7 @@ public class ProfileService {
 
     @Transactional
     public void deleteAsk(User user, Long askId) {
-        Ask ask = askRepository.findById(askId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_ASK));
+        Ask ask = askRepository.findById(askId).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_ASK));
 
         if (ask.getUser() != user) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_ASK_USER_MISSMATCH);
@@ -157,12 +165,41 @@ public class ProfileService {
     }
 
     public void deleteReview(User user, Long reviewId) {
-        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_REVIEW));
+        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
 
         if (review.getUser() != user) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
         }
 
         reviewRepository.softDelete(review);
+    }
+
+
+    public void updateReview(User user, UpdateReviewRequestDto req) {
+        StringBuilder sb = new StringBuilder();
+
+        Review review = reviewRepository.findById(req.getReviewId())
+                .orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
+
+        if (review.getUser() != user) {
+            throw new ProfileErrorException(ProfileErrorCode.UPDATE_REVIEW_USER_MISSMATCH);
+        }
+
+        long dayBetween = ChronoUnit.DAYS.between(review.getCreatedAt().toLocalDate(), LocalDate.now());
+        if (dayBetween > 30) {
+            throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_30DAYS);
+        } else if (review.getUpdateCount() == 2) {
+            throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_COUNT);
+        } else {
+            String reviewImg = null;
+            if (req.getReviewImg() != null) {
+                for (String img : req.getReviewImg()) {
+                    sb.append(img).append(",");
+                }
+                reviewImg = sb.substring(0, sb.length() - 1);
+            }
+
+            review.update(req.getContent(), req.getRating(), reviewImg);
+        }
     }
 }
