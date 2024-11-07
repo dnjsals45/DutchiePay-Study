@@ -18,7 +18,7 @@ public class GetMyReviewResponseDto {
     private String content;
     private LocalDate createdAt;
     private Boolean isPossible;
-    private String reviewImg;
+    private String[] reviewImg;
 
 
     public static GetMyReviewResponseDto from(Review review) {
@@ -33,7 +33,7 @@ public class GetMyReviewResponseDto {
                 .content(review.getContents())
                 .createdAt(createdAt)
                 .isPossible(daysBetween <= 30 && review.getUpdateCount() != 3)
-                .reviewImg(review.getReviewImg())
+                .reviewImg(review.getReviewImg().split(","))
                 .build();
     }
 }
