@@ -57,7 +57,7 @@ public class QReviewRepositoryImpl implements QReviewRepository {
                     .content(t.get(review.contents))
                     .createdAt(createdAt)
                     .isPossible(daysBetween <= 30 && t.get(review.updateCount) != 3)
-                    .reviewImg(t.get(review.reviewImg))
+                    .reviewImg(t.get(review.reviewImg) != null ? t.get(review.reviewImg).split(",") : null)
                     .build());
         }
 

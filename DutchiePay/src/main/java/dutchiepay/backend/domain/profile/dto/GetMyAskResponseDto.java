@@ -15,6 +15,7 @@ public class GetMyAskResponseDto {
     private String productName;
     private String content;
     private String answer;
+    private LocalDateTime createdAt;
     private LocalDateTime answeredAt;
     private Boolean isSecret;
 }
