@@ -9,4 +9,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, QOrderRepos
     Optional<Order> findByOrderNum(String orderNum);
 
     boolean existsByOrderNum(String orderNum);
+
+    Order findByTid(String transactionId);
+
 }

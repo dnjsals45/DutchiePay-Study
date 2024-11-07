@@ -18,7 +18,8 @@ public enum CommerceErrorCode implements StatusCode {
     /**
      * 404 Not Found
      */
-    CANNOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "상품 정보를 찾을 수 없습니다.");
+    CANNOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "상품 정보를 찾을 수 없습니다."),
+    CANNOT_FOUND_BUY(HttpStatus.NOT_FOUND, "공동구매 게시글을 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
