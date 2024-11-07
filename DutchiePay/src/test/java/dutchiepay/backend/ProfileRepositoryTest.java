@@ -404,7 +404,6 @@ class ProfileRepositoryTest {
             System.out.println("수량 = " + dto.getQuantity());
             System.out.println("상품 가격 = " + dto.getProductPrice());
             System.out.println("총 가격 = " + dto.getTotalPrice());
-            System.out.println("할인율 = " + dto.getDiscountPercent());
             System.out.println("결제 방법 = " + dto.getPayment());
             System.out.println("주문 배송지 = " + dto.getAddress());
             System.out.println("배송 상태 = " + dto.getDeliveryState());
