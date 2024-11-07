@@ -16,9 +16,10 @@ public class MyGoodsResponseDto {
     private String productName;
     private Integer quantity;
     private Integer productPrice;
-    private Integer discountPercent;
+    private Integer discountPrice;
     private Integer totalPrice;
     private String payment;
+    private String receiver;
     private String address;
     private String zipCode;
     private String detail;

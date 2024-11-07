@@ -157,10 +157,11 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         orders.orderedAt,
                         product.productName,
                         orders.quantity,
+                        product.originalPrice,
                         product.salePrice,
-                        product.discountPercent,
                         orders.totalPrice,
                         orders.payment,
+                        orders.receiver,
                         orders.address,
                         orders.zipCode,
                         orders.detail,
@@ -190,10 +191,11 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                     .orderDate(t.get(orders.orderedAt).toLocalDate())
                     .productName(t.get(product.productName))
                     .quantity(t.get(orders.quantity))
-                    .productPrice(t.get(product.salePrice))
-                    .discountPercent(t.get(product.discountPercent))
+                    .productPrice(t.get(product.originalPrice))
+                    .discountPrice(t.get(product.salePrice))
                     .totalPrice(t.get(orders.totalPrice))
                     .payment(t.get(orders.payment))
+                    .receiver(t.get(orders.receiver))
                     .address(t.get(orders.address))
                     .zipCode(t.get(orders.zipCode))
                     .detail(t.get(orders.detail))
