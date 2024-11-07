@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,20 +33,19 @@ public class NoticeService {
     }
 
     private void sendUnradNotification(User user) {
-        List<Notice> notices = noticeRepository.findByUserAndIsReadFalse(user);
+        List<Notice> notices = noticeRepository.findByUserAndIsReadFalseAndCreatedAtAfter(user, LocalDateTime.now().minusDays(7));
+        List<NoticeDto> sendNotice = notices.stream()
+                .map(NoticeDto::toDto)
+                .toList();
         SseEmitter sseEmitter = emitters.get(user.getUserId());
 
         if (sseEmitter != null) {
-            for (Notice notice : notices) {
-                NoticeDto dto = NoticeDto.toDto(notice);
-                try {
-                    sseEmitter.send(SseEmitter.event()
-                            .id(String.valueOf(dto.getNoticeId()))
-                            .name("notice")
-                            .data(dto));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            try {
+                sseEmitter.send(SseEmitter.event()
+                        .name("notice")
+                        .data(sendNotice));
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
