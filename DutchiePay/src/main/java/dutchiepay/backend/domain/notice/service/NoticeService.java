@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.notice.service;
 
+import dutchiepay.backend.domain.notice.dto.NoticeDto;
 import dutchiepay.backend.domain.notice.repository.NoticeRepository;
 import dutchiepay.backend.entity.Notice;
 import dutchiepay.backend.entity.User;
@@ -36,8 +37,12 @@ public class NoticeService {
 
         if (sseEmitter != null) {
             for (Notice notice : notices) {
+                NoticeDto dto = NoticeDto.toDto(notice);
                 try {
-                    sseEmitter.send(notice);
+                    sseEmitter.send(SseEmitter.event()
+                            .id(String.valueOf(dto.getNoticeId()))
+                            .name("notice")
+                            .data(dto));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
