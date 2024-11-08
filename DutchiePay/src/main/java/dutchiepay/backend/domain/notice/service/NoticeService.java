@@ -28,12 +28,26 @@ public class NoticeService {
         sseEmitter.onCompletion(() -> emitters.remove(user.getUserId()));
         sseEmitter.onTimeout(() -> emitters.remove(user.getUserId()));
 
-        sendUnradNotification(user);
+        sendUnreadNotification(user);
 
         return sseEmitter;
     }
 
-    private void sendUnradNotification(User user) {
+    public void sendNotice(User user, Notice notice) {
+        SseEmitter sseEmitter = emitters.get(user.getUserId());
+
+        if (sseEmitter != null) {
+            try {
+                sseEmitter.send(SseEmitter.event()
+                        .name("notice")
+                        .data(NoticeDto.toDto(notice)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void sendUnreadNotification(User user) {
         List<Notice> notices = noticeRepository.findByUserAndIsReadFalseAndCreatedAtAfter(user, LocalDateTime.now().minusDays(7));
         List<NoticeDto> sendNotice = new ArrayList<>();
 
