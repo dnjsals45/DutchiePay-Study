@@ -33,6 +33,7 @@ public class GetBuyListResponseDto {
         private Integer nowCount;
         private Integer expireDate;
         private Boolean isLiked;
+        private Long reviewCount;
     }
 }
 

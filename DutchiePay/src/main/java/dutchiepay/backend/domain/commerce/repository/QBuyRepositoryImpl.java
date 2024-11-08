@@ -250,11 +250,13 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.skeleton,
                         buy.nowCount,
                         buy.deadline,
-                        user != null ? like.count().gt(0L) : Expressions.constant(false))
+                        user != null ? like.count().gt(0L) : Expressions.constant(false),
+                        review.count())
                 .from(buy)
                 .join(buy.product, product)
                 .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
-                .leftJoin(category).on(buyCategory.category.eq(category));
+                .leftJoin(category).on(buyCategory.category.eq(category))
+                .leftJoin(review).on(review.order.buy.eq(buy));
 
         if (user != null) {
             query.leftJoin(like).on(like.buy.eq(buy).and(like.user.eq(user)));
@@ -291,7 +293,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                     .skeleton(result.get(6, Integer.class))
                     .nowCount(result.get(7, Integer.class))
                     .expireDate(calculateExpireDate(result.get(8, LocalDate.class)))
-                    .isLiked(result.get(9, Boolean.class));
+                    .isLiked(result.get(9, Boolean.class))
+                    .reviewCount(result.get(10, Long.class));
 
             products.add(dtoBuilder.build());
             count++;
