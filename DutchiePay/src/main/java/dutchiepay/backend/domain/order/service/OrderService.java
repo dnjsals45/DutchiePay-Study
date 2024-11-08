@@ -24,7 +24,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
-        if (order.getUser() != user) {
+        if (!order.getUser().getUserId().equals(user.getUserId())) {
             throw new OrderErrorException(OrderErrorCode.ORDER_USER_MISS_MATCH);
         }
 
@@ -36,7 +36,7 @@ public class OrderService {
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
-        if (order.getUser() != user) {
+        if (!order.getUser().getUserId().equals(user.getUserId())) {
             throw new OrderErrorException(OrderErrorCode.ORDER_USER_MISS_MATCH);
         }
 
@@ -61,7 +61,7 @@ public class OrderService {
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
-        if (order.getUser() != user) {
+        if (!order.getUser().getUserId().equals(user.getUserId())) {
             throw new OrderErrorException(OrderErrorCode.ORDER_USER_MISS_MATCH);
         }
 
