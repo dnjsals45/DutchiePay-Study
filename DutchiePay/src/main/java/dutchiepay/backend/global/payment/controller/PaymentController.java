@@ -2,11 +2,15 @@ package dutchiepay.backend.global.payment.controller;
 
 import dutchiepay.backend.global.payment.dto.kakao.ApproveResponseDto;
 import dutchiepay.backend.global.payment.dto.kakao.ReadyRequestDto;
+import dutchiepay.backend.global.payment.dto.portone.TossPaymentsSuccessResponseDto;
+import dutchiepay.backend.global.payment.dto.portone.TossPaymentsValidateRequestDto;
 import dutchiepay.backend.global.payment.service.KakaoPayService;
+import dutchiepay.backend.global.payment.service.TossPaymentsService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +28,7 @@ public class PaymentController {
     private final String PAYMENT_FAIL_STATUS = "PAYMENT_FAIL";
     private final String POST_MESSAGE_CONTENT_TYPE = "text/html;charset=UTF-8";
     private final KakaoPayService kakaoPayService;
+    private final TossPaymentsService tossService;
 
     @PostMapping("/ready")
     @PreAuthorize("isAuthenticated()")
@@ -82,4 +87,15 @@ public class PaymentController {
             response.getWriter().flush();
         }
     }
+
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TossPaymentsSuccessResponseDto> validateTossResult(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                             @RequestParam("type") String type,
+                                                                             @RequestBody TossPaymentsValidateRequestDto validateRequestDto) {
+        return new ResponseEntity<>(tossService.validateResult(userDetails.getUser(), validateRequestDto),
+                HttpStatusCode.valueOf(200));
+    }
+
+
 }

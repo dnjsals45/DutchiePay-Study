@@ -107,3 +107,6 @@ payment:
   kakao:
     cid: ${KAKAO_PAY_CID}
     secret: ${KAKAO_PAY_SECRET}
+  portone:
+    secret: ${PORTONE_API_SECRET}
+    store-id: ${PORTONE_STORE_ID}
