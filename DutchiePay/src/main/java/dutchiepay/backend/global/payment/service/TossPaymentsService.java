@@ -3,24 +3,16 @@ package dutchiepay.backend.global.payment.service;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
-import dutchiepay.backend.domain.order.exception.OrderErrorCode;
-import dutchiepay.backend.domain.order.exception.OrderErrorException;
 import dutchiepay.backend.domain.order.repository.OrderRepository;
-import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
-import dutchiepay.backend.entity.Product;
 import dutchiepay.backend.entity.User;
-import dutchiepay.backend.global.payment.dto.portone.CancelToServerRequestDto;
-import dutchiepay.backend.global.payment.dto.portone.TossPaymentsCancelResponseDto;
-import dutchiepay.backend.global.payment.dto.portone.TossPaymentsValidateRequestDto;
-import dutchiepay.backend.global.payment.dto.portone.TossPaymentsValidatePaidResponseDto;
+import dutchiepay.backend.global.payment.dto.portone.*;
 import dutchiepay.backend.global.payment.exception.PaymentErrorCode;
 import dutchiepay.backend.global.payment.exception.PaymentErrorException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +46,7 @@ public class TossPaymentsService {
      * @param user 현재 로그인한 사용자
      * @param validateRequestDto 결제 정보를 담은 Dto
      */
-    public void validateResult(User user, TossPaymentsValidateRequestDto validateRequestDto) {
+    public TossPaymentsSuccessResponseDto validateResult(User user, TossPaymentsValidateRequestDto validateRequestDto) {
 
         HttpHeaders header = new HttpHeaders();
         header.set("Authorization", "PortOne " + apiSecret);
@@ -70,12 +62,14 @@ public class TossPaymentsService {
             );
             // 검증에 성공하면 order 엔티티 생성 후 저장
             if (validatePayment(response.getBody(), validateRequestDto)) {
-                makeOrder(validateRequestDto, user);
-
+                return TossPaymentsSuccessResponseDto.builder()
+                        .orderNum(makeOrder(validateRequestDto, user).getOrderNum()).build();
             }
         } catch (HttpStatusCodeException e) {
             log.error("결제 정보 불러오기 중 오류 발생: " + e.getMessage());
         }
+
+        return null;
     }
 
     /**
@@ -112,7 +106,7 @@ public class TossPaymentsService {
      * @param user 현재 로그인한 사용자
      */
     @Transactional
-    protected void makeOrder(TossPaymentsValidateRequestDto requestDto, User user) {
+    protected Order makeOrder(TossPaymentsValidateRequestDto requestDto, User user) {
         Buy buy = buyRepository.findById(requestDto.getBuyId())
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_BUY));
         if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
@@ -148,6 +142,7 @@ public class TossPaymentsService {
                 this.cancelPayment(newOrder);
             }
         }
+        return newOrder;
     }
 
     private String generateOrderNumber() {
