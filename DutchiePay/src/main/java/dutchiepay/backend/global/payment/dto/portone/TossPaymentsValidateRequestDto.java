@@ -5,8 +5,9 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 @Getter
-public class TossValidateRequestDto {
+public class TossPaymentsValidateRequestDto {
 
+    private Long buyId;
     private String paymentId;
     private String productName;
     private BigDecimal quantity;

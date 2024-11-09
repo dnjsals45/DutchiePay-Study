@@ -95,4 +95,8 @@ public class Order extends Auditing {
     public void failPayment() {
         this.state = "결제실패";
     }
+
+    public void changeStatus(String state) {
+        this.state = state;
+    }
 }

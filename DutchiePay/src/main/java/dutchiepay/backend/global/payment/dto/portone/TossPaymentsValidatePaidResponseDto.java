@@ -1,6 +1,5 @@
-package dutchiepay.backend.global.payment.dto.portone.responsedto;
+package dutchiepay.backend.global.payment.dto.portone;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,7 +7,7 @@ import java.math.BigDecimal;
 
 @Getter
 @NoArgsConstructor
-public class TossValidatePaidResponseDto {
+public class TossPaymentsValidatePaidResponseDto {
 
     private String status;
     private String id;  // paymentId

@@ -14,12 +14,14 @@ public enum CommerceErrorCode implements StatusCode {
      */
     AFTER_DUE_DATE(HttpStatus.BAD_REQUEST, "마감된 상품입니다."),
     INVALID_FILTER(HttpStatus.BAD_REQUEST, "유효하지 않은 필터입니다."),
+    SUCCEEDED_BUY(HttpStatus.BAD_REQUEST, "성공한 공동구매는 취소할 수 없습니다."),
 
     /**
      * 404 Not Found
      */
     CANNOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "상품 정보를 찾을 수 없습니다."),
     CANNOT_FOUND_BUY(HttpStatus.NOT_FOUND, "공동구매 게시글을 찾을 수 없습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;

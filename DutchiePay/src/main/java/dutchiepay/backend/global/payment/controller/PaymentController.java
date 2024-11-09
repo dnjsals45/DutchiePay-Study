@@ -1,9 +1,8 @@
 package dutchiepay.backend.global.payment.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import dutchiepay.backend.global.payment.dto.kakao.ApproveResponseDto;
 import dutchiepay.backend.global.payment.dto.kakao.ReadyRequestDto;
-import dutchiepay.backend.global.payment.dto.portone.TossValidateRequestDto;
+import dutchiepay.backend.global.payment.dto.portone.TossPaymentsValidateRequestDto;
 import dutchiepay.backend.global.payment.service.KakaoPayService;
 import dutchiepay.backend.global.payment.service.TossPaymentsService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
@@ -91,7 +90,9 @@ public class PaymentController {
     @PreAuthorize("isAuthenticated()")
     public void validateTossResult(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                    @RequestParam("type") String type,
-                                   @RequestBody TossValidateRequestDto validateRequestDto) throws JsonProcessingException {
+                                   @RequestBody TossPaymentsValidateRequestDto validateRequestDto) {
         tossService.validateResult(userDetails.getUser(), validateRequestDto);
     }
+
+
 }
