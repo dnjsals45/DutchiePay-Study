@@ -77,7 +77,7 @@ public class ProfileService {
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
-        if (user != order.getUser()) {
+        if (!order.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
         }
 
@@ -157,31 +157,32 @@ public class ProfileService {
     public void deleteAsk(User user, Long askId) {
         Ask ask = askRepository.findById(askId).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_ASK));
 
-        if (ask.getUser() != user) {
+        if (!ask.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_ASK_USER_MISSMATCH);
         }
 
         askRepository.softDelete(ask);
     }
 
+    @Transactional
     public void deleteReview(User user, Long reviewId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
 
-        if (review.getUser() != user) {
+        if (!review.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
         }
 
         reviewRepository.softDelete(review);
     }
 
-
+    @Transactional
     public void updateReview(User user, UpdateReviewRequestDto req) {
         StringBuilder sb = new StringBuilder();
 
         Review review = reviewRepository.findById(req.getReviewId())
                 .orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
 
-        if (review.getUser() != user) {
+        if (!review.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.UPDATE_REVIEW_USER_MISSMATCH);
         }
 
