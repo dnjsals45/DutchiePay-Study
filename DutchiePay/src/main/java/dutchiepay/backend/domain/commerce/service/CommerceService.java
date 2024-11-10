@@ -67,8 +67,8 @@ public class CommerceService {
 
         Buy buy = buyRepository.findById(buyId)
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
-        if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
-        return askRepository.findByBuyAndDeletedAtIsNull(buy, PageRequest.of(page, limit))
+
+        return askRepository.findByBuyAndDeletedAtIsNull(buy, PageRequest.of(page - 1, limit))
                 .stream().map(BuyAskResponseDto::toDto).collect(Collectors.toList());
     }
 
@@ -100,7 +100,6 @@ public class CommerceService {
     public PaymentInfoResponseDto getPaymentInfo(Long buyId) {
         Buy buy = buyRepository.findById(buyId)
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT));
-        if (buy.getDeadline().isBefore(LocalDate.now())) throw new CommerceException(CommerceErrorCode.AFTER_DUE_DATE);
 
         return PaymentInfoResponseDto.toDto(buy, productRepository.findById(buy.getProduct().getProductId())
                 .orElseThrow(() -> new CommerceException(CommerceErrorCode.CANNOT_FOUND_PRODUCT)).getStore().getStoreName());
