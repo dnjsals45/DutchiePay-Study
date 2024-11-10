@@ -129,11 +129,11 @@ public class TossPaymentsService {
                 .state("주문완료")
                 .build());
         // 공동구매 기한 확인
-        if (buy.getDeadline().isBefore(LocalDate.now())) {
+        if (buy.getDeadline().isAfter(LocalDate.now())) {
             buy.upCount();
             newOrder.changeStatus("공구진행중");
         }
-        else if (buy.getDeadline().isAfter(LocalDate.now())) {
+        else if (buy.getDeadline().isBefore(LocalDate.now())) {
             // 최소 인원 충족
             if (buy.getNowCount() >= buy.getSkeleton()) newOrder.changeStatus("배송진행중");
             else {
