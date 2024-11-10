@@ -59,8 +59,10 @@ public class OrderService {
         // 환불일때만 결제 취소 진행
         if (req.getType().equals("환불")) {
             if (order.getPayment().equals("kakao")) kakaoPayService.kakaoPayCancel(order.getOrderNum());
-            else if (order.getPayment().equals("card")) tossPaymentsService.cancelPayment(order);
-            // else tossPayService.cancel();
+            else if (order.getPayment().equals("card")) {
+                tossPaymentsService.cancelPayment(order);
+                order.changeStatus("환불처리");
+            }
         }
 
         Refund newRefund = Refund.builder()
