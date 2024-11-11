@@ -22,7 +22,8 @@ public enum PaymentErrorCode {
      * 500 INTERNAL_SERVER_ERROR
      */
     ERROR_KAKAOPAY_STATUS(HttpStatus.INTERNAL_SERVER_ERROR, "카카오페이 결제 상태를 확인할 수 없습니다."),
-    ERROR_KAKAOPAY_CANCEL(HttpStatus.INTERNAL_SERVER_ERROR, "카카오페이 결제 취소 중 오류가 발생하였습니다."),;
+    ERROR_KAKAOPAY_CANCEL(HttpStatus.INTERNAL_SERVER_ERROR, "카카오페이 결제 취소 중 오류가 발생하였습니다."),
+    PORTONE_CANCEL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 취소에 실패하였습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
