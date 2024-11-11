@@ -148,6 +148,7 @@ public class KakaoPayService {
 
         if (status.equals("SUCCESS_PAYMENT")) {
             kakaoPayCancel(order, orderState);
+            order.getBuy().disCount(order.getQuantity());
             return true;
         } else {
             throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);
@@ -162,6 +163,7 @@ public class KakaoPayService {
 
         if (status.equals("SUCCESS_PAYMENT")) {
             kakaoPayCancel(order, orderState);
+            order.getBuy().disCount(order.getQuantity());
             return true;
         } else {
             throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);

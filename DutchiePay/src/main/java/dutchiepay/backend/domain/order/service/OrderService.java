@@ -97,7 +97,7 @@ public class OrderService {
             }
         } else if (order.getPayment().equals("kakao")) {
             if (kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
-                buy.disCount();
+                buy.disCount(order.getQuantity());
             } else {
                 throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
             }
