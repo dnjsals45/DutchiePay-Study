@@ -178,6 +178,9 @@ public class TossPaymentsService {
                     response.getBody().getCancellation().getTotalAmount().equals(BigDecimal.valueOf(order.getTotalPrice()))) {
                 return true;
             }
+            else {
+                throw new PaymentErrorException(PaymentErrorCode.PORTONE_CANCEL_FAILED);
+            }
         } catch (HttpStatusCodeException e) {
             log.error("결제 취소 중 오류 발생: " + e.getMessage());
             if (e.getStatusCode() == HttpStatus.BAD_REQUEST)
