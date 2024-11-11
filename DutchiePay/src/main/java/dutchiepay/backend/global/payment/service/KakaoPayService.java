@@ -50,14 +50,12 @@ public class KakaoPayService {
     // 카카오페이 결제를 시작하기 위해 결제정보를 카카오페이 서버에 전달하고 결제 고유번호(TID)와 URL을 응답받는 단계
     @Transactional
     public KakaoPayReadyResponseDto kakaoPayReady(User user, ReadyRequestDto req) {
-        Product product = productRepository.findByProductName(req.getProductName())
-                .orElseThrow(() -> new PaymentErrorException(PaymentErrorCode.INVALID_PRODUCT));
-        Buy buy = buyRepository.findByProduct(product)
+        Buy buy = buyRepository.findById(req.getBuyId())
                 .orElseThrow(() -> new PaymentErrorException(PaymentErrorCode.INVALID_BUY));
 
         Order newOrder = Order.builder()
                 .user(user)
-                .product(product)
+                .product(buy.getProduct())
                 .buy(buy)
                 .receiver(req.getReceiver())
                 .phone(req.getPhone())
