@@ -81,7 +81,7 @@ public class ProfileService {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
         }
 
-        if (reviewRepository.existsByUserAndOrder(user, order)) {
+        if (reviewRepository.existsByUserAndOrderAndDeletedAtIsNull(user, order)) {
             throw new ReviewErrorException(ReviewErrorCode.ALREADY_EXIST);
         }
 
