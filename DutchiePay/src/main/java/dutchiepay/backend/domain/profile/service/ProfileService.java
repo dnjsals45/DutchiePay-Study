@@ -86,7 +86,7 @@ public class ProfileService {
         }
 
         String reviewImg = null;
-        if (req.getReviewImg() != null) {
+        if (req.getReviewImg() != null && req.getReviewImg().length > 0) {
             for (String img : req.getReviewImg()) {
                 sb.append(img).append(",");
             }
