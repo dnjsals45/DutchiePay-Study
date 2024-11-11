@@ -93,7 +93,7 @@ public class OrderService {
         if (order.getPayment().equals("card"))
             if (tossPaymentsService.cancelPayment(order)){
                 order.changeStatus("취소완료");
-                buy.disCount();
+                buy.disCount(order.getQuantity());
             }
     }
 }
