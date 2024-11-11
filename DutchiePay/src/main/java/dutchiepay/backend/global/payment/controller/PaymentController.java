@@ -28,7 +28,7 @@ public class PaymentController {
     private final String PAYMENT_FAIL_STATUS = "PAYMENT_FAIL";
     private final String POST_MESSAGE_CONTENT_TYPE = "text/html;charset=UTF-8";
     private final KakaoPayService kakaoPayService;
-    private final TossPaymentsService tossService;
+    private final TossPaymentsService tossPaymentsService;
 
     @PostMapping("/ready")
     @PreAuthorize("isAuthenticated()")
@@ -93,9 +93,8 @@ public class PaymentController {
     public ResponseEntity<TossPaymentsSuccessResponseDto> validateTossResult(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                              @RequestParam("type") String type,
                                                                              @RequestBody TossPaymentsValidateRequestDto validateRequestDto) {
-        return new ResponseEntity<>(tossService.validateResult(userDetails.getUser(), validateRequestDto),
+        return new ResponseEntity<>(tossPaymentsService.validateResult(userDetails.getUser(), validateRequestDto),
                 HttpStatusCode.valueOf(200));
     }
-
 
 }
