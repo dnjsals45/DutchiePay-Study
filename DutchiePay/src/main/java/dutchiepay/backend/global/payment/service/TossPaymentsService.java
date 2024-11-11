@@ -46,6 +46,7 @@ public class TossPaymentsService {
      * @param user 현재 로그인한 사용자
      * @param validateRequestDto 결제 정보를 담은 Dto
      */
+    @Transactional
     public TossPaymentsSuccessResponseDto validateResult(User user, TossPaymentsValidateRequestDto validateRequestDto) {
 
         HttpHeaders header = new HttpHeaders();
@@ -126,16 +127,17 @@ public class TossPaymentsService {
                 .phone(requestDto.getPhone())
                 .payment("card")
                 .totalPrice(Integer.parseInt(requestDto.getTotalAmount().toString()))
-                .state("주문완료")
+                .state("공구진행중")
                 .build());
+
         // 공동구매 기한 확인
         if (buy.getDeadline().isAfter(LocalDate.now())) {
-            buy.upCount();
-            newOrder.changeStatus("공구진행중");
+            buy.upCount(newOrder.getQuantity());
         }
         else if (buy.getDeadline().isBefore(LocalDate.now())) {
             // 최소 인원 충족
             if (buy.getNowCount() >= buy.getSkeleton()) newOrder.changeStatus("배송진행중");
+            // 최소 인원 미충족
             else {
                 newOrder.changeStatus("공구실패");
                 // 결제 취소
@@ -172,9 +174,12 @@ public class TossPaymentsService {
                     httpEntity,
                     TossPaymentsCancelResponseDto.class
             );
-            if (response.getBody().getStatus().equals("SUCCEEDED") &&
-                    response.getBody().getTotalAmount().equals(BigDecimal.valueOf(order.getTotalPrice()))) {
+            if (response.getBody().getCancellation().getStatus().equals("SUCCEEDED") &&
+                    response.getBody().getCancellation().getTotalAmount().equals(BigDecimal.valueOf(order.getTotalPrice()))) {
                 return true;
+            }
+            else {
+                throw new PaymentErrorException(PaymentErrorCode.PORTONE_CANCEL_FAILED);
             }
         } catch (HttpStatusCodeException e) {
             log.error("결제 취소 중 오류 발생: " + e.getMessage());

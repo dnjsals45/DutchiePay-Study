@@ -38,11 +38,11 @@ public class Buy extends Auditing {
     @Column(nullable = false)
     private int nowCount;
 
-    public void upCount() {
-        this.nowCount++;
+    public void upCount(int count) {
+        this.nowCount += count;
     }
 
-    public void disCount() {
-        this.nowCount--;
+    public void disCount(int count) {
+        this.nowCount -= count;
     }
 }
