@@ -38,6 +38,7 @@ public class QAskRepositoryImpl implements QAskRepository{
                 .join(ask.buy)
                 .join(ask.product.store)
                 .where(ask.user.eq(user))
+                .where(ask.deletedAt.isNull())
                 .fetch();
 
         List<GetMyAskResponseDto> result = new ArrayList<>();

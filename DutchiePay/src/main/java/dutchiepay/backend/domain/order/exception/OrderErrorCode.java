@@ -15,6 +15,8 @@ public enum OrderErrorCode implements StatusCode {
     INVALID_ORDER(HttpStatus.BAD_REQUEST, "주문정보를 찾을 수 없습니다."),
     INVALID_EXCHANGE_TYPE(HttpStatus.BAD_REQUEST, "올바르지 않은 교환 요청 타입입니다."),
     NOT_DELIVERED(HttpStatus.BAD_REQUEST, "배송이 완료되지 않았습니다"),
+    INVALID_PAYMENT(HttpStatus.BAD_REQUEST, "올바르지 않은 결제 정보입니다."),
+    KAKAOPAY_CANCEL_FAILED(HttpStatus.BAD_REQUEST, "카카오페이 결제 취소에 실패하였습니다."),
 
     /**
      * 401 UNAUTHORIZED

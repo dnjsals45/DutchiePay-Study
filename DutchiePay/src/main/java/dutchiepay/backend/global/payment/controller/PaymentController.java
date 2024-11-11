@@ -47,7 +47,7 @@ public class PaymentController {
     public void approve(HttpServletResponse response,
                         @RequestParam("pg_token") String pgToken,
                         @RequestParam("orderNum") String orderNum) throws IOException {
-        ApproveResponseDto result = kakaoPayService.kakaoPayApprove(pgToken, orderNum);
+        kakaoPayService.kakaoPayApprove(pgToken, orderNum);
 
         response.setContentType(POST_MESSAGE_CONTENT_TYPE);
         response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_APPROVE_STATUS));
@@ -58,19 +58,10 @@ public class PaymentController {
     @PreAuthorize("permitAll()")
     public void cancel(HttpServletResponse response,
                          @RequestParam("orderNum") String orderNum) throws IOException {
-        // 결제내역조회(/v1/payment/status) api에서 status를 확인한다.
-        String status = kakaoPayService.kakaPayCheckStatus(orderNum);
-
-        // 승인되지 않은 경우(결제 x인 경우) -> 취소 불가능 (상태코드 : READY)
-        // 승인 된 경우 -> 취소 가능 (상태코드 : SUCCESS_PAYMENT)
-        // 이미 취소 된 경우 -> 취소 불가능 (상태코드 : CANCEL_PAYMENT)
-        if (status.equals("SUCCESS_PAYMENT")) {
-            kakaoPayService.kakaoPayCancel(orderNum);
-
+        if (kakaoPayService.cancelExchange(orderNum, "취소완료")) {
             response.setContentType(POST_MESSAGE_CONTENT_TYPE);
             response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_CANCEL_STATUS));
             response.getWriter().flush();
-        } else if (status.equals("CANCEL_PAYMENT")) {
         }
     }
 

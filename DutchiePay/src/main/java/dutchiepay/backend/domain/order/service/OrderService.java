@@ -38,7 +38,7 @@ public class OrderService {
             throw new OrderErrorException(OrderErrorCode.ORDER_USER_MISS_MATCH);
         }
 
-        order.confirmPurchase();
+        order.changeStatus("구매확정");
     }
 
     @Transactional
@@ -58,7 +58,7 @@ public class OrderService {
 
         // 환불일때만 결제 취소 진행
         if (req.getType().equals("환불")) {
-            if (order.getPayment().equals("kakao")) kakaoPayService.kakaoPayCancel(order.getOrderNum());
+            if (order.getPayment().equals("kakao")) kakaoPayService.cancelExchange(order, "환불처리");
             else if (order.getPayment().equals("card")) {
                 tossPaymentsService.cancelPayment(order);
                 order.changeStatus("환불처리");
@@ -90,10 +90,19 @@ public class OrderService {
         if (buy.getDeadline().isAfter(LocalDate.now()) && buy.getNowCount() >= buy.getSkeleton())
             throw new CommerceException(CommerceErrorCode.SUCCEEDED_BUY);
 
-        if (order.getPayment().equals("card"))
-            if (tossPaymentsService.cancelPayment(order)){
+        if (order.getPayment().equals("card")) {
+            if (tossPaymentsService.cancelPayment(order)) {
                 order.changeStatus("취소완료");
                 buy.disCount(order.getQuantity());
             }
+        } else if (order.getPayment().equals("kakao")) {
+            if (kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
+                buy.disCount(order.getQuantity());
+            } else {
+                throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
+            }
+        } else {
+            throw new OrderErrorException(OrderErrorCode.INVALID_PAYMENT);
+        }
     }
 }
