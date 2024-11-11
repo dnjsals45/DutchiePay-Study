@@ -97,6 +97,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         List<Review> reviews = jpaQueryFactory
                 .selectFrom(review)
                 .where(review.order.buy.buyId.eq(buyId))
+                .where(review.deletedAt.isNull())
                 .fetch();
 
         long reviewCount = 0;
@@ -251,7 +252,11 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.nowCount,
                         buy.deadline,
                         user != null ? like.count().gt(0L) : Expressions.constant(false),
-                        review.count())
+                        JPAExpressions
+                                .select(review.count())
+                                .from(review)
+                                .where(review.order.buy.eq(buy))
+                                .where(review.deletedAt.isNull()))
                 .from(buy)
                 .join(buy.product, product)
                 .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
@@ -322,6 +327,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .join(review.order.buy, buy)
                 .where(buy.buyId.eq(buyId))
                 .where(photoCondition(photo))
+                .where(review.deletedAt.isNull())
                 .orderBy(review.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
