@@ -135,7 +135,8 @@ public class KakaoPayService {
                     ApproveResponseDto.class
             );
 
-            order.changeStatus("결제완료");
+            order.changeStatus("공구진행중");
+            order.getBuy().upCount(order.getQuantity());
 
             return response.getBody();
         } catch (HttpStatusCodeException ex) {
