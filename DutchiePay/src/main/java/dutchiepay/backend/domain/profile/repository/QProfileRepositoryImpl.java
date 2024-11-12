@@ -52,6 +52,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     QComment comment = QComment.comment;
     QBuyCategory buyCategory = QBuyCategory.buyCategory;
     QCategory category = QCategory.category;
+    QReview review = QReview.review;
 
 
     @Override
@@ -77,7 +78,12 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                                         .from(score)
                                         .where(score.buy.eq(buy)), "rating"
                         ),
-                        score.count,
+                        ExpressionUtils.as(
+                                JPAExpressions
+                                        .select(review.count().castToNum(Integer.class))
+                                        .from(review)
+                                        .where(review.order.buy.eq(buy)), "reviewCount"
+                        ),
                         ExpressionUtils.as(
                                 Expressions.numberTemplate(
                                         Integer.class,
