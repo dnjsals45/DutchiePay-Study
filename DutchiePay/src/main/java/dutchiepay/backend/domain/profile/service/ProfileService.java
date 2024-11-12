@@ -74,6 +74,10 @@ public class ProfileService {
     public void createReview(User user, CreateReviewRequestDto req) {
         StringBuilder sb  = new StringBuilder();
 
+        if (req.getRating() != 1 && req.getRating() != 2 && req.getRating() != 3 && req.getRating() != 4 && req.getRating() != 5) {
+            throw new ReviewErrorException(ReviewErrorCode.INVALID_RATING);
+        }
+
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
