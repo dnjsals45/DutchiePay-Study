@@ -177,7 +177,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         }
 
         if (end == 0) {
-            BooleanExpression dateCondition = buy.deadline.after(LocalDate.now());
+            BooleanExpression dateCondition = buy.deadline.after(LocalDate.now().minusDays(1));
             conditions = conditions == null ? dateCondition : conditions.and(dateCondition);
         }
 
