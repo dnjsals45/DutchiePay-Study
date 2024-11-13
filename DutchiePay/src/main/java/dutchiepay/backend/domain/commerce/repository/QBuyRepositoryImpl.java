@@ -76,7 +76,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         JPAExpressions
                                 .select(ask.count())
                                 .from(ask)
-                                .where(ask.buy.buyId.eq(buyId)),
+                                .where(ask.buy.buyId.eq(buyId))
+                                .where(ask.deletedAt.isNull()),
                         score.one,
                         score.two,
                         score.three,

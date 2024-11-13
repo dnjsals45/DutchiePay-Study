@@ -18,7 +18,7 @@ public enum ProfileErrorCode implements StatusCode {
     INVALID_POST_TYPE(HttpStatus.BAD_REQUEST, "올바르지 않은 게시글 타입입니다."),
     INVALID_USER_ORDER_REVIEW(HttpStatus.BAD_REQUEST, "자신이 구매한 상품에만 후기를 달 수 있습니다."),
     INVALID_USER_ORDER_ASK(HttpStatus.BAD_REQUEST, "자신이 구매한 상품에만 문의를 달 수 있습니다."),
-    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "올바르지 않은 주문 상태입니다."),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "올바르지 않은 필터입니다."),
 
     /**
      * 401 UNAUTHORIZED

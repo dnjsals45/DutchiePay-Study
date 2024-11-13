@@ -35,9 +35,10 @@ public class ProfileService {
     }
 
     public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit, String filter) {
-        if (!(filter.equals("pending") || filter.equals("shipped") || filter.equals("delivered"))) {
-            throw new ProfileErrorException(ProfileErrorCode.INVALID_ORDER_STATUS);
-        }
+        if (filter != null && !(filter.equals("pending") || filter.equals("shipped") || filter.equals("delivered"))) {
+                throw new ProfileErrorException(ProfileErrorCode.INVALID_ORDER_STATUS);
+            }
+
         return profileRepository.getMyGoods(user, filter, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 
