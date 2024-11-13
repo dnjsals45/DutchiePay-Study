@@ -34,8 +34,11 @@ public class ProfileService {
         return MyPageResponseDto.from(user);
     }
 
-    public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit) {
-        return profileRepository.getMyGoods(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
+    public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit, String filter) {
+        if (!(filter.equals("pending") || filter.equals("shipped") || filter.equals("delivered"))) {
+            throw new ProfileErrorException(ProfileErrorCode.INVALID_ORDER_STATUS);
+        }
+        return profileRepository.getMyGoods(user, filter, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 
 
@@ -73,6 +76,10 @@ public class ProfileService {
     @Transactional
     public void createReview(User user, CreateReviewRequestDto req) {
         StringBuilder sb  = new StringBuilder();
+
+        if (req.getRating() != 1 && req.getRating() != 2 && req.getRating() != 3 && req.getRating() != 4 && req.getRating() != 5) {
+            throw new ReviewErrorException(ReviewErrorCode.INVALID_RATING);
+        }
 
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));

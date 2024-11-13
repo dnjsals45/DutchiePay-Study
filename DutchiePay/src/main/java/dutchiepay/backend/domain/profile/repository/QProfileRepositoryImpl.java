@@ -149,7 +149,10 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     }
 
     @Override
-    public List<MyGoodsResponseDto> getMyGoods(User user, Pageable pageable) {
+    public List<MyGoodsResponseDto> getMyGoods(User user, String filter, Pageable pageable) {
+
+        BooleanExpression filterCondition = getMyGoodsFilterCondition(filter);
+
         List<Tuple> tuple =  jpaQueryFactory
                 .select(orders.orderId,
                         orders.orderNum,
@@ -171,7 +174,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .from(orders)
                 .join(orders.product, product)
                 .join(product.store, store)
-                .where(orders.user.eq(user))
+                .where(orders.user.eq(user), filterCondition)
                 .orderBy(orders.orderedAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -209,6 +212,36 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         }
 
         return result;
+    }
+
+    private BooleanExpression getMyGoodsFilterCondition(String filter) {
+        if (filter == null || filter.isEmpty()) {
+            return null;
+        }
+
+        switch (filter) {
+            case "pending":
+                return orders.state.in(
+                        "공구진행중",
+                        "배송준비중",
+                        "공구실패",
+                        "구매취소"
+                );
+
+            case "shipped":
+                return orders.state.in(
+                        "배송중"
+                );
+
+            case "delivered":
+                return orders.state.in(
+                        "배송완료",
+                        "구매확정",
+                        "환불/교환"
+                );
+            default:
+                return null;
+        }
     }
 
     // QueryDsl 은 union 작성이 안된다.. native로 작성해야할까?
