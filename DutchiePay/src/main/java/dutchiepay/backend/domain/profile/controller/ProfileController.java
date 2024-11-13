@@ -36,7 +36,7 @@ public class ProfileController {
     public ResponseEntity<?> myGoods(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                    @RequestParam(name = "page") Long page,
                                    @RequestParam(name = "limit") Long limit,
-                                     @RequestParam(name = "filter", required = false) String filter) {
+                                   @RequestParam(name = "filter", required = false) String filter) {
         return ResponseEntity.ok().body(profileService.getMyGoods(userDetails.getUser(), page, limit, filter));
     }
 
