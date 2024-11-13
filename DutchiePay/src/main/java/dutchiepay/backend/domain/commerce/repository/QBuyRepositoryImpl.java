@@ -296,12 +296,6 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .leftJoin(review).on(review.order.buy.eq(buy))
                 .leftJoin(like).on(like.buy.eq(buy));
 
-//        if (user != null) {
-//            query.leftJoin(like).on(like.buy.eq(buy).and(like.user.eq(user)));
-//        } else {
-//            query.leftJoin(like).on(like.buy.eq(buy));
-//        }
-
         query.where(conditions)
                 .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,
                         product.salePrice, product.discountPercent, buy.skeleton, buy.nowCount, buy.deadline)
