@@ -393,7 +393,7 @@ class ProfileRepositoryTest {
         orderRepository.save(orders2);
 
         // when
-        List<MyGoodsResponseDto> result = profileRepository.getMyGoods(user, PageRequest.of(0, 1));
+        List<MyGoodsResponseDto> result = profileRepository.getMyGoods(user, null, PageRequest.of(0, 1));
 
         // then
         for (MyGoodsResponseDto dto : result) {
