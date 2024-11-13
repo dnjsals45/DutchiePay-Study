@@ -162,6 +162,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .build();
     }
 
+
     @Override
     public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, int end, Long cursor, int limit) {
         if (cursor == null) {
@@ -185,55 +186,32 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
         OrderSpecifier[] orderBy;
         BooleanExpression cursorCondition = null;
-
-        // 현재 날짜를 기준으로 그룹 표현식 정의
-        NumberExpression<Integer> groupExpression = Expressions.cases()
-                .when(buy.deadline.after(LocalDate.now()))
-                .then(0)
-                .otherwise(1);
-
         switch (filter) {
             case "like":
+                orderBy = new OrderSpecifier[]{like.count().desc(), buy.buyId.desc()};
                 if (cursor < Long.MAX_VALUE) {
-                    Tuple cursorInfo = jpaQueryFactory
-                            .select(like.count(),
-                                    groupExpression)
+                    Long cursorLike = jpaQueryFactory
+                            .select(like.count())
                             .from(like)
                             .join(like.buy, buy)
                             .where(buy.buyId.eq(cursor))
-                            .groupBy(buy.buyId, buy.deadline)
                             .fetchOne();
 
-                    if (cursorInfo != null) {
-                        Long cursorLike = cursorInfo.get(0, Long.class);
-                        Integer cursorGroup = cursorInfo.get(1, Integer.class);
-
-                        // 같은 그룹 내 조건
-                        BooleanExpression sameGroupCondition = groupExpression.eq(cursorGroup)
-                                .and(
-                                        like.count().lt(cursorLike)
-                                                .or(like.count().eq(cursorLike)
-                                                        .and(buy.buyId.lt(cursor)))
-                                );
-
-                        // 다음 그룹 조건
-                        BooleanExpression nextGroupCondition = groupExpression.gt(cursorGroup);
-
-                        cursorCondition = sameGroupCondition.or(nextGroupCondition);
+                    if (cursorLike != null) {
+                        cursorCondition = like.count().lt(cursorLike)
+                                .or(like.count().eq(cursorLike))
+                                .and(buy.buyId.loe(cursor));
                     }
                 }
-                orderBy = new OrderSpecifier[]{
-                        groupExpression.asc(),
-                        like.count().desc(),
-                        buy.buyId.desc()
-                };
                 break;
-
             case "endDate":
                 if (cursor < Long.MAX_VALUE) {
                     Tuple cursorInfo = jpaQueryFactory
                             .select(buy.deadline,
-                                    groupExpression)
+                                    Expressions.cases()
+                                            .when(buy.deadline.after(LocalDate.now()))
+                                            .then(0)
+                                            .otherwise(1))
                             .from(buy)
                             .where(buy.buyId.eq(cursor))
                             .fetchOne();
@@ -242,84 +220,55 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         LocalDate cursorEndDate = cursorInfo.get(0, LocalDate.class);
                         Integer cursorGroup = cursorInfo.get(1, Integer.class);
 
-                        BooleanExpression sameGroupCondition = groupExpression.eq(cursorGroup)
-                                .and(
-                                        buy.deadline.gt(cursorEndDate)
-                                                .or(buy.deadline.eq(cursorEndDate)
-                                                        .and(buy.buyId.lt(cursor)))
-                                );
+                        BooleanExpression sameGroupCondition = Expressions.cases()
+                                .when(buy.deadline.after(LocalDate.now()))
+                                .then(0)
+                                .otherwise(1)
+                                .eq(cursorGroup)
+                                .and(buy.deadline.gt(cursorEndDate)
+                                    .or(buy.deadline.eq(cursorEndDate)
+                                    .and(buy.buyId.loe(cursor))));
 
-                        BooleanExpression nextGroupCondition = groupExpression.gt(cursorGroup);
+                        BooleanExpression nextGroupCondition = Expressions.cases()
+                                .when(buy.deadline.after(LocalDate.now()))
+                                .then(0)
+                                .otherwise(1)
+                                .gt(cursorGroup);
 
                         cursorCondition = sameGroupCondition.or(nextGroupCondition);
                     }
                 }
+
                 orderBy = new OrderSpecifier[]{
-                        groupExpression.asc(),
+                        Expressions.cases()
+                                .when(buy.deadline.after(LocalDate.now()))
+                                .then(0)
+                                .otherwise(1)
+                                .asc(),
                         buy.deadline.asc(),
                         buy.buyId.desc()
                 };
                 break;
-
             case "discount":
                 if (cursor < Long.MAX_VALUE) {
-                    Tuple cursorInfo = jpaQueryFactory
-                            .select(product.discountPercent,
-                                    groupExpression)
+                    Integer cursorDiscount = jpaQueryFactory
+                            .select(product.discountPercent)
                             .from(buy)
                             .join(buy.product, product)
                             .where(buy.buyId.eq(cursor))
                             .fetchOne();
 
-                    if (cursorInfo != null) {
-                        Integer cursorDiscount = cursorInfo.get(0, Integer.class);
-                        Integer cursorGroup = cursorInfo.get(1, Integer.class);
-
-                        BooleanExpression sameGroupCondition = groupExpression.eq(cursorGroup)
-                                .and(
-                                        product.discountPercent.lt(cursorDiscount)
-                                                .or(product.discountPercent.eq(cursorDiscount)
-                                                        .and(buy.buyId.lt(cursor)))
-                                );
-
-                        BooleanExpression nextGroupCondition = groupExpression.gt(cursorGroup);
-
-                        cursorCondition = sameGroupCondition.or(nextGroupCondition);
+                    if (cursorDiscount != null) {
+                        cursorCondition = product.discountPercent.lt(cursorDiscount)
+                                .or(product.discountPercent.eq(cursorDiscount));
                     }
                 }
-                orderBy = new OrderSpecifier[]{
-                        groupExpression.asc(),
-                        product.discountPercent.desc(),
-                        buy.buyId.desc()
-                };
+                orderBy = new OrderSpecifier[]{product.discountPercent.desc(), buy.buyId.desc()};
                 break;
-
             case "newest":
-                if (cursor < Long.MAX_VALUE) {
-                    Tuple cursorInfo = jpaQueryFactory
-                            .select(buy.buyId,
-                                    groupExpression)
-                            .from(buy)
-                            .where(buy.buyId.eq(cursor))
-                            .fetchOne();
-
-                    if (cursorInfo != null) {
-                        Integer cursorGroup = cursorInfo.get(1, Integer.class);
-
-                        BooleanExpression sameGroupCondition = groupExpression.eq(cursorGroup)
-                                .and(buy.buyId.lt(cursor));
-
-                        BooleanExpression nextGroupCondition = groupExpression.gt(cursorGroup);
-
-                        cursorCondition = sameGroupCondition.or(nextGroupCondition);
-                    }
-                }
-                orderBy = new OrderSpecifier[]{
-                        groupExpression.asc(),
-                        buy.buyId.desc()
-                };
+                orderBy = new OrderSpecifier[]{buy.buyId.desc()};
+                conditions = conditions != null ? conditions.and(buy.buyId.loe(cursor)) : buy.buyId.loe(cursor);
                 break;
-
             default:
                 throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
         }
