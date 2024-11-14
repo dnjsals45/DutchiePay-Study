@@ -37,6 +37,7 @@ public class QReviewRepositoryImpl implements QReviewRepository {
                 .join(review.order.buy)
                 .join(review.order.product)
                 .where(review.user.eq(user))
+                .where(review.deletedAt.isNull())
                 .fetch();
 
         List<GetMyReviewResponseDto> result = new ArrayList<>();

@@ -35,8 +35,9 @@ public class ProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myGoods(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                    @RequestParam(name = "page") Long page,
-                                   @RequestParam(name = "limit") Long limit) {
-        return ResponseEntity.ok().body(profileService.getMyGoods(userDetails.getUser(), page, limit));
+                                   @RequestParam(name = "limit") Long limit,
+                                   @RequestParam(name = "filter", required = false) String filter) {
+        return ResponseEntity.ok().body(profileService.getMyGoods(userDetails.getUser(), page, limit, filter));
     }
 
     // 타입은 post / comment 중 하나

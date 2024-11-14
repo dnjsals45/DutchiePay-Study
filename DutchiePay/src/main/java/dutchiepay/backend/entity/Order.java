@@ -71,28 +71,12 @@ public class Order extends Auditing {
     @Column(nullable = false)
     private int quantity;
 
-    public void confirmPurchase() {
-        this.state = "구매확정";
-    }
-
-    public void cancelPurchase() {
-        this.state = "주문취소";
-    }
-
     public void readyPurchase(String tid) {
         this.tid = tid;
         this.state = "결제준비";
     }
 
-    public void approvePayment() {
-        this.state = "결제완료";
-    }
-
-    public void cancelPayment() {
-        this.state = "결제취소";
-    }
-
-    public void failPayment() {
-        this.state = "결제실패";
+    public void changeStatus(String state) {
+        this.state = state;
     }
 }

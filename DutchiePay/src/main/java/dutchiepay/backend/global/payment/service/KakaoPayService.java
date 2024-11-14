@@ -50,14 +50,12 @@ public class KakaoPayService {
     // 카카오페이 결제를 시작하기 위해 결제정보를 카카오페이 서버에 전달하고 결제 고유번호(TID)와 URL을 응답받는 단계
     @Transactional
     public KakaoPayReadyResponseDto kakaoPayReady(User user, ReadyRequestDto req) {
-        Product product = productRepository.findByProductName(req.getProductName())
-                .orElseThrow(() -> new PaymentErrorException(PaymentErrorCode.INVALID_PRODUCT));
-        Buy buy = buyRepository.findByProduct(product)
+        Buy buy = buyRepository.findById(req.getBuyId())
                 .orElseThrow(() -> new PaymentErrorException(PaymentErrorCode.INVALID_BUY));
 
         Order newOrder = Order.builder()
                 .user(user)
-                .product(product)
+                .product(buy.getProduct())
                 .buy(buy)
                 .receiver(req.getReceiver())
                 .phone(req.getPhone())
@@ -135,7 +133,8 @@ public class KakaoPayService {
                     ApproveResponseDto.class
             );
 
-            order.approvePayment();
+            order.changeStatus("공구진행중");
+            order.getBuy().upCount(order.getQuantity());
 
             return response.getBody();
         } catch (HttpStatusCodeException ex) {
@@ -143,11 +142,35 @@ public class KakaoPayService {
         }
     }
 
-    @Transactional
-    public void kakaoPayCancel(String orderNum) {
+    public boolean cancelExchange(Order order, String orderState) {
+        String status = kakaPayCheckStatus(order);
+
+        if (status.equals("SUCCESS_PAYMENT")) {
+            kakaoPayCancel(order, orderState);
+            order.getBuy().disCount(order.getQuantity());
+            return true;
+        } else {
+            throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);
+        }
+    }
+
+    public boolean cancelExchange(String orderNum, String orderState) {
         Order order = ordersRepository.findByOrderNum(orderNum)
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
+        String status = kakaPayCheckStatus(order);
+
+        if (status.equals("SUCCESS_PAYMENT")) {
+            kakaoPayCancel(order, orderState);
+            order.getBuy().disCount(order.getQuantity());
+            return true;
+        } else {
+            throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);
+        }
+    }
+
+    @Transactional
+    protected void kakaoPayCancel(Order order, String state) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "SECRET_KEY " + secretKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -168,10 +191,11 @@ public class KakaoPayService {
                     CancelResponseDto.class
             );
 
-            order.cancelPayment();
+            order.changeStatus(state);
             log.info("response: {}", response.getBody());
         } catch (HttpStatusCodeException ex) {
             log.error("카카오페이 결제 취소 실패: Status code: {}, Response body: {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw new PaymentErrorException(PaymentErrorCode.ERROR_KAKAOPAY_CANCEL);
         }
     }
 
@@ -200,9 +224,34 @@ public class KakaoPayService {
             return response.getBody().getStatus();
         } catch (HttpStatusCodeException ex) {
             log.error("카카오페이 결제 상태 조회 실패");
+            throw new PaymentErrorException(PaymentErrorCode.ERROR_KAKAOPAY_STATUS);
         }
+    }
 
-        return null;
+    public String kakaPayCheckStatus(Order order) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "SECRET_KEY " + secretKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        KakaoPayCheckStatusRequest request = KakaoPayCheckStatusRequest.builder()
+                .cid(cid)
+                .tid(order.getTid())
+                .build();
+
+        HttpEntity<KakaoPayCheckStatusRequest> entityMap = new HttpEntity<>(request, headers);
+
+        try {
+            ResponseEntity<KakaoPayCheckStatusResponse> response = new RestTemplate().postForEntity(
+                    "https://open-api.kakaopay.com/online/v1/payment/order",
+                    entityMap,
+                    KakaoPayCheckStatusResponse.class
+            );
+
+            return response.getBody().getStatus();
+        } catch (HttpStatusCodeException ex) {
+            log.error("카카오페이 결제 상태 조회 실패");
+            throw new PaymentErrorException(PaymentErrorCode.ERROR_KAKAOPAY_STATUS);
+        }
     }
 
     public String makePostMessage(String orderNum, String paymentStatus) {
@@ -242,6 +291,6 @@ public class KakaoPayService {
         Order order = ordersRepository.findByOrderNum(orderNum)
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
-        order.failPayment();
+        order.changeStatus("결제실패");
     }
 }

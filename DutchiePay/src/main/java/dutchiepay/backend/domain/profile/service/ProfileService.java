@@ -34,8 +34,12 @@ public class ProfileService {
         return MyPageResponseDto.from(user);
     }
 
-    public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit) {
-        return profileRepository.getMyGoods(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
+    public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit, String filter) {
+        if (filter != null && !(filter.equals("pending") || filter.equals("shipped") || filter.equals("delivered"))) {
+                throw new ProfileErrorException(ProfileErrorCode.INVALID_ORDER_STATUS);
+            }
+
+        return profileRepository.getMyGoods(user, filter, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 
 
@@ -74,19 +78,23 @@ public class ProfileService {
     public void createReview(User user, CreateReviewRequestDto req) {
         StringBuilder sb  = new StringBuilder();
 
+        if (req.getRating() != 1 && req.getRating() != 2 && req.getRating() != 3 && req.getRating() != 4 && req.getRating() != 5) {
+            throw new ReviewErrorException(ReviewErrorCode.INVALID_RATING);
+        }
+
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
 
-        if (user != order.getUser()) {
+        if (!order.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
         }
 
-        if (reviewRepository.existsByUserAndOrder(user, order)) {
+        if (reviewRepository.existsByUserAndOrderAndDeletedAtIsNull(user, order)) {
             throw new ReviewErrorException(ReviewErrorCode.ALREADY_EXIST);
         }
 
         String reviewImg = null;
-        if (req.getReviewImg() != null) {
+        if (req.getReviewImg() != null && req.getReviewImg().length > 0) {
             for (String img : req.getReviewImg()) {
                 sb.append(img).append(",");
             }
@@ -157,31 +165,32 @@ public class ProfileService {
     public void deleteAsk(User user, Long askId) {
         Ask ask = askRepository.findById(askId).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_ASK));
 
-        if (ask.getUser() != user) {
+        if (!ask.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_ASK_USER_MISSMATCH);
         }
 
         askRepository.softDelete(ask);
     }
 
+    @Transactional
     public void deleteReview(User user, Long reviewId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
 
-        if (review.getUser() != user) {
+        if (!review.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
         }
 
         reviewRepository.softDelete(review);
     }
 
-
+    @Transactional
     public void updateReview(User user, UpdateReviewRequestDto req) {
         StringBuilder sb = new StringBuilder();
 
         Review review = reviewRepository.findById(req.getReviewId())
                 .orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
 
-        if (review.getUser() != user) {
+        if (!review.getUser().getUserId().equals(user.getUserId())) {
             throw new ProfileErrorException(ProfileErrorCode.UPDATE_REVIEW_USER_MISSMATCH);
         }
 
