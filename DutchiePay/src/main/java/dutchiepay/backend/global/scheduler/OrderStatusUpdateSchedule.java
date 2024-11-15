@@ -33,7 +33,7 @@ public class OrderStatusUpdateSchedule {
     private static final String FAILED = "공구실패";
     private static final String EXCHANGE_REQUESTED = "교환요청";
 
-    @Scheduled(cron = "0 10 0 * * ?")
+    @Scheduled(cron = "0 5 0 * * ?")
     @Transactional
     public void orderStatusUpdate() {
         log.info("주문 상태 업데이트 스케쥴링 시작");
@@ -49,12 +49,12 @@ public class OrderStatusUpdateSchedule {
 
             if (buy.getDeadline().isBefore(now) && buy.getNowCount() >= buy.getSkeleton() && IN_PROGRESS.equals(order.getState())) {
                 order.changeStatus(PREPARING_SHIPMENT);
-            } else if (isEqualOrAfter(buy.getDeadline().plusDays(2), now) && PREPARING_SHIPMENT.equals(order.getState())) {
+            } else if (isEqualOrAfter(now, buy.getDeadline().plusDays(2)) && PREPARING_SHIPMENT.equals(order.getState())) {
                 order.changeStatus(SHIPPING);
             } else if ((SHIPPING.equals(order.getState()) || EXCHANGE_REQUESTED.equals(order.getState()))
-                    && isEqualOrAfter(order.getStatusChangeDate().plusDays(2), now)) {
+                    && isEqualOrAfter(now, order.getStatusChangeDate().plusDays(2))) {
                 order.changeStatus(COMPLETED);
-            } else if (SHIPPING.equals(order.getState()) && isEqualOrAfter(order.getStatusChangeDate().plusDays(7) ,now)) {
+            } else if (COMPLETED.equals(order.getState()) && isEqualOrAfter(now, order.getStatusChangeDate().plusDays(5))) {
                 order.changeStatus(PURCHASE_CONFIRMED);
             } else if (buy.getDeadline().isBefore(now) && buy.getNowCount() < buy.getSkeleton() && IN_PROGRESS.equals(order.getState())) {
                 order.changeStatus(FAILED);
