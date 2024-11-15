@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.order.repository;
 
+import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,4 +13,5 @@ public interface OrderRepository extends JpaRepository<Order, Long>, QOrderRepos
 
     Order findByTid(String transactionId);
 
+    Order findByBuy(Buy buy);
 }

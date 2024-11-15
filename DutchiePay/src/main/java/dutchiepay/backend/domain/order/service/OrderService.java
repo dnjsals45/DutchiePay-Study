@@ -105,4 +105,29 @@ public class OrderService {
             throw new OrderErrorException(OrderErrorCode.INVALID_PAYMENT);
         }
     }
+
+    @Transactional
+    public void autoCancelPurchase(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
+        Buy buy = order.getBuy();
+
+        if (buy.getDeadline().isAfter(LocalDate.now()) && buy.getNowCount() >= buy.getSkeleton())
+            throw new CommerceException(CommerceErrorCode.SUCCEEDED_BUY);
+
+        if (order.getPayment().equals("card")) {
+            if (tossPaymentsService.cancelPayment(order)) {
+                order.changeStatus("취소완료");
+                buy.disCount(order.getQuantity());
+            }
+        } else if (order.getPayment().equals("kakao")) {
+            if (kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
+                buy.disCount(order.getQuantity());
+            } else {
+                throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
+            }
+        } else {
+            throw new OrderErrorException(OrderErrorCode.INVALID_PAYMENT);
+        }
+    }
 }

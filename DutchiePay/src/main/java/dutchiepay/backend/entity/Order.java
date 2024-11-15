@@ -4,6 +4,7 @@ import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -71,12 +72,17 @@ public class Order extends Auditing {
     @Column(nullable = false)
     private int quantity;
 
+    @Column
+    private LocalDate statusChangeDate;
+
     public void readyPurchase(String tid) {
         this.tid = tid;
         this.state = "결제준비";
+        this.statusChangeDate = LocalDate.now();
     }
 
     public void changeStatus(String state) {
         this.state = state;
+        this.statusChangeDate = LocalDate.now();
     }
 }
