@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -37,38 +38,67 @@ public class OrderStatusUpdateSchedule {
     @Transactional
     public void orderStatusUpdate() {
         log.info("주문 상태 업데이트 스케쥴링 시작");
-        List<Buy> buyList = buyRepository.findAll();
-        List<Order> changeOrderList = new ArrayList<>();
+        LocalDate now = LocalDate.now();
 
-        for (Buy buy : buyList) {
-            Order order = orderRepository.findByBuy(buy);
-            if (order == null) {
-                continue;
-            }
-            LocalDate now = LocalDate.now();
+        updateInProgressOrders(now);
+        updatePreparingShipmentOrders(now);
+        updateShippingOrders(now);
+        updateCompletedOrders(now);
 
-            if (buy.getDeadline().isBefore(now) && buy.getNowCount() >= buy.getSkeleton() && IN_PROGRESS.equals(order.getState())) {
-                order.changeStatus(PREPARING_SHIPMENT);
-            } else if (isEqualOrAfter(now, buy.getDeadline().plusDays(2)) && PREPARING_SHIPMENT.equals(order.getState())) {
-                order.changeStatus(SHIPPING);
-            } else if ((SHIPPING.equals(order.getState()) || EXCHANGE_REQUESTED.equals(order.getState()))
-                    && isEqualOrAfter(now, order.getStatusChangeDate().plusDays(2))) {
-                order.changeStatus(COMPLETED);
-            } else if (COMPLETED.equals(order.getState()) && isEqualOrAfter(now, order.getStatusChangeDate().plusDays(5))) {
-                order.changeStatus(PURCHASE_CONFIRMED);
-            } else if (buy.getDeadline().isBefore(now) && buy.getNowCount() < buy.getSkeleton() && IN_PROGRESS.equals(order.getState())) {
-                order.changeStatus(FAILED);
-                orderService.autoCancelPurchase(order.getOrderId());
-            }
-
-            changeOrderList.add(order);
-        }
-
-        orderRepository.saveAll(changeOrderList);
         log.info("주문 상태 업데이트 스케쥴링 종료");
     }
 
-    private boolean isEqualOrAfter(LocalDate date1, LocalDate date2) {
-        return date1.isEqual(date2) || date1.isAfter(date2);
+    private void updateInProgressOrders(LocalDate now) {
+        List<Order> inProgressOrders = orderRepository.findAllByState(IN_PROGRESS);
+        List<Order> updateList = new ArrayList<>();
+
+        for (Order order : inProgressOrders) {
+            Buy buy = order.getBuy();
+            if (buy.getDeadline().isBefore(now)) {
+                if (buy.getNowCount() >= buy.getSkeleton()) {
+                    order.changeStatus(PREPARING_SHIPMENT);
+                    updateList.add(order);
+                } else {
+                    order.changeStatus(FAILED);
+                    orderService.autoCancelPurchase(order.getOrderId());
+                    updateList.add(order);
+                }
+            }
+        }
+
+        if (!updateList.isEmpty()) {
+            orderRepository.saveAll(updateList);
+        }
+    }
+
+    private void updatePreparingShipmentOrders(LocalDate now) {
+        List<Order> preparingOrders = orderRepository
+                .findPreparingShipmentOrders(PREPARING_SHIPMENT, now.minusDays(2));
+
+        if (!preparingOrders.isEmpty()) {
+            preparingOrders.forEach(order -> order.changeStatus(SHIPPING));
+            orderRepository.saveAll(preparingOrders);
+        }
+    }
+
+    private void updateShippingOrders(LocalDate now) {
+        List<Order> shippingOrders = orderRepository
+                .findShippingOrders(Arrays.asList(SHIPPING, EXCHANGE_REQUESTED),
+                        now.minusDays(2));
+
+        if (!shippingOrders.isEmpty()) {
+            shippingOrders.forEach(order -> order.changeStatus(COMPLETED));
+            orderRepository.saveAll(shippingOrders);
+        }
+    }
+
+    private void updateCompletedOrders(LocalDate now) {
+        List<Order> completedOrders = orderRepository
+                .findCompletedOrders(COMPLETED, now.minusDays(5));
+
+        if (!completedOrders.isEmpty()) {
+            completedOrders.forEach(order -> order.changeStatus(PURCHASE_CONFIRMED));
+            orderRepository.saveAll(completedOrders);
+        }
     }
 }
