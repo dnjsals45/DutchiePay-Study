@@ -21,10 +21,7 @@ import java.util.List;
 @Slf4j
 public class OrderStatusUpdateSchedule {
     private final OrderService orderService;
-
     private final OrderRepository orderRepository;
-
-    private final BuyRepository buyRepository;
 
     private static final String IN_PROGRESS = "공구진행중";
     private static final String PREPARING_SHIPMENT = "배송준비중";
@@ -82,8 +79,7 @@ public class OrderStatusUpdateSchedule {
     }
 
     private void updateShippingOrders(LocalDate now) {
-        List<Order> shippingOrders = orderRepository
-                .findShippingOrders(Arrays.asList(SHIPPING, EXCHANGE_REQUESTED),
+        List<Order> shippingOrders = orderRepository.findShippingOrders(Arrays.asList(SHIPPING, EXCHANGE_REQUESTED),
                         now.minusDays(2));
 
         if (!shippingOrders.isEmpty()) {
@@ -93,8 +89,7 @@ public class OrderStatusUpdateSchedule {
     }
 
     private void updateCompletedOrders(LocalDate now) {
-        List<Order> completedOrders = orderRepository
-                .findCompletedOrders(COMPLETED, now.minusDays(5));
+        List<Order> completedOrders = orderRepository.findCompletedOrders(COMPLETED, now.minusDays(5));
 
         if (!completedOrders.isEmpty()) {
             completedOrders.forEach(order -> order.changeStatus(PURCHASE_CONFIRMED));
