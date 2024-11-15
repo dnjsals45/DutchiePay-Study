@@ -1,13 +1,13 @@
-package dutchiepay.backend.global.quartz;
+package dutchiepay.backend.global.scheduler;
 
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.order.repository.OrderRepository;
 import dutchiepay.backend.domain.order.service.OrderService;
 import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,20 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class OrderStatusUpdateJob implements Job {
-
-    @Autowired
+@RequiredArgsConstructor
+@Slf4j
+public class OrderStatusUpdateSchedule {
     private final OrderService orderService;
-    @Autowired
-    private final OrderRepository orderRepository;
-    @Autowired
-    private final BuyRepository buyRepository;
 
-    public OrderStatusUpdateJob() {
-        this.orderService = null;
-        this.orderRepository = null;
-        this.buyRepository = null;
-    }
+    private final OrderRepository orderRepository;
+
+    private final BuyRepository buyRepository;
 
     private static final String IN_PROGRESS = "공구진행중";
     private static final String PREPARING_SHIPMENT = "배송준비중";
@@ -39,15 +33,14 @@ public class OrderStatusUpdateJob implements Job {
     private static final String FAILED = "공구실패";
     private static final String EXCHANGE_REQUESTED = "교환요청";
 
-    @Override
+    @Scheduled(cron = "0 10 0 * * ?")
     @Transactional
-    public void execute(JobExecutionContext jobExecutionContext) {
-        assert buyRepository != null;
+    public void orderStatusUpdate() {
+        log.info("주문 상태 업데이트 스케쥴링 시작");
         List<Buy> buyList = buyRepository.findAll();
         List<Order> changeOrderList = new ArrayList<>();
 
         for (Buy buy : buyList) {
-            assert orderRepository != null;
             Order order = orderRepository.findByBuy(buy);
             if (order == null) {
                 continue;
@@ -56,7 +49,7 @@ public class OrderStatusUpdateJob implements Job {
 
             if (buy.getDeadline().isBefore(now) && buy.getNowCount() >= buy.getSkeleton() && IN_PROGRESS.equals(order.getState())) {
                 order.changeStatus(PREPARING_SHIPMENT);
-            } else if (buy.getDeadline().plusDays(2).isBefore(now) && PREPARING_SHIPMENT.equals(order.getState())) {
+            } else if (isEqualOrAfter(buy.getDeadline().plusDays(2), now) && PREPARING_SHIPMENT.equals(order.getState())) {
                 order.changeStatus(SHIPPING);
             } else if ((SHIPPING.equals(order.getState()) || EXCHANGE_REQUESTED.equals(order.getState()))
                     && isEqualOrAfter(order.getStatusChangeDate().plusDays(2), now)) {
@@ -65,15 +58,14 @@ public class OrderStatusUpdateJob implements Job {
                 order.changeStatus(PURCHASE_CONFIRMED);
             } else if (buy.getDeadline().isBefore(now) && buy.getNowCount() < buy.getSkeleton() && IN_PROGRESS.equals(order.getState())) {
                 order.changeStatus(FAILED);
-                assert orderService != null;
                 orderService.autoCancelPurchase(order.getOrderId());
             }
 
             changeOrderList.add(order);
         }
 
-        assert orderRepository != null;
         orderRepository.saveAll(changeOrderList);
+        log.info("주문 상태 업데이트 스케쥴링 종료");
     }
 
     private boolean isEqualOrAfter(LocalDate date1, LocalDate date2) {
