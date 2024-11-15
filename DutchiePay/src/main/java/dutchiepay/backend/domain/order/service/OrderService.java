@@ -87,7 +87,7 @@ public class OrderService {
             throw new OrderErrorException(OrderErrorCode.ORDER_USER_MISS_MATCH);
         }
 
-        if (buy.getDeadline().isAfter(LocalDate.now()) && buy.getNowCount() >= buy.getSkeleton())
+        if (buy.getDeadline().isBefore(LocalDate.now()) && buy.getNowCount() >= buy.getSkeleton())
             throw new CommerceException(CommerceErrorCode.SUCCEEDED_BUY);
 
         if (order.getPayment().equals("card")) {
@@ -96,9 +96,7 @@ public class OrderService {
                 buy.disCount(order.getQuantity());
             }
         } else if (order.getPayment().equals("kakao")) {
-            if (kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
-                buy.disCount(order.getQuantity());
-            } else {
+            if (!kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
                 throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
             }
         } else {
