@@ -29,7 +29,13 @@ public enum ProfileErrorCode implements StatusCode {
      * 403 FORBIDDEN
      */
     DELETE_REVIEW_USER_MISSMATCH(HttpStatus.FORBIDDEN, "본인만 후기 삭제를 할 수 있습니다."),
-    UPDATE_REVIEW_USER_MISSMATCH(HttpStatus.FORBIDDEN, "본인만 후기 수정을 할 수 있습니다.");
+    UPDATE_REVIEW_USER_MISSMATCH(HttpStatus.FORBIDDEN, "본인만 후기 수정을 할 수 있습니다."),
+
+    /**
+     * 404 NOT_FOUND
+     */
+    NO_HISTORY_ORDER(HttpStatus.NOT_FOUND, "주문 내역이 없습니다."),
+    NO_MORE_HISTORY_ORDER(HttpStatus.NOT_FOUND, "더 이상 주문 내역이 없습니다."),;
 
     private final HttpStatus httpStatus;
     private final String message;

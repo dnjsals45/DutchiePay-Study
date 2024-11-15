@@ -12,6 +12,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyPostsResponseDto;
+import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
+import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -156,7 +158,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
     @Override
     public List<MyGoodsResponseDto> getMyGoods(User user, String filter, Pageable pageable) {
-
         BooleanExpression filterCondition = getMyGoodsFilterCondition(filter);
 
         List<Tuple> tuple =  jpaQueryFactory
@@ -188,9 +189,12 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
         List<MyGoodsResponseDto> result = new ArrayList<>();
 
-        if (tuple.isEmpty()) {
-            return result;
+        if (pageable.getPageNumber() == 0 && tuple.isEmpty()) {
+            throw new ProfileErrorException(ProfileErrorCode.NO_HISTORY_ORDER);
+        } else if (tuple.isEmpty()) {
+            throw new ProfileErrorException(ProfileErrorCode.NO_MORE_HISTORY_ORDER);
         }
+
 
         for (Tuple t : tuple) {
             MyGoodsResponseDto dto = MyGoodsResponseDto.builder()
