@@ -1,6 +1,5 @@
 package dutchiepay.backend.global.scheduler;
 
-import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.order.repository.OrderRepository;
 import dutchiepay.backend.domain.order.service.OrderService;
 import dutchiepay.backend.entity.Buy;
