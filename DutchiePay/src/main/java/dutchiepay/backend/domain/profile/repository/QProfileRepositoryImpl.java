@@ -152,9 +152,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
     @Override
     public List<MyGoodsResponseDto> getMyGoods(User user, String filter, Pageable pageable) {
-
-        System.out.println("pageable = " + pageable.getPageNumber());
-
         BooleanExpression filterCondition = getMyGoodsFilterCondition(filter);
 
         List<Tuple> tuple =  jpaQueryFactory
