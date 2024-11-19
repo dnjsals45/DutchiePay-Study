@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.chat.service;
 
+import dutchiepay.backend.domain.chat.dto.ChatMessage;
 import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
 import dutchiepay.backend.entity.ChatRoom;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,12 @@ public class ChatRoomService {
                 .build();
 
         chatRoomRepository.save(newChat);
+    }
+
+    public void sendToChatRoomUser(String chatRoomId, ChatMessage message) {
+        ChatRoom chatRoom = chatRoomRepository.findById(Long.parseLong(chatRoomId))
+                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+
+
     }
 }
