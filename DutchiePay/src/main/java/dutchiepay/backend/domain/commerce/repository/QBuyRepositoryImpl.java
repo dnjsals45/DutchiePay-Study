@@ -209,7 +209,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                     Tuple cursorInfo = jpaQueryFactory
                             .select(buy.deadline,
                                     Expressions.cases()
-                                            .when(buy.deadline.after(LocalDate.now()))
+                                            .when(buy.deadline.goe(LocalDate.now()))
                                             .then(0)
                                             .otherwise(1))
                             .from(buy)
@@ -221,7 +221,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         Integer cursorGroup = cursorInfo.get(1, Integer.class);
 
                         BooleanExpression sameGroupCondition = Expressions.cases()
-                                .when(buy.deadline.after(LocalDate.now()))
+                                .when(buy.deadline.goe(LocalDate.now()))
                                 .then(0)
                                 .otherwise(1)
                                 .eq(cursorGroup)
@@ -230,7 +230,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                                     .and(buy.buyId.loe(cursor))));
 
                         BooleanExpression nextGroupCondition = Expressions.cases()
-                                .when(buy.deadline.after(LocalDate.now()))
+                                .when(buy.deadline.goe(LocalDate.now()))
                                 .then(0)
                                 .otherwise(1)
                                 .gt(cursorGroup);
@@ -241,7 +241,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
                 orderBy = new OrderSpecifier[]{
                         Expressions.cases()
-                                .when(buy.deadline.after(LocalDate.now()))
+                                .when(buy.deadline.goe(LocalDate.now()))
                                 .then(0)
                                 .otherwise(1)
                                 .asc(),
