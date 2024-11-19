@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Disabled
 class OrderStatusUpdateJobTest {
     @Autowired
     private StoreRepository storeRepository;
@@ -125,9 +124,7 @@ class OrderStatusUpdateJobTest {
         orderRepository.saveAll(orderList);
         // when
         CronTrigger cronTrigger = new CronTrigger("0 10 0 * * ?");
-        Date nextExecutionTime = cronTrigger.nextExecutionTime(
-                new SimpleTriggerContext()
-        );
+        cronTrigger.nextExecution(new SimpleTriggerContext());
 
         taskScheduler.schedule(schedule::orderStatusUpdate, new Date());
 
