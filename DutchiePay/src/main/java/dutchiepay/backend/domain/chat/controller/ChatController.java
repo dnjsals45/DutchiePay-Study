@@ -10,9 +10,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -32,5 +30,12 @@ public class ChatController {
                                           @RequestBody String chatRoomId) {
         chatroomService.joinChatRoom(userDetails.getUser(), chatRoomId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/chat/message")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getChatRoomMessageList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                    @RequestParam String chatRoomId) {
+        return ResponseEntity.ok(chatroomService.getChatRoomMessageList(userDetails.getUser(), Long.valueOf(chatRoomId)));
     }
 }

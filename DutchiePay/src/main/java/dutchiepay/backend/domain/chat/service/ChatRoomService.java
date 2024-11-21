@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.ChatMessage;
+import dutchiepay.backend.domain.chat.dto.CursorResponse;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
@@ -79,6 +80,28 @@ public class ChatRoomService {
         updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
         simpMessagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomId, MessageResponse.of(newMessage));
+    }
+
+    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+
+        List<Message> messageList = messageRepository.findAllByChatroom(chatRoom);
+        List<MessageResponse> dto = new ArrayList<>();
+
+        for (Message message : messageList) {
+            dto.add(MessageResponse.of(message));
+        }
+
+        return dto;
+    }
+
+    public void checkCursorId(Long chatRoomId) {
+        Long cursor = messageRepository.findCursorId(chatRoomId);
+
+        if (cursor != null) {
+            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
+        }
     }
 
     private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {

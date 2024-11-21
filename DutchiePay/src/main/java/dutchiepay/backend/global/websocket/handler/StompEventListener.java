@@ -1,8 +1,8 @@
 package dutchiepay.backend.global.websocket.handler;
 
-import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
 import dutchiepay.backend.domain.chat.repository.UserChatroomRepository;
+import dutchiepay.backend.domain.chat.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -19,12 +19,14 @@ import java.security.Principal;
 public class StompEventListener extends DefaultHandshakeHandler {
     private final UserChatroomRepository userChatroomRepository;
     private final MessageRepository messageRepository;
+    private final ChatRoomService chatRoomService;
 
     @EventListener
     public void handleSubscribeEvent(SessionSubscribeEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
         String destination = accessor.getDestination();
+
         String userId = accessor.getSessionAttributes().get("userId").toString();
         Long chatRoomId = Long.parseLong(destination.substring(destination.lastIndexOf("/") + 1));
 
@@ -36,11 +38,15 @@ public class StompEventListener extends DefaultHandshakeHandler {
             lastMessageId = 0L;
         }
 
+        if (destination.startsWith("/sub/chat/room/read")) {
+            chatRoomService.checkCursorId(chatRoomId);
+        }
+
         // 채팅방에 접속하면 읽지 않은 메시지들의 unreadCount 개수를 감소시킨다.
         messageRepository.discountUnreadMessageCount(lastMessageId, chatRoomId);
 
         // 유저 본인의 lastMessageId를 최신 메시지로 업데이트한다.
-//        userChatroomRepository.updateLastMessageLatestMessageId(Long.parseLong(userId), chatRoomId);
+        userChatroomRepository.updateLastMessageLatestMessageId(Long.parseLong(userId), chatRoomId);
     }
 
     @EventListener
