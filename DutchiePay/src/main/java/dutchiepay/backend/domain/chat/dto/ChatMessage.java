@@ -6,5 +6,4 @@ import lombok.Getter;
 public class ChatMessage {
     private Long sender;
     private String content;
-    private Long unreadCount;
 }

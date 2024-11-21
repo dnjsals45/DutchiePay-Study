@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.ChatMessage;
+import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
 import dutchiepay.backend.domain.chat.repository.UserChatroomRepository;
@@ -77,7 +78,7 @@ public class ChatRoomService {
 
         updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
-        simpMessagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomId, message);
+        simpMessagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomId, MessageResponse.of(newMessage));
     }
 
     private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
