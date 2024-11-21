@@ -20,5 +20,9 @@ public class ChatRoom extends Auditing {
 
     private Integer maxPartInc;
 
-    private Integer maxPartIn;
+    private Integer nowPartInc;
+
+    public void joinUser() {
+        this.nowPartInc++;
+    }
 }

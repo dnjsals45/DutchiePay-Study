@@ -24,5 +24,5 @@ public class Message extends Auditing {
 
     private String content;
 
-    private Boolean isRead;
+    private int unreadCount;
 }

@@ -86,20 +86,35 @@ public class JwtUtil {
     }
 
     // 토큰에서 사용자 정보 가져오기
-    public Claims getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getKeyFromToken(token)).build()
+    public Claims getUserInfoFromAccessToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(getKeyFromAccessToken(token)).build()
             .parseClaimsJws(token)
             .getBody();
     }
 
-    private Key getKeyFromToken(String token) {
+    public Claims getUserInfoFromRefreshToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(getKeyFromRefreshToken(token)).build()
+            .parseClaimsJws(token)
+            .getBody();
+    }
+
+    private Key getKeyFromAccessToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(accessKey).build().parseClaimsJws(token)
             .getBody();
         String tokenType = claims.get("tokenType", String.class);
 
         if ("access".equals(tokenType)) {
             return accessKey;
-        } else if ("refresh".equals(tokenType)) {
+        }
+        throw new IllegalArgumentException("토큰 타입이 유효하지 않습니다.");
+    }
+
+    private Key getKeyFromRefreshToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(refreshKey).build().parseClaimsJws(token)
+            .getBody();
+        String tokenType = claims.get("tokenType", String.class);
+
+        if ("refresh".equals(tokenType)) {
             return refreshKey;
         }
         throw new IllegalArgumentException("토큰 타입이 유효하지 않습니다.");
