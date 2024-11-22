@@ -67,6 +67,8 @@ public class OrderService {
             }
         }
 
+        order.getBuy().disCount(order.getQuantity());
+
         Refund newRefund = Refund.builder()
                 .user(user)
                 .store(order.getProduct().getStore())
@@ -98,7 +100,7 @@ public class OrderService {
                 buy.disCount(order.getQuantity());
             }
         } else if (order.getPayment().equals("kakao")) {
-            if (!kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
+            if (!kakaoPayService.kakaoPayCancel(order, "취소완료")) {
                 throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
             }
         } else {
@@ -128,7 +130,7 @@ public class OrderService {
     }
 
     private void cancelKakaoPayExchange(Order order, String orderState) {
-        String status = kakaoPayService.kakaPayCheckStatus(order);
+        String status = kakaoPayService.kakaoPayCheckStatus(order);
 
         if (status.equals("SUCCESS_PAYMENT")) {
             kakaoPayService.kakaoPayCancel(order, orderState);

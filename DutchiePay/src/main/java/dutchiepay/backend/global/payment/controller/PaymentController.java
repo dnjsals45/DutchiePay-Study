@@ -58,7 +58,7 @@ public class PaymentController {
     @PreAuthorize("permitAll()")
     public void cancel(HttpServletResponse response,
                          @RequestParam("orderNum") String orderNum) throws IOException {
-        if (kakaoPayService.cancelExchange(orderNum, "취소완료")) {
+        if (kakaoPayService.kakaoPayCancel(orderNum, "취소완료")) {
             response.setContentType(POST_MESSAGE_CONTENT_TYPE);
             response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_CANCEL_STATUS));
             response.getWriter().flush();
@@ -69,7 +69,7 @@ public class PaymentController {
     @PreAuthorize("permitAll()")
     public void fail(HttpServletResponse response,
                        @RequestParam("orderNum") String orderNum) throws IOException {
-        String status = kakaoPayService.kakaPayCheckStatus(orderNum);
+        String status = kakaoPayService.kakaoPayCheckStatus(orderNum);
 
         if (status.equals("FAIL_PAYMENT")) {
             kakaoPayService.kakaoPayFail(orderNum);
