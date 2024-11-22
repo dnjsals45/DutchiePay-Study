@@ -142,18 +142,6 @@ public class KakaoPayService {
         }
     }
 
-    public boolean cancelExchange(Order order, String orderState) {
-        String status = kakaPayCheckStatus(order);
-
-        if (status.equals("SUCCESS_PAYMENT")) {
-            kakaoPayCancel(order, orderState);
-            order.getBuy().disCount(order.getQuantity());
-            return true;
-        } else {
-            throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);
-        }
-    }
-
     public boolean cancelExchange(String orderNum, String orderState) {
         Order order = ordersRepository.findByOrderNum(orderNum)
                 .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
@@ -162,7 +150,6 @@ public class KakaoPayService {
 
         if (status.equals("SUCCESS_PAYMENT")) {
             kakaoPayCancel(order, orderState);
-            order.getBuy().disCount(order.getQuantity());
             return true;
         } else {
             throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);
@@ -170,7 +157,7 @@ public class KakaoPayService {
     }
 
     @Transactional
-    protected void kakaoPayCancel(Order order, String state) {
+    public void kakaoPayCancel(Order order, String state) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "SECRET_KEY " + secretKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -185,14 +172,13 @@ public class KakaoPayService {
         HttpEntity<KakaoPayCancelRequest> entityMap = new HttpEntity<>(cancelRequest, headers);
 
         try {
-            ResponseEntity<CancelResponseDto> response = new RestTemplate().postForEntity(
+            new RestTemplate().postForEntity(
                     "https://open-api.kakaopay.com/online/v1/payment/cancel",
                     entityMap,
                     CancelResponseDto.class
             );
 
             order.changeStatus(state);
-            log.info("response: {}", response.getBody());
         } catch (HttpStatusCodeException ex) {
             log.error("카카오페이 결제 취소 실패: Status code: {}, Response body: {}", ex.getStatusCode(), ex.getResponseBodyAsString());
             throw new PaymentErrorException(PaymentErrorCode.ERROR_KAKAOPAY_CANCEL);
