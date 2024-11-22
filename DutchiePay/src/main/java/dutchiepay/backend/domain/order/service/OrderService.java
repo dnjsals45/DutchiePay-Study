@@ -13,6 +13,8 @@ import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.Refund;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.payment.exception.PaymentErrorCode;
+import dutchiepay.backend.global.payment.exception.PaymentErrorException;
 import dutchiepay.backend.global.payment.service.KakaoPayService;
 import dutchiepay.backend.global.payment.service.TossPaymentsService;
 import lombok.RequiredArgsConstructor;
@@ -58,12 +60,14 @@ public class OrderService {
 
         // 환불일때만 결제 취소 진행
         if (req.getType().equals("환불")) {
-            if (order.getPayment().equals("kakao")) kakaoPayService.cancelExchange(order, "환불처리");
+            if (order.getPayment().equals("kakao")) cancelKakaoPayExchange(order, "환불처리");
             else if (order.getPayment().equals("card")) {
                 tossPaymentsService.cancelPayment(order);
                 order.changeStatus("환불처리");
             }
         }
+
+        order.getBuy().disCount(order.getQuantity());
 
         Refund newRefund = Refund.builder()
                 .user(user)
@@ -96,7 +100,7 @@ public class OrderService {
                 buy.disCount(order.getQuantity());
             }
         } else if (order.getPayment().equals("kakao")) {
-            if (!kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
+            if (!kakaoPayService.kakaoPayCancel(order, "취소완료")) {
                 throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
             }
         } else {
@@ -115,17 +119,23 @@ public class OrderService {
 
         if (order.getPayment().equals("card")) {
             if (tossPaymentsService.cancelPayment(order)) {
-                order.changeStatus("취소완료");
-                buy.disCount(order.getQuantity());
+                order.changeStatus("공구실패");
             }
         } else if (order.getPayment().equals("kakao")) {
-            if (kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
-                buy.disCount(order.getQuantity());
-            } else {
-                throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
-            }
+            cancelKakaoPayExchange(order, "공구실패");
         } else {
             throw new OrderErrorException(OrderErrorCode.INVALID_PAYMENT);
+        }
+        buy.disCount(order.getQuantity());
+    }
+
+    private void cancelKakaoPayExchange(Order order, String orderState) {
+        String status = kakaoPayService.kakaoPayCheckStatus(order);
+
+        if (status.equals("SUCCESS_PAYMENT")) {
+            kakaoPayService.kakaoPayCancel(order, orderState);
+        } else {
+            throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_CANCEL_STATUS);
         }
     }
 }
