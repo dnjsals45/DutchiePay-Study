@@ -43,6 +43,10 @@ public class Buy extends Auditing {
     }
 
     public void disCount(int count) {
-        this.nowCount -= count;
+        if (count >= this.nowCount) {
+            this.nowCount = 0;
+        } else {
+            this.nowCount -= count;
+        }
     }
 }
