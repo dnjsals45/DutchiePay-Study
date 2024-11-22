@@ -34,4 +34,24 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                     .execute();
         }
     }
+
+    @Override
+    public void updateLastMessageToUser(Long userId, Long chatRoomId) {
+        Long latestMessageId = jpaQueryFactory
+                .select(message.messageId)
+                .from(message)
+                .where(message.chatroom.chatroomId.eq(chatRoomId))
+                .orderBy(message.messageId.desc())
+                .limit(1)
+                .fetchOne();
+
+        if (latestMessageId != null) {
+            jpaQueryFactory
+                    .update(userChatRoom)
+                    .set(userChatRoom.lastMessageId, latestMessageId)
+                    .where(userChatRoom.user.userId.eq(userId)
+                            .and(userChatRoom.chatroom.chatroomId.eq(chatRoomId)))
+                    .execute();
+        }
+    }
 }

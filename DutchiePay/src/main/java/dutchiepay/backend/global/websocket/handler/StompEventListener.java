@@ -38,8 +38,9 @@ public class StompEventListener extends DefaultHandshakeHandler {
             lastMessageId = 0L;
         }
 
+        // destination이 /sub/chat/room/read로 시작하면 cursorId를 보내준다.
         if (destination.startsWith("/sub/chat/room/read")) {
-            chatRoomService.checkCursorId(chatRoomId);
+            chatRoomService.checkCursorId(chatRoomId, Long.valueOf(userId));
         }
 
         // 채팅방에 접속하면 읽지 않은 메시지들의 unreadCount 개수를 감소시킨다.

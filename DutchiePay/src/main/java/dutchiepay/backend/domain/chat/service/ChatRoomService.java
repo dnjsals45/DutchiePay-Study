@@ -96,11 +96,13 @@ public class ChatRoomService {
         return dto;
     }
 
-    public void checkCursorId(Long chatRoomId) {
-        Long cursor = messageRepository.findCursorId(chatRoomId);
+    public void checkCursorId(Long chatRoomId, Long userId) {
+        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
 
         if (cursor != null) {
+            log.info("커서 값: {}", cursor);
             simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
+            userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
         }
     }
 
