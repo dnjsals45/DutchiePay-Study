@@ -119,10 +119,10 @@ public class OrderService {
 
         if (order.getPayment().equals("card")) {
             if (tossPaymentsService.cancelPayment(order)) {
-                order.changeStatus("취소완료");
+                order.changeStatus("공구실패");
             }
         } else if (order.getPayment().equals("kakao")) {
-            cancelKakaoPayExchange(order, "취소완료");
+            cancelKakaoPayExchange(order, "공구실패");
         } else {
             throw new OrderErrorException(OrderErrorCode.INVALID_PAYMENT);
         }
