@@ -116,16 +116,14 @@ public class OrderService {
         if (order.getPayment().equals("card")) {
             if (tossPaymentsService.cancelPayment(order)) {
                 order.changeStatus("취소완료");
-                buy.disCount(order.getQuantity());
             }
         } else if (order.getPayment().equals("kakao")) {
-            if (kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
-                buy.disCount(order.getQuantity());
-            } else {
+            if (!kakaoPayService.cancelExchange(order.getOrderNum(), "취소완료")) {
                 throw new OrderErrorException(OrderErrorCode.KAKAOPAY_CANCEL_FAILED);
             }
         } else {
             throw new OrderErrorException(OrderErrorCode.INVALID_PAYMENT);
         }
+        buy.disCount(order.getQuantity());
     }
 }
