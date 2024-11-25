@@ -283,7 +283,13 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.skeleton,
                         buy.nowCount,
                         buy.deadline,
-                        user != null ? like.count().gt(0L) : Expressions.constant(false),
+                        user != null ? JPAExpressions
+                                .selectOne()
+                                .from(like)
+                                .where(like.buy.eq(buy)
+                                        .and(like.user.eq(user)))
+                                .exists()
+                                : Expressions.constant(false),
                         JPAExpressions
                                 .select(review.count())
                                 .from(review)
