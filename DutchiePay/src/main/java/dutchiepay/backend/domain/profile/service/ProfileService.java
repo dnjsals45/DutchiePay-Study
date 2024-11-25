@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.profile.service;
 
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
+import dutchiepay.backend.domain.commerce.repository.ScoreRepository;
 import dutchiepay.backend.domain.order.exception.*;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
@@ -29,6 +30,7 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
     private final BuyRepository buyRepository;
+    private final ScoreRepository scoreRepository;
 
     public MyPageResponseDto myPage(User user) {
         return MyPageResponseDto.from(user);
@@ -111,6 +113,23 @@ public class ProfileService {
                 .build();
 
         reviewRepository.save(newReview);
+
+        Score score = scoreRepository.findByBuy(order.getBuy());
+        if (score == null) {
+            score = Score.builder()
+                    .buy(order.getBuy())
+                    .one(req.getRating() == 1 ? 1 : 0)
+                    .two(req.getRating() == 2 ? 1 : 0)
+                    .three(req.getRating() == 3 ? 1 : 0)
+                    .four(req.getRating() == 4 ? 1 : 0)
+                    .five(req.getRating() == 5 ? 1 : 0)
+                    .count(1)
+                    .build();
+
+            scoreRepository.save(score);
+        } else {
+            score.addReview(req.getRating());
+        }
     }
 
     @Transactional
