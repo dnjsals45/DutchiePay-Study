@@ -176,6 +176,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         orders.zipCode,
                         orders.detail,
                         orders.state,
+                        orders.message,
                         product.productImg,
                         store.storeName)
                 .from(orders)
