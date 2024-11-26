@@ -8,6 +8,7 @@ import dutchiepay.backend.global.payment.service.KakaoPayService;
 import dutchiepay.backend.global.payment.service.TossPaymentsService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -33,7 +34,7 @@ public class PaymentController {
     @PostMapping("/ready")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> ready(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                   @RequestBody ReadyRequestDto req,
+                                   @Valid @RequestBody ReadyRequestDto req,
                                    @RequestParam String type) {
         if (type.equals("kakao")) {
             return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(userDetails.getUser(), req));
