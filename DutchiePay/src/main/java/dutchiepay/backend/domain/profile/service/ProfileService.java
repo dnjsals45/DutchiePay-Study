@@ -36,7 +36,7 @@ public class ProfileService {
         return MyPageResponseDto.from(user);
     }
 
-    public List<MyGoodsResponseDto> getMyGoods(User user, Long page, Long limit, String filter) {
+    public MyGoodsResponseDto getMyGoods(User user, Long page, Long limit, String filter) {
         if (filter != null && !(filter.equals("pending") || filter.equals("shipped") || filter.equals("delivered"))) {
                 throw new ProfileErrorException(ProfileErrorCode.INVALID_ORDER_STATUS);
             }
