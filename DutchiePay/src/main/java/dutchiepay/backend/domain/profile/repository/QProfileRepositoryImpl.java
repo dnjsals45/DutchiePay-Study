@@ -157,7 +157,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     }
 
     @Override
-    public List<MyGoodsResponseDto> getMyGoods(User user, String filter, Pageable pageable) {
+    public MyGoodsResponseDto getMyGoods(User user, String filter, Pageable pageable) {
         BooleanExpression filterCondition = getMyGoodsFilterCondition(filter);
 
         List<Tuple> tuple =  jpaQueryFactory
@@ -176,6 +176,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         orders.zipCode,
                         orders.detail,
                         orders.state,
+                        orders.message,
                         product.productImg,
                         store.storeName)
                 .from(orders)
@@ -184,10 +185,17 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .where(orders.user.eq(user), filterCondition)
                 .orderBy(orders.orderedAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .limit(pageable.getPageSize() + 1)
                 .fetch();
 
-        List<MyGoodsResponseDto> result = new ArrayList<>();
+        boolean hasNext = false;
+        List<Tuple> content = tuple;
+        if (tuple.size() > pageable.getPageSize()) {
+            hasNext = true;
+            content = tuple.subList(0, pageable.getPageSize());
+        }
+
+        List<MyGoodsResponseDto.Goods> result = new ArrayList<>();
 
         if (pageable.getPageNumber() == 0 && tuple.isEmpty()) {
             throw new ProfileErrorException(ProfileErrorCode.NO_HISTORY_ORDER);
@@ -196,8 +204,8 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         }
 
 
-        for (Tuple t : tuple) {
-            MyGoodsResponseDto dto = MyGoodsResponseDto.builder()
+        for (Tuple t : content) {
+            MyGoodsResponseDto.Goods dto = MyGoodsResponseDto.Goods.builder()
                     .orderId(t.get(orders.orderId))
                     .orderNum(t.get(orders.orderNum))
                     .buyId(t.get(buy.buyId))
@@ -221,7 +229,10 @@ public class QProfileRepositoryImpl implements QProfileRepository {
             result.add(dto);
         }
 
-        return result;
+        return MyGoodsResponseDto.builder()
+                .goods(result)
+                .hasNext(hasNext)
+                .build();
     }
 
     private BooleanExpression getMyGoodsFilterCondition(String filter) {

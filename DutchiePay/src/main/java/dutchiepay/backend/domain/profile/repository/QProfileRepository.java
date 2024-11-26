@@ -12,7 +12,7 @@ import java.util.List;
 public interface QProfileRepository {
     List<GetMyLikesResponseDto> getMyLike(User user);
 
-    List<MyGoodsResponseDto> getMyGoods(User user, String filter, Pageable pageable);
+    MyGoodsResponseDto getMyGoods(User user, String filter, Pageable pageable);
 
     List<MyPostsResponseDto> getMyPosts(User user, PageRequest pageable);
 
