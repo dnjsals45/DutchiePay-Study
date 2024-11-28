@@ -100,8 +100,10 @@ public class ChatRoomService {
         Long cursor = messageRepository.findCursorId(chatRoomId, userId);
 
         if (cursor != null) {
-            log.info("커서 값: {}", cursor);
             simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
+            userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
+        } else {
+            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(0L));
             userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
         }
     }
@@ -124,7 +126,19 @@ public class ChatRoomService {
 
     private int getSubscribedUserCount(String chatRoomId) {
         String destination = "/sub/chat/room/" + chatRoomId;
+        int count = 0;
 
-        return simpUserRegistry.findSubscriptions(sub -> sub.getDestination().equals(destination)).size();
+        for (SimpUser user : simpUserRegistry.getUsers()) {
+            for (SimpSession session : user.getSessions()) {
+                for (SimpSubscription subscription : session.getSubscriptions()) {
+                    if (destination.equals(subscription.getDestination())) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return count;
     }
 }

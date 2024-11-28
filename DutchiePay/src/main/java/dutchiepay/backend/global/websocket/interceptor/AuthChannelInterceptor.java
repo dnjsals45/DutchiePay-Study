@@ -42,8 +42,7 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
             );
 
-            SecurityContextHolder.getContext().setAuthentication((UsernamePasswordAuthenticationToken) principal);
-
+            accessor.setUser(principal);
             accessor.getSessionAttributes().put("userId", userId);
         }
 
