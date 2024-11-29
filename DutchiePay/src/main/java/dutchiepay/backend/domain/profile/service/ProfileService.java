@@ -68,7 +68,7 @@ public class ProfileService {
         Review review = reviewRepository.findByUserAndReviewId(user, reviewId)
                 .orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_REVIEW));
 
-        return GetMyReviewResponseDto.from(review);
+        return GetMyReviewResponseDto.from(review, review.getOrder().getOrderNum());
     }
 
 
@@ -220,7 +220,7 @@ public class ProfileService {
             throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_COUNT);
         } else {
             String reviewImg = null;
-            if (req.getReviewImg() != null) {
+            if (req.getReviewImg() != null && req.getReviewImg().length > 0) {
                 for (String img : req.getReviewImg()) {
                     sb.append(img).append(",");
                 }
