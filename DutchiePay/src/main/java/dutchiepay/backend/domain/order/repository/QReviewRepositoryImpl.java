@@ -27,6 +27,7 @@ public class QReviewRepositoryImpl implements QReviewRepository {
                 .select(review.reviewId,
                         review.order.buy.buyId,
                         review.order.product.productName,
+                        review.order.orderNum,
                         review.rating,
                         review.contents,
                         review.createdAt,
@@ -54,6 +55,7 @@ public class QReviewRepositoryImpl implements QReviewRepository {
                     .reviewId(t.get(review.reviewId))
                     .buyId(t.get(review.order.buy.buyId))
                     .productName(t.get(review.order.product.productName))
+                    .orderNum(t.get(review.order.orderNum))
                     .rating(t.get(review.rating))
                     .content(t.get(review.contents))
                     .createdAt(createdAt)
