@@ -18,6 +18,9 @@ jobs:
   docker-build:
     name: Create Docker Image
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./DutchiePay
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -37,16 +40,15 @@ jobs:
         with:
           username: ${{secrets.DOCKER_USER}}
           password: ${{secrets.DOCKER_TOKEN}}
-
+            
+      - name: Grant x to gradlew
+        run: chmod +x gradlew
+        
       - name: Build and Push Docker Image
         run: |
             ./gradlew bootBuildImage --imageName=${{secrets.APP_NAME}}:${{github.sha}}
             docker push ${{secrets.APP_NAME}}:${{github.sha}}
-            
-      - name: Grant x to gradlew
-        run: chmod +x gradlew
-        working-directory: ./DutchiePay
-        
+    
       - name: Deploy to ec2
         uses: appleboy/ssh-action@master
         with:
