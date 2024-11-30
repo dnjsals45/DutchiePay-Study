@@ -31,10 +31,6 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Grant x to gradlew
-        run: chmod +x gradlew
-      # working directory
-
       # docker hub 로그인
       - name: Login to docker hub
         uses: docker/login-action@v2
@@ -46,7 +42,11 @@ jobs:
         run: |
             ./gradlew bootBuildImage --imageName=${{secrets.APP_NAME}}:${{github.sha}}
             docker push ${{secrets.APP_NAME}}:${{github.sha}}
-
+            
+      - name: Grant x to gradlew
+        run: chmod +x gradlew
+        working-directory: ./DutchiePay
+        
       - name: Deploy to ec2
         uses: appleboy/ssh-action@master
         with:
