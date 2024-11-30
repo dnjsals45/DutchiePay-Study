@@ -55,10 +55,8 @@ jobs:
           key: ${{secrets.EC2_SSH_PRIVATE_KEY}}
           port: ${{secrets.EC2_PORT}}
           script: |
-            if docker ps -a | grep -q ${{secrets.APP_NAME}}; then
-              docker stop ${{secrets.APP_NAME}}
-              docker rm ${{secrets.APP_NAME}}
-            fi
+            docker stop ${{secrets.APP_NAME}}
+            docker rm ${{secrets.APP_NAME}}
             
             docker rmi ${{secrets.DOCKER_USER}}/${{secrets.APP_NAME}}:latest
             
