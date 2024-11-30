@@ -46,8 +46,8 @@ jobs:
         
       - name: Build and Push Docker Image
         run: |
-            ./gradlew bootBuildImage --imageName=${{secrets.APP_NAME}}:${{github.sha}}
-            docker push ${{secrets.APP_NAME}}:${{github.sha}}
+            ./gradlew bootBuildImage --imageName=${{secrets.DOCKER_USER}}/${{secrets.APP_NAME}}:${{github.sha}}
+            docker push ${{secrets.DOCKER_USER}}/${{secrets.APP_NAME}}:${{github.sha}}
     
       - name: Deploy to ec2
         uses: appleboy/ssh-action@master
