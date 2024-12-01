@@ -65,5 +65,5 @@ jobs:
             docker pull ${{secrets.DOCKER_USER}}/${{secrets.APP_NAME}}:${{github.sha}}
             
             docker run -d --name ${{secrets.APP_NAME}} -p 8080:8080 \
-            --env-file=./.env --network server -v /etc/localtime:/etc/localtime:ro -e TZ=Asia/Seoul --memory="1g" --memory-swap="1g" \
+            --env-file=./.env -v /etc/localtime:/etc/localtime:ro -e TZ=Asia/Seoul --memory="1g" --memory-swap="1g" \
             ${{secrets.DOCKER_USER}}/${{secrets.APP_NAME}}:${{github.sha}}
