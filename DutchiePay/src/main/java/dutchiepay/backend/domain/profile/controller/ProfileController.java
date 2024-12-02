@@ -2,6 +2,7 @@ package dutchiepay.backend.domain.profile.controller;
 
 import dutchiepay.backend.domain.profile.dto.*;
 import dutchiepay.backend.domain.profile.service.ProfileService;
+import dutchiepay.backend.domain.profile.service.ReviewService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,8 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/profile")
 public class ProfileController {
-
     private final ProfileService profileService;
+    private final ReviewService reviewService;
 
     /**
      * GET
@@ -62,7 +63,7 @@ public class ProfileController {
     @GetMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myReviews(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok().body(profileService.getMyReviews(userDetails.getUser()));
+        return ResponseEntity.ok().body(reviewService.getMyReviews(userDetails.getUser()));
     }
 
     @Operation(summary = "후기 1개 조회 (구현 완료)", description = "reviewId 입력하지 않을 시 내가 쓴 후기 전체 조회")
@@ -70,7 +71,7 @@ public class ProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getOneReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                          @RequestParam(name = "reviewId", required = false) Long reviewId) {
-        return ResponseEntity.ok().body(profileService.getOneReview(userDetails.getUser(), reviewId));
+        return ResponseEntity.ok().body(reviewService.getOneReview(userDetails.getUser(), reviewId));
     }
 
     @Operation(summary = "내가 쓴 문의 내역 조회 (구현 완료)")
@@ -89,7 +90,7 @@ public class ProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                           @Valid @RequestBody CreateReviewRequestDto req) {
-        profileService.createReview(userDetails.getUser(), req);
+        reviewService.createReview(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
 
@@ -146,7 +147,7 @@ public class ProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                           @Valid @RequestBody UpdateReviewRequestDto request) {
-        profileService.updateReview(userDetails.getUser(), request);
+        reviewService.updateReview(userDetails.getUser(), request);
         return ResponseEntity.ok().build();
     }
 
@@ -158,7 +159,7 @@ public class ProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                        @RequestParam(name = "reviewId") Long reviewId) {
-        profileService.deleteReview(userDetails.getUser(), reviewId);
+        reviewService.deleteReview(userDetails.getUser(), reviewId);
         return ResponseEntity.ok().build();
     }
 

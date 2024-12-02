@@ -1,7 +1,6 @@
 package dutchiepay.backend.domain.profile.service;
 
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
-import dutchiepay.backend.domain.commerce.repository.ScoreRepository;
 import dutchiepay.backend.domain.order.exception.*;
 import dutchiepay.backend.domain.order.repository.*;
 import dutchiepay.backend.domain.profile.dto.*;
@@ -17,20 +16,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-    private final OrderRepository orderRepository;
-    private final ReviewRepository reviewRepository;
     private final AskRepository askRepository;
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
     private final BuyRepository buyRepository;
-    private final ScoreRepository scoreRepository;
 
     public MyPageResponseDto myPage(User user) {
         return MyPageResponseDto.from(user);
@@ -44,7 +38,6 @@ public class ProfileService {
         return profileRepository.getMyGoods(user, filter, PageRequest.of(page.intValue() - 1, limit.intValue()));
     }
 
-
     public List<MyPostsResponseDto> getMyPosts(User user, String type, Long page, Long limit) {
         if (type.equals("post")) {
             return profileRepository.getMyPosts(user, PageRequest.of(page.intValue() - 1, limit.intValue()));
@@ -55,81 +48,12 @@ public class ProfileService {
         }
     }
 
-
     public List<GetMyLikesResponseDto> getMyLike(User user) {
         return profileRepository.getMyLike(user);
     }
 
-    public List<GetMyReviewResponseDto> getMyReviews(User user) {
-        return reviewRepository.getMyReviews(user);
-    }
-
-    public GetMyReviewResponseDto getOneReview(User user, Long reviewId) {
-        Review review = reviewRepository.findByUserAndReviewId(user, reviewId)
-                .orElseThrow(() -> new ProfileErrorException(ProfileErrorCode.INVALID_REVIEW));
-
-        return GetMyReviewResponseDto.from(review, review.getOrder().getOrderNum());
-    }
-
-
     public List<GetMyAskResponseDto> getMyAsks(User user) {
         return askRepository.getMyAsks(user);
-    }
-
-    @Transactional
-    public void createReview(User user, CreateReviewRequestDto req) {
-        StringBuilder sb  = new StringBuilder();
-
-        if (req.getRating() != 1 && req.getRating() != 2 && req.getRating() != 3 && req.getRating() != 4 && req.getRating() != 5) {
-            throw new ReviewErrorException(ReviewErrorCode.INVALID_RATING);
-        }
-
-        Order order = orderRepository.findById(req.getOrderId())
-                .orElseThrow(() -> new OrderErrorException(OrderErrorCode.INVALID_ORDER));
-
-        if (!order.getUser().getUserId().equals(user.getUserId())) {
-            throw new ProfileErrorException(ProfileErrorCode.INVALID_USER_ORDER_REVIEW);
-        }
-
-        if (reviewRepository.existsByUserAndOrderAndDeletedAtIsNull(user, order)) {
-            throw new ReviewErrorException(ReviewErrorCode.ALREADY_EXIST);
-        }
-
-        String reviewImg = null;
-        if (req.getReviewImg() != null && req.getReviewImg().length > 0) {
-            for (String img : req.getReviewImg()) {
-                sb.append(img).append(",");
-            }
-            reviewImg = sb.substring(0, sb.length() - 1);
-        }
-
-        Review newReview = Review.builder()
-                .user(user)
-                .order(order)
-                .contents(req.getContent())
-                .rating(req.getRating())
-                .reviewImg(reviewImg)
-                .updateCount(0)
-                .build();
-
-        reviewRepository.save(newReview);
-
-        Score score = scoreRepository.findByBuy(order.getBuy());
-        if (score == null) {
-            score = Score.builder()
-                    .buy(order.getBuy())
-                    .one(req.getRating() == 1 ? 1 : 0)
-                    .two(req.getRating() == 2 ? 1 : 0)
-                    .three(req.getRating() == 3 ? 1 : 0)
-                    .four(req.getRating() == 4 ? 1 : 0)
-                    .five(req.getRating() == 5 ? 1 : 0)
-                    .count(1)
-                    .build();
-
-            scoreRepository.save(score);
-        } else {
-            score.addReview(req.getRating());
-        }
     }
 
     @Transactional
@@ -189,60 +113,5 @@ public class ProfileService {
         }
 
         askRepository.softDelete(ask);
-    }
-
-    @Transactional
-    public void deleteReview(User user, Long reviewId) {
-        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
-
-        if (!review.getUser().getUserId().equals(user.getUserId())) {
-            throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
-        }
-
-        int deleteRating = review.getRating();
-
-        reviewRepository.softDelete(review);
-
-        Score score = scoreRepository.findByBuy(review.getOrder().getBuy());
-        if (score != null) {
-            score.removeReview(deleteRating);
-        }
-    }
-
-    @Transactional
-    public void updateReview(User user, UpdateReviewRequestDto req) {
-        StringBuilder sb = new StringBuilder();
-
-        Review review = reviewRepository.findById(req.getReviewId())
-                .orElseThrow(() -> new ReviewErrorException(ReviewErrorCode.INVALID_REVIEW));
-
-        if (!review.getUser().getUserId().equals(user.getUserId())) {
-            throw new ProfileErrorException(ProfileErrorCode.UPDATE_REVIEW_USER_MISSMATCH);
-        }
-
-        long dayBetween = ChronoUnit.DAYS.between(review.getCreatedAt().toLocalDate(), LocalDate.now());
-        if (dayBetween > 30) {
-            throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_30DAYS);
-        } else if (review.getUpdateCount() == 2) {
-            throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_COUNT);
-        } else {
-            int oldRating = review.getRating();
-            int newRating = req.getRating();
-
-            String reviewImg = null;
-            if (req.getReviewImg() != null && req.getReviewImg().length > 0) {
-                for (String img : req.getReviewImg()) {
-                    sb.append(img).append(",");
-                }
-                reviewImg = sb.substring(0, sb.length() - 1);
-            }
-
-            review.update(req.getContent(), req.getRating(), reviewImg);
-
-            Score score = scoreRepository.findByBuy(review.getOrder().getBuy());
-            if (score != null) {
-                score.updateReview(oldRating, newRating);
-            }
-        }
     }
 }
