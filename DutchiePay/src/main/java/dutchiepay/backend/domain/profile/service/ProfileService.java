@@ -199,7 +199,14 @@ public class ProfileService {
             throw new ProfileErrorException(ProfileErrorCode.DELETE_REVIEW_USER_MISSMATCH);
         }
 
+        int deleteRating = review.getRating();
+
         reviewRepository.softDelete(review);
+
+        Score score = scoreRepository.findByBuy(review.getOrder().getBuy());
+        if (score != null) {
+            score.removeReview(deleteRating);
+        }
     }
 
     @Transactional
@@ -219,6 +226,9 @@ public class ProfileService {
         } else if (review.getUpdateCount() == 2) {
             throw new ReviewErrorException(ReviewErrorCode.CANNOT_UPDATE_CAUSE_COUNT);
         } else {
+            int oldRating = review.getRating();
+            int newRating = req.getRating();
+
             String reviewImg = null;
             if (req.getReviewImg() != null && req.getReviewImg().length > 0) {
                 for (String img : req.getReviewImg()) {
@@ -228,6 +238,11 @@ public class ProfileService {
             }
 
             review.update(req.getContent(), req.getRating(), reviewImg);
+
+            Score score = scoreRepository.findByBuy(review.getOrder().getBuy());
+            if (score != null) {
+                score.updateReview(oldRating, newRating);
+            }
         }
     }
 }
