@@ -11,15 +11,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long>, QReviewRepository {
-    List<Review> findAllByUser(User user);
-
     Optional<Review> findByUserAndReviewId(User user, Long reviewId);
 
     @Modifying
     @Query("update Review r set r.deletedAt = current_timestamp where r = ?1")
     void softDelete(Review review);
-
-    boolean existsByUserAndOrder(User user, Order order);
 
     boolean existsByUserAndOrderAndDeletedAtIsNull(User user, Order order);
 }
