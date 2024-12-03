@@ -1,4 +1,4 @@
-package dutchiepay.backend.domain.commerce.repository;
+package dutchiepay.backend.domain.community.repository;
 
 import dutchiepay.backend.entity.Share;
 import org.springframework.data.jpa.repository.JpaRepository;
