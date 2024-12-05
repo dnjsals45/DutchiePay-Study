@@ -51,6 +51,10 @@ public class Share extends Auditing {
     @Column(nullable = false)
     private int maximum;
 
+    // 현재 인원
+    @Column(nullable = false)
+    private int now;
+
     // 조회수
     @Column(nullable = false)
     private int hits;
