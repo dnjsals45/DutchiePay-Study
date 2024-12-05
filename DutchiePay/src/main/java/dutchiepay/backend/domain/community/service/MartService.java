@@ -20,9 +20,9 @@ public class MartService {
     private final ShareRepository shareRepository;
 
     @Transactional
-    public void createMart(CreateMartRequestDto req) {
+    public void createMart(User user, CreateMartRequestDto req) {
         validateTitle(req.getTitle());
-        createMartEntity(req);
+        createShareEntity(req, user.getLocation());
     }
 
     @Transactional
@@ -60,17 +60,21 @@ public class MartService {
         }
     }
 
-    private void createMartEntity(CreateMartRequestDto req) {
+    private void createShareEntity(CreateMartRequestDto req, String location) {
         Share newShare = Share.builder()
                 .title(req.getTitle())
                 .date(req.getDate())
                 .maximum(req.getMaximum())
                 .meetingPlace(req.getMeetingPlace())
+                .location(location)
+                .state("모집중")
                 .latitude(req.getLatitude())
                 .longitude(req.getLongitude())
                 .contents(req.getContent())
                 .thumbnail(req.getThumbnail())
                 .category(req.getCategory())
+                .now(1)
+                .hits(0)
                 .build();
 
         shareRepository.save(newShare);

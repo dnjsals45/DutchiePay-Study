@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,8 +47,9 @@ public class ShareController {
     @Operation(summary = "마트/배달 게시글 작성")
     @PostMapping("")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> createMart(@RequestBody @Valid CreateMartRequestDto req) {
-        martService.createMart(req);
+    public ResponseEntity<?> createMart(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @RequestBody @Valid CreateMartRequestDto req) {
+        martService.createMart(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
 
