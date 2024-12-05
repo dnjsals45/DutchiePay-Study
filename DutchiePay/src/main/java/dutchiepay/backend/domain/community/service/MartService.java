@@ -2,6 +2,8 @@ package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.community.dto.GetMartListResponseDto;
 import dutchiepay.backend.domain.community.dto.GetMartResponseDto;
+import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
+import dutchiepay.backend.domain.community.exception.CommunityException;
 import dutchiepay.backend.domain.community.repository.ShareRepository;
 import dutchiepay.backend.domain.community.dto.CreateMartRequestDto;
 import dutchiepay.backend.domain.community.dto.UpdateMartRequestDto;
@@ -46,14 +48,14 @@ public class MartService {
 
     private void updateMartEntity(UpdateMartRequestDto req) {
         Share share = shareRepository.findById(req.getShareId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_SHARE));
 
         share.update(req);
     }
 
     private void validateTitle(String title) {
         if (title.length() > 60) {
-            throw new IllegalArgumentException("제목은 60자 이하로 입력해주세요.");
+            throw new CommunityException(CommunityErrorCode.OVER_TITLE_LENGTH);
         }
     }
 
@@ -75,13 +77,13 @@ public class MartService {
 
     private void validateCategory(String category) {
         if (!category.equals("mart") && !category.equals("delivery")) {
-            throw new IllegalArgumentException("카테고리는 마트 또는 배달로 입력해주세요.");
+            throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
         }
     }
 
     private void validateShare(Long shareId) {
         if (!shareRepository.existsById(shareId)) {
-            throw new IllegalArgumentException("해당 게시글이 존재하지 않습니다.");
+            throw new CommunityException(CommunityErrorCode.INVALID_SHARE);
         }
     }
 }
