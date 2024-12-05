@@ -21,9 +21,10 @@ public class ShareController {
     private final MartService martService;
 
     @Operation(summary = "마트/배달 리스트 조회")
-    @GetMapping(value = "", params = {"category", "limit", "cursor"})
+    @GetMapping(value = "/list")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<?> getMartList(@RequestParam String category,
-                                         @RequestParam Long cursor,
+                                         @RequestParam(required = false) Long cursor,
                                          @RequestParam Integer limit) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -36,7 +37,8 @@ public class ShareController {
     }
 
     @Operation(summary = "마트/배달 게시글 상세 조회")
-    @GetMapping(value = "", params = "shareId")
+    @GetMapping(value = "")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<?> getMartByShareId(@RequestParam Long shareId) {
         return ResponseEntity.ok().body(martService.getMartByShareId(shareId));
     }

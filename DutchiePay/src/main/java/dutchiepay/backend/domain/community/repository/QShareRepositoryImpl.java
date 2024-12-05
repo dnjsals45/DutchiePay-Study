@@ -103,6 +103,7 @@ public class QShareRepositoryImpl implements QShareRepository{
                                 share.meetingPlace.as("meetingPlace"),
                                 share.longitude.as("longitude"),
                                 share.latitude.as("latitude"),
+                                share.state.as("state"),
                                 share.createdAt.as("createdAt"),
                                 share.date.as("date"),
                                 share.maximum.as("maximum"),
