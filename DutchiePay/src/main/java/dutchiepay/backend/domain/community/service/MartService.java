@@ -35,10 +35,12 @@ public class MartService {
     }
 
     public GetMartResponseDto getMartByShareId(Long shareId) {
+        validateShare(shareId);
         return shareRepository.getMartByShareId(shareId);
     }
 
     public GetMartListResponseDto getMartList(User user, String category, Long cursor, Integer limit) {
+        validateCategory(category);
         return shareRepository.getMartList(user, category, cursor, limit);
     }
 
@@ -69,5 +71,17 @@ public class MartService {
                 .build();
 
         shareRepository.save(newShare);
+    }
+
+    private void validateCategory(String category) {
+        if (!category.equals("mart") && !category.equals("delivery")) {
+            throw new IllegalArgumentException("카테고리는 마트 또는 배달로 입력해주세요.");
+        }
+    }
+
+    private void validateShare(Long shareId) {
+        if (!shareRepository.existsById(shareId)) {
+            throw new IllegalArgumentException("해당 게시글이 존재하지 않습니다.");
+        }
     }
 }
