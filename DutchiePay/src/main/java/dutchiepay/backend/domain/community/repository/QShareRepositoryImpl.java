@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,11 +120,13 @@ public class QShareRepositoryImpl implements QShareRepository{
 
     private String convertRelativeTime(LocalDateTime createdAt) {
         LocalDateTime now = LocalDateTime.now();
-        Duration duration = Duration.between(createdAt, now);
 
-        long minutes = duration.toMinutes();
-        long hours = duration.toHours();
-        long days = duration.toDays();
+        long minutes = ChronoUnit.MINUTES.between(createdAt, now);
+        long hours = ChronoUnit.HOURS.between(createdAt, now);
+        long days = ChronoUnit.DAYS.between(createdAt, now);
+        long weeks = ChronoUnit.WEEKS.between(createdAt, now);
+        long months = ChronoUnit.MONTHS.between(createdAt, now);
+        long years = ChronoUnit.YEARS.between(createdAt, now);
 
         if (minutes < 1) {
             return "방금 전";
@@ -134,13 +137,10 @@ public class QShareRepositoryImpl implements QShareRepository{
         } else if (days < 7) {
             return days + "일 전";
         } else if (days < 30) {
-            long weeks = days / 7;
             return weeks + "주 전";
         } else if (days < 365) {
-            long months = days / 30;
             return months + "달 전";
         } else {
-            long years = days / 365;
             return years + "년 전";
         }
     }

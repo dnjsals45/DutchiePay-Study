@@ -14,7 +14,7 @@ public interface QProfileRepository {
 
     MyGoodsResponseDto getMyGoods(User user, String filter, Pageable pageable);
 
-    List<MyPostsResponseDto> getMyPosts(User user, PageRequest pageable);
+    MyPostsResponseDto getMyPosts(User user, PageRequest pageable);
 
-    List<MyPostsResponseDto> getMyCommentsPosts(User user, PageRequest pageable);
+    MyPostsResponseDto getMyCommentsPosts(User user, PageRequest pageable);
 }
