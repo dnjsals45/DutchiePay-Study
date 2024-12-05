@@ -33,6 +33,7 @@ public class MartService {
 
     @Transactional
     public void deleteMart(Long shareId) {
+        validateShare(shareId);
         shareRepository.softDelete(shareId);
     }
 
