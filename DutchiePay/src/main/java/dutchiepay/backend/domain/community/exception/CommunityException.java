@@ -3,7 +3,8 @@ package dutchiepay.backend.domain.community.exception;
 import lombok.Getter;
 
 @Getter
-public class CommunityException extends RuntimeException {
+public class CommunityException extends RuntimeException{
+
     private final CommunityErrorCode communityErrorCode;
 
     public CommunityException(CommunityErrorCode communityErrorCode) {
