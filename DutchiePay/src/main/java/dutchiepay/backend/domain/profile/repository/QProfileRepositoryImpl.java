@@ -265,55 +265,35 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         }
     }
 
-    // QueryDsl 은 union 작성이 안된다.. native로 작성해야할까?
     @Override
-    public List<MyPostsResponseDto> getMyPosts(User user, PageRequest pageable) {
-//        List<MyPostsResponseDto> shareResult = jpaQueryFactory
-//                .select(Projections.constructor(MyPostsResponseDto.class,
-//                        share.shareId.as("postId"),
-//                        share.title.as("title"),
-//                        share.createdAt.as("writeTime"),
-//                        share.contents.as("content"),
-//                        Expressions.asString("마트/배달").as("category"),
-//                        Expressions.nullExpression(String.class),
-//                        share.thumbnail.as("thumbnail")))
-//                .from(share)
-//                .where(share.userId.eq(user))
-//                .where(share.deletedAt.isNull())
-//                .orderBy(share.createdAt.desc())
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//
-//        List<MyPostsResponseDto> freeResult = jpaQueryFactory
-//                .select(Projections.constructor(MyPostsResponseDto.class,
-//                        free.freeId.as("postId"),
-//                        free.title.as("title"),
-//                        free.createdAt.as("writeTime"),
-//                        free.contents.as("content"),
-//                        Expressions.asString("자유").as("category"),
-//                        ExpressionUtils.as(
-//                                JPAExpressions
-//                                        .select(comment.count())
-//                                        .from(comment)
-//                                        .where(comment.freeId.eq(free))
-//                                        .where(comment.deletedAt.isNull()), "commentCount"),
-//                        Expressions.nullExpression(String.class)))
-//                .from(free)
-//                .where(free.user.eq(user))
-//                .where(free.deletedAt.isNull())
-//                .orderBy(free.createdAt.desc())
-//                .offset(pageable.getOffset())
-//                .fetch();
-
-        String sql = "SELECT share_id as postId, title, created_at as writeTime, contents as content, '마트/배달' as category, NULL as commentCount, thumbnail " +
+    public MyPostsResponseDto getMyPosts(User user, PageRequest pageable) {
+        String sql = "SELECT " +
+                "share.share_id as postId, " +
+                "share.title, " +
+                "share.created_at as writeTime, " +
+                "share.contents as content, " +
+                "'마트/배달' as category, " +
+                "NULL as commentCount, " +
+                "share.thumbnail, " +
+                "user.nickname as writerNickname, " +
+                "user.profile_img as writerProfileImage " +
                 "FROM share " +
-                "WHERE user_id = :userId AND deleted_at IS NULL " +
+                "LEFT JOIN user ON share.user_id = user.user_id " +
+                "WHERE share.user_id = :userId AND share.deleted_at IS NULL " +
                 "UNION ALL " +
-                "SELECT free_id as postId, title, created_at as writeTime, contents as content, '자유' as category, " +
-                "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, NULL as thumbnail " +
+                "SELECT " +
+                "free.free_id as postId, " +
+                "free.title, " +
+                "free.created_at as writeTime, " +
+                "free.contents as content, " +
+                "'자유' as category, " +
+                "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, " +
+                "NULL as thumbnail, " +
+                "user.nickname as writerNickname, " +
+                "user.profile_img as writerProfileImage " +
                 "FROM free " +
-                "WHERE user_id = :userId AND deleted_at IS NULL " +
+                "LEFT JOIN user ON free.user_id = user.user_id " +
+                "WHERE free.user_id = :userId AND free.deleted_at IS NULL " +
                 "ORDER BY writeTime DESC " +
                 "LIMIT :limit OFFSET :offset";
 
@@ -325,32 +305,36 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         @SuppressWarnings("unchecked")
         List<Object[]> resultList = query.getResultList();
 
-        List<MyPostsResponseDto> result = new ArrayList<>();
+        List<MyPostsResponseDto.Post> result = new ArrayList<>();
 
         for (Object[] objects : resultList) {
-            LocalDateTime dbTime = ((Timestamp) objects[2]).toLocalDateTime();
+            LocalDateTime dataTime = ((Timestamp) objects[2]).toLocalDateTime();
 
-            long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
-            String writeTime = daysBetween + "일 전";
+            String writeTime = convertRelativeTime(dataTime);
 
-            MyPostsResponseDto data = MyPostsResponseDto.builder()
+            MyPostsResponseDto.Post data = MyPostsResponseDto.Post.builder()
                                     .postId((Long) objects[0])
                                     .title((String) objects[1])
                                     .writeTime(writeTime)
-                                    .content((String) objects[3])
+                                    .description((String) objects[3])
                                     .category((String) objects[4])
                                     .commentCount((Long) objects[5])
                                     .thumbnail((String) objects[6])
+                                    .writerNickname((String) objects[7])
+                                    .writerProfileImage((String) objects[8])
                                     .build();
 
             result.add(data);
         }
 
-        return result;
+        return MyPostsResponseDto.builder()
+                .totalPost(result.size())
+                .posts(result)
+                .build();
     }
 
     @Override
-    public List<MyPostsResponseDto> getMyCommentsPosts(User user, PageRequest pageable) {
+    public MyPostsResponseDto getMyCommentsPosts(User user, PageRequest pageable) {
         List<Tuple> queryResult = jpaQueryFactory
                 .select(
                         free.freeId,
@@ -374,30 +358,62 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        List<MyPostsResponseDto> result = new ArrayList<>();
+        List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
             LocalDateTime dbTime = tuple.get(free.createdAt);
 
             long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
             String writeTime = daysBetween + "일 전";
 
-            MyPostsResponseDto data = MyPostsResponseDto.builder()
+            MyPostsResponseDto.Post data = MyPostsResponseDto.Post.builder()
                     .postId(tuple.get(free.freeId))
                     .title(tuple.get(free.title))
                     .writeTime(writeTime)
-                    .content(tuple.get(free.contents))
+                    .description(tuple.get(free.contents))
                     .category(tuple.get(free.category))
                     .commentCount(tuple.get(5, Long.class))
                     .thumbnail(null)
+                    .writerNickname(null)
+                    .writerProfileImage(null)
                     .build();
 
             result.add(data);
         }
 
-        return result;
+        return MyPostsResponseDto.builder()
+                .totalPost(result.size())
+                .posts(result)
+                .build();
     }
 
     private BooleanExpression categoryEq(String categoryName) {
         return category != null ? category.name.eq(categoryName) : null;
+    }
+
+    private String convertRelativeTime(LocalDateTime createdAt) {
+        LocalDateTime now = LocalDateTime.now();
+
+        long minutes = ChronoUnit.MINUTES.between(createdAt, now);
+        long hours = ChronoUnit.HOURS.between(createdAt, now);
+        long days = ChronoUnit.DAYS.between(createdAt, now);
+        long weeks = ChronoUnit.WEEKS.between(createdAt, now);
+        long months = ChronoUnit.MONTHS.between(createdAt, now);
+        long years = ChronoUnit.YEARS.between(createdAt, now);
+
+        if (minutes < 1) {
+            return "방금 전";
+        } else if (minutes < 60) {
+            return minutes + "분 전";
+        } else if (hours < 24) {
+            return hours + "시간 전";
+        } else if (days < 7) {
+            return days + "일 전";
+        } else if (days < 30) {
+            return weeks + "주 전";
+        } else if (days < 365) {
+            return months + "달 전";
+        } else {
+            return years + "년 전";
+        }
     }
 }

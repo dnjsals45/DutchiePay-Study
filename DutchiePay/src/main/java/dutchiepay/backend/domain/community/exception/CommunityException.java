@@ -14,7 +14,7 @@ public class CommunityException extends RuntimeException{
 
     @Override
     public String toString() {
-        return String.format("CommerceErrorException(code=%s, message=%s)",
+        return String.format("CommunityErrorException(code=%s, message=%s)",
                 communityErrorCode.name(), communityErrorCode.getMessage());
     }
 }

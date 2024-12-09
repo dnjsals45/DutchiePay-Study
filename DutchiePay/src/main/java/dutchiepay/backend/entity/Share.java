@@ -1,10 +1,9 @@
 package dutchiepay.backend.entity;
 
+import dutchiepay.backend.domain.community.dto.UpdateMartRequestDto;
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -46,11 +45,15 @@ public class Share extends Auditing {
     private String thumbnail;
 
     // 일시
-    private LocalDateTime date;
+    private String date;
 
     // 최대 인원
     @Column(nullable = false)
     private int maximum;
+
+    // 현재 인원
+    @Column(nullable = false)
+    private int now;
 
     // 조회수
     @Column(nullable = false)
@@ -67,4 +70,19 @@ public class Share extends Auditing {
     // 약속 장소
     @Column(nullable = false)
     private String meetingPlace;
+
+    public void update(UpdateMartRequestDto req) {
+        this.title = req.getTitle();
+        this.maximum = req.getMaximum();
+        this.meetingPlace = req.getMeetingPlace();
+        this.latitude = req.getLatitude();
+        this.longitude = req.getLongitude();
+        this.contents = req.getContent();
+        this.thumbnail = req.getThumbnail();
+        this.category = req.getCategory();
+    }
+
+    public void changeStatus(String status) {
+        this.state = status;
+    }
 }
