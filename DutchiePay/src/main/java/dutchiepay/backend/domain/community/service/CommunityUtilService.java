@@ -84,6 +84,6 @@ public class CommunityUtilService {
 
     // 댓글 작성자를 검증
     public static void validateCommentWriter(User user, Comment comment) {
-        if (!comment.getUser().equals(user)) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+        if (!comment.getUser().getUserId().equals(user.getUserId())) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
     }
 }

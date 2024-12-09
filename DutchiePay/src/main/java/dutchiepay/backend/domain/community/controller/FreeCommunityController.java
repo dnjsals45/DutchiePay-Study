@@ -73,7 +73,7 @@ public class FreeCommunityController {
     @PostMapping("/comments")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentCreateResponseDto> createComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                  @RequestBody CommentCreateRequestDto commentRequestDto) {
+                                                                  @Valid @RequestBody CommentCreateRequestDto commentRequestDto) {
         return ResponseEntity.ok(freeCommunityService.createComment(userDetails.getUser(), commentRequestDto));
     }
 
@@ -81,7 +81,7 @@ public class FreeCommunityController {
     @PatchMapping("/comments")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                              @RequestBody CommentUpdateRequestDto updateCommentDto) {
+                                              @Valid @RequestBody CommentUpdateRequestDto updateCommentDto) {
         freeCommunityService.updateComment(userDetails.getUser(), updateCommentDto);
 
         return ResponseEntity.noContent().build();
@@ -94,11 +94,5 @@ public class FreeCommunityController {
                                               @RequestParam("commentId") Long commentId) {
         freeCommunityService.deleteComment(userDetails.getUser(), commentId);
         return ResponseEntity.notFound().build();
-    }
-
-    @GetMapping("/add")
-    @PreAuthorize("isAuthenticated()")
-    public void addEntity() {
-        freeCommunityService.addEntity();
     }
 }
