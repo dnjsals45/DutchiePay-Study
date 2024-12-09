@@ -1,12 +1,9 @@
 package dutchiepay.backend.domain.community.service;
 
-import dutchiepay.backend.domain.community.dto.GetMartListResponseDto;
-import dutchiepay.backend.domain.community.dto.GetMartResponseDto;
+import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
 import dutchiepay.backend.domain.community.exception.CommunityException;
 import dutchiepay.backend.domain.community.repository.ShareRepository;
-import dutchiepay.backend.domain.community.dto.CreateMartRequestDto;
-import dutchiepay.backend.domain.community.dto.UpdateMartRequestDto;
 import dutchiepay.backend.entity.Share;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -89,5 +86,13 @@ public class MartService {
         if (!shareRepository.existsById(shareId)) {
             throw new CommunityException(CommunityErrorCode.INVALID_SHARE);
         }
+    }
+
+    @Transactional
+    public void changeStatus(ChangeStatusRequestDto req) {
+        Share share = shareRepository.findById(req.getPostId())
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_SHARE));
+
+        share.changeStatus(req.getStatus());
     }
 }

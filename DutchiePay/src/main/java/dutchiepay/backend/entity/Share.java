@@ -81,4 +81,8 @@ public class Share extends Auditing {
         this.thumbnail = req.getThumbnail();
         this.category = req.getCategory();
     }
+
+    public void changeStatus(String status) {
+        this.state = status;
+    }
 }
