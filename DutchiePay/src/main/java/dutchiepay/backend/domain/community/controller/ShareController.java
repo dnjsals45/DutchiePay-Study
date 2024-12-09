@@ -55,7 +55,7 @@ public class ShareController {
 
     @Operation(summary = "마트/배달 게시글 수정")
     @PatchMapping("")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() && @shareAuthorManager.isShareAuthor(#req.shareId, authentication.getPrincipal())")
     public ResponseEntity<?> updateMart(@RequestBody UpdateMartRequestDto req) {
         martService.updateMart(req);
         return null;
@@ -63,7 +63,7 @@ public class ShareController {
 
     @Operation(summary = "마트/배달 게시글 삭제")
     @DeleteMapping("")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() && @shareAuthorManager.isShareAuthor(#shareId, authentication.getPrincipal())")
     public ResponseEntity<?> deleteMart(@RequestParam Long shareId) {
         martService.deleteMart(shareId);
         return null;

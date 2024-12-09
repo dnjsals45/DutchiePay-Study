@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class MartService {
-
     private final ShareRepository shareRepository;
 
     @Transactional
