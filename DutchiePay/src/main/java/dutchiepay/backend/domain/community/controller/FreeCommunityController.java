@@ -6,6 +6,7 @@ import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -66,6 +67,33 @@ public class FreeCommunityController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<HotAndRecommendsResponseDto> hotAndRecommends(@RequestParam("category") String category) {
         return ResponseEntity.ok(freeCommunityService.hotAndRecommends(category));
+    }
+
+    @Operation(summary = "댓글 작성(구현중)")
+    @PostMapping("/comments")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CommentCreateResponseDto> createComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                  @RequestBody CommentCreateRequestDto commentRequestDto) {
+        return ResponseEntity.ok(freeCommunityService.createComment(userDetails.getUser(), commentRequestDto));
+    }
+
+    @Operation(summary = "댓글 수정(구현중)")
+    @PatchMapping("/comments")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> updateComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                              @RequestBody CommentUpdateRequestDto updateCommentDto) {
+        freeCommunityService.updateComment(userDetails.getUser(), updateCommentDto);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "댓글 삭제(구현중)")
+    @DeleteMapping("/comments")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                              @RequestParam("commentId") Long commentId) {
+        freeCommunityService.deleteComment(userDetails.getUser(), commentId);
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/add")
