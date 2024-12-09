@@ -4,6 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.domain.community.dto.GetMartListResponseDto;
 import dutchiepay.backend.domain.community.dto.GetMartResponseDto;
 import dutchiepay.backend.entity.QShare;
@@ -76,7 +77,7 @@ public class QShareRepositoryImpl implements QShareRepository{
                     .title(result.get(share.title))
                     .meetingPlace(result.get(share.meetingPlace))
                     .state(result.get(share.state))
-                    .relativeTime(convertRelativeTime(result.get(share.createdAt)))
+                    .relativeTime(ChronoUtil.timesAgo(result.get(share.createdAt)))
                     .date(result.get(share.date))
                     .maximum(result.get(share.maximum))
                     .now(result.get(share.now))
@@ -116,32 +117,5 @@ public class QShareRepositoryImpl implements QShareRepository{
                 .where(share.shareId.eq(shareId))
                 .where(share.deletedAt.isNull())
                 .fetchOne();
-    }
-
-    private String convertRelativeTime(LocalDateTime createdAt) {
-        LocalDateTime now = LocalDateTime.now();
-
-        long minutes = ChronoUnit.MINUTES.between(createdAt, now);
-        long hours = ChronoUnit.HOURS.between(createdAt, now);
-        long days = ChronoUnit.DAYS.between(createdAt, now);
-        long weeks = ChronoUnit.WEEKS.between(createdAt, now);
-        long months = ChronoUnit.MONTHS.between(createdAt, now);
-        long years = ChronoUnit.YEARS.between(createdAt, now);
-
-        if (minutes < 1) {
-            return "방금 전";
-        } else if (minutes < 60) {
-            return minutes + "분 전";
-        } else if (hours < 24) {
-            return hours + "시간 전";
-        } else if (days < 7) {
-            return days + "일 전";
-        } else if (days < 30) {
-            return weeks + "주 전";
-        } else if (days < 365) {
-            return months + "달 전";
-        } else {
-            return years + "년 전";
-        }
     }
 }
