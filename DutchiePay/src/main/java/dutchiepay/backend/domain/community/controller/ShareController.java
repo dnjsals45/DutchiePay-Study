@@ -58,7 +58,7 @@ public class ShareController {
     @PreAuthorize("isAuthenticated() && @shareAuthorManager.isShareAuthor(#req.shareId, authentication.getPrincipal())")
     public ResponseEntity<?> updateMart(@RequestBody UpdateMartRequestDto req) {
         martService.updateMart(req);
-        return null;
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "마트/배달 게시글 삭제")
@@ -66,6 +66,6 @@ public class ShareController {
     @PreAuthorize("isAuthenticated() && @shareAuthorManager.isShareAuthor(#shareId, authentication.getPrincipal())")
     public ResponseEntity<?> deleteMart(@RequestParam Long shareId) {
         martService.deleteMart(shareId);
-        return null;
+        return ResponseEntity.ok().build();
     }
 }
