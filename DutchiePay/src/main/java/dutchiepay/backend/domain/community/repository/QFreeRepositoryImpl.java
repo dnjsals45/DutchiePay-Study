@@ -10,13 +10,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.domain.community.dto.FreeListResponseDto;
+import dutchiepay.backend.domain.community.dto.FreePostResponseDto;
 import dutchiepay.backend.domain.community.dto.HotAndRecommendsResponseDto;
 import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
 import dutchiepay.backend.domain.community.exception.CommunityException;
-import dutchiepay.backend.entity.Free;
-import dutchiepay.backend.entity.QComment;
-import dutchiepay.backend.entity.QFree;
-import dutchiepay.backend.entity.QUser;
+import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -91,17 +89,6 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
         query.limit(limit + 1).orderBy(orderSpecifier);
         List<Free> posts = query.fetch();
-        for (Free free1 : posts) {
-            System.out.println("=========Query Result=========");
-            System.out.println(free1.getFreeId());
-            System.out.println(free1.getUser().getNickname());
-            System.out.println(free1.getTitle());
-            System.out.println(free1.getContents());
-            System.out.println(free1.getCategory());
-            System.out.println(free1.getCreatedAt());
-            System.out.println(free1.getHits());
-        }
-
         Long nextCursor = posts.size() > limit ? posts.get(limit).getFreeId() : null;
 
         return FreeListResponseDto.toDto(posts.stream().map(free ->
@@ -110,29 +97,15 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     }
 
     @Override
-    public Tuple getFreePost(Long freeId) {
-        return jpaQueryFactory
-                .select(
-                        user.userId,
-                        user.nickname,
-                        user.profileImg,
-                        free.title,
-                        free.contents,
-                        free.createdAt,
-                        free.category,
-                        free.hits,
-                        Expressions.as(
-                                JPAExpressions
-                                        .select(comment.count())
-                                        .from(comment)
-                                        .where(comment.free.freeId.eq(freeId)),
-                                "commentsCount"
-                        )
-                )
-                .from(free)
-                .join(free.user, user)
+    public FreePostResponseDto getFreePost(Long freeId) {
+        Free result = jpaQueryFactory
+                .selectFrom(free)
                 .where(free.freeId.eq(freeId))
-                .fetchFirst();
+                .fetchOne();
+
+        if (result == null) throw new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST);
+
+        return FreePostResponseDto.toDto(result.getUser(), result, countComments(result));
     }
 
     @Override
