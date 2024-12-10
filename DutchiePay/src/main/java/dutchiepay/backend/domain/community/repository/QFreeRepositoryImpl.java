@@ -116,7 +116,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     public List<HotAndRecommendsResponseDto.Posts> getHotPosts() {
 
         return jpaQueryFactory
-                .select(free)
+                .selectFrom(free)
                 .where(free.createdAt.goe(LocalDateTime.now().minusDays(7)),
                         free.deletedAt.isNull())
                 .orderBy(free.hits.desc())
