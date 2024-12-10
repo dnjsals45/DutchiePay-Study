@@ -105,7 +105,7 @@ public class FreeCommunityService {
      * @return 댓글 목록 dto
      */
     public CommentResponseDto getComments(Long freeId, Long cursor, int limit) {
-        return communityUtilService.getComments(freeId, cursor, limit);
+        return qFreeRepository.getComments(freeId, cursor, limit);
     }
 
     /**
@@ -115,7 +115,7 @@ public class FreeCommunityService {
      * @return 답글 목록 dto
      */
     public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
-        return communityUtilService.getReComments(commentId, type);
+        return qFreeRepository.getReComments(commentId, type);
     }
 
     /**

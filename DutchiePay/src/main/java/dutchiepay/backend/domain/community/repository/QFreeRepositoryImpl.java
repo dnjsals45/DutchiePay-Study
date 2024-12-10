@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.community.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.ChronoUtil;

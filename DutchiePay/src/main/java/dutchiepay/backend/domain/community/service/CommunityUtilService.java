@@ -5,21 +5,17 @@ import dutchiepay.backend.domain.commerce.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
 import dutchiepay.backend.domain.community.exception.CommunityException;
-import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
     private final FreeRepository freeRepository;
     private final CommentRepository commentRepository;
-    private final PostHitService postHitService;
 
     // 게시글 Id로 Free 객체 조회
     public Free findFreeById(Long freeId) {
