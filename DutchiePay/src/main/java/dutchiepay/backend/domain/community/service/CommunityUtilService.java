@@ -20,7 +20,7 @@ public class CommunityUtilService {
 
     // 게시글 Id로 Free 객체 조회
     public Free findFreeById(Long freeId) {
-        return freeRepository.findById(freeId)
+        return freeRepository.findByFreeIdAndDeletedAtIsNull(freeId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
     }
 
@@ -64,6 +64,9 @@ public class CommunityUtilService {
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
     public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
+        // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
+        findCommentById(commentRequestDto.getRootCommentId());
+        findCommentById(commentRequestDto.getMentionedId());
         return CommentCreateResponseDto.toDto(
                 commentRepository.save(
                         Comment.builder()
@@ -74,7 +77,7 @@ public class CommunityUtilService {
 
     // commentId로 Comment 객체를 찾음
     public Comment findCommentById(Long commentId) {
-        return commentRepository.findById(commentId)
+        return commentRepository.findByCommentIdAndDeletedAtIsNull(commentId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_COMMENT));
     }
 
