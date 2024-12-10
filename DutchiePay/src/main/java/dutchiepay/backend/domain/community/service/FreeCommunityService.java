@@ -2,8 +2,6 @@ package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
-import dutchiepay.backend.entity.Comment;
-import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +18,7 @@ import static dutchiepay.backend.domain.community.service.CommunityUtilService.*
 public class FreeCommunityService {
 
     private final CommunityUtilService communityUtilService;
+    private final PostHitService postHitService;
     private final QFreeRepositoryImpl qFreeRepository;
 
 
@@ -42,7 +41,9 @@ public class FreeCommunityService {
      */
     public FreePostResponseDto getFreePost(User user, Long freeId) {
 
-        return qFreeRepository.getFreePost(user, freeId);
+        postHitService.increaseHitCount(user, "free", freeId);
+
+        return qFreeRepository.getFreePost(freeId);
     }
 
     /**

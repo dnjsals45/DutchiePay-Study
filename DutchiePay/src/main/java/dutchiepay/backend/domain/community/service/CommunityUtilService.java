@@ -27,16 +27,6 @@ public class CommunityUtilService {
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
     }
 
-    // QFreeRepository에서 게시글 단건 조회
-    public FreePostResponseDto getFreePost(User user, Long freeId) {
-        FreePostResponseDto result = qFreeRepository.getFreePost(freeId);
-
-        // 문제 없을 경우 조회수 증가
-        postHitService.increaseHitCount(user, "free", freeId);
-
-        return result;
-    }
-
     // 게시글의 길이를 검증한 후 저장
     public String validatePostLength(String content) {
         String description = content.replaceAll("<[^>]*>", "");
