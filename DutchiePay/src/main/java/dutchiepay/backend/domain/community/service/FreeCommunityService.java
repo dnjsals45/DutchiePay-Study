@@ -1,7 +1,6 @@
 package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.community.dto.*;
-import dutchiepay.backend.domain.user.service.UserUtilService;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
@@ -33,12 +32,12 @@ public class FreeCommunityService {
     /**
      * 게시글 단건 조회
      *
+     * @param user  조회를 요청한 user
      * @param freeId 조회할 게시글 Id
      * @return 게시글 상세 정보 dto
      */
-    public FreePostResponseDto getFreePost(Long freeId) {
-
-        return communityUtilService.getFreePost(freeId);
+    public FreePostResponseDto getFreePost(User user, Long freeId) {
+        return communityUtilService.getFreePost(user, freeId);
     }
 
     /**

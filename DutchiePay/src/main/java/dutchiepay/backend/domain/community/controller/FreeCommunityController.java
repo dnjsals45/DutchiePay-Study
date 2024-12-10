@@ -32,9 +32,10 @@ public class FreeCommunityController {
     @Operation(summary = "자유게시판 상세 조회(구현중)")
     @GetMapping()
     @PreAuthorize("isAuthenticated()")
-    public FreePostResponseDto getFreePost(@RequestParam("freeId") Long freeId) {
+    public FreePostResponseDto getFreePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                           @RequestParam("freeId") Long freeId) {
 
-        return freeCommunityService.getFreePost(freeId);
+        return freeCommunityService.getFreePost(userDetails.getUser(), freeId);
     }
 
     @Operation(summary = "자유게시판 글 작성(구현중)")

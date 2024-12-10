@@ -18,6 +18,7 @@ public class CommunityUtilService {
     private final QFreeRepositoryImpl qFreeRepository;
     private final FreeRepository freeRepository;
     private final CommentRepository commentRepository;
+    private final PostHitService postHitService;
 
     // QFreeRepository에서 게시글 목록 조회
     public FreeListResponseDto getFreeLists(String category, String filter, int limit, Long cursor) {
@@ -31,8 +32,13 @@ public class CommunityUtilService {
     }
 
     // QFreeRepository에서 게시글 단건 조회
-    public FreePostResponseDto getFreePost(Long freeId) {
-        return qFreeRepository.getFreePost(freeId);
+    public FreePostResponseDto getFreePost(User user, Long freeId) {
+        FreePostResponseDto result = qFreeRepository.getFreePost(freeId);
+
+        // 문제 없을 경우 조회수 증가
+        postHitService.increaseHitCount(user, "free", freeId);
+
+        return result;
     }
 
     // 게시글의 길이를 검증한 후 저장

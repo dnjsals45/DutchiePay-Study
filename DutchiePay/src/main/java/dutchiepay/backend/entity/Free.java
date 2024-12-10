@@ -47,4 +47,7 @@ public class Free extends Auditing {
         this.description = description;
     }
 
+    public void increaseHitCount() {
+        this.hits++;
+    }
 }
