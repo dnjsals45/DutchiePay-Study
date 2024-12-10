@@ -45,7 +45,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         switch (filter) {
             case "new":
                 orderSpecifier = new OrderSpecifier[]{free.createdAt.desc()};
-                query.where(free.freeId.loe(cursor));
+                query.where(free.freeId.loe(cursor),
+                        free.deletedAt.isNull());
                 break;
             case "comment":
                 orderSpecifier = new OrderSpecifier[]{comment.count().desc(), free.freeId.desc()};
@@ -54,7 +55,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
                             select(comment.count())
                             .from(comment)
                             .join(comment.free, free)
-                            .where(free.freeId.eq(cursor))
+                            .where(free.freeId.eq(cursor),
+                                    free.deletedAt.isNull())
                             .fetchFirst();
                     if (nowCommentsCount != null) {
                         query.having(comment.count().lt(nowCommentsCount)
@@ -69,7 +71,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
                     Integer nowViews = jpaQueryFactory
                             .select(free.hits)
                             .from(free)
-                            .where(free.freeId.eq(cursor))
+                            .where(free.freeId.eq(cursor),
+                                    free.deletedAt.isNull())
                             .fetchFirst();
                     if (nowViews != null) {
                         query.where(free.hits.lt(nowViews)
@@ -94,8 +97,9 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     public FreePostResponseDto getFreePost(Long freeId) {
         Free result = jpaQueryFactory
                 .selectFrom(free)
-                .where(free.freeId.eq(freeId))
-                .fetchOne();
+                .where(free.freeId.eq(freeId),
+                        free.deletedAt.isNull())
+                .fetchFirst();
 
         if (result == null) throw new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST);
 
@@ -107,7 +111,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
         return jpaQueryFactory
                 .select(free)
-                .where(free.createdAt.goe(LocalDateTime.now().minusDays(7)))
+                .where(free.createdAt.goe(LocalDateTime.now().minusDays(7)),
+                        free.deletedAt.isNull())
                 .orderBy(free.hits.desc())
                 .limit(5)
                 .fetch()
@@ -120,7 +125,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     public List<HotAndRecommendsResponseDto.Posts> getRecommendsPosts(String category) {
         return jpaQueryFactory
                 .selectFrom(free)
-                .where(free.category.eq(category))
+                .where(free.category.eq(category),
+                        free.deletedAt.isNull())
                 .orderBy(free.createdAt.desc())
                 .limit(5)
                 .fetch()
@@ -133,7 +139,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         return jpaQueryFactory
                 .select(comment.count())
                 .from(comment)
-                .where(comment.free.eq(free))
+                .where(comment.free.eq(free),
+                        comment.deletedAt.isNull())
                 .fetchFirst();
     }
 
