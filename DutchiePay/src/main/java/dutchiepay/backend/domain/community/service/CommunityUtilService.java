@@ -65,15 +65,6 @@ public class CommunityUtilService {
         if (comment.length() > 800) throw new CommunityException(CommunityErrorCode.OVER_CONTENT_LENGTH);
     }
 
-    // 원댓 목록 조회
-    public CommentResponseDto getComments(Long freeId, Long cursor, int limit) {
-        return qFreeRepository.getComments(freeId, cursor, limit);
-    }
-
-    // 답댓 목록 조회
-    public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
-        return qFreeRepository.getReComments(commentId, type);
-    }
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
     public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
