@@ -34,7 +34,7 @@ public class Comment extends Auditing {
     @Column(nullable = false, length = 800)
     private String contents;
 
-    public void updateContents(String contents){
+    public void updateComment(String contents){
         this.contents = contents;
     }
 }

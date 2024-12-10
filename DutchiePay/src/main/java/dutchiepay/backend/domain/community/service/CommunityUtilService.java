@@ -15,15 +15,9 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
-    private final QFreeRepositoryImpl qFreeRepository;
     private final FreeRepository freeRepository;
     private final CommentRepository commentRepository;
     private final PostHitService postHitService;
-
-    // QFreeRepository에서 게시글 목록 조회
-    public FreeListResponseDto getFreeLists(String category, String filter, int limit, Long cursor) {
-        return qFreeRepository.getFreeLists(category, filter, limit, cursor);
-    }
 
     // 게시글 Id로 Free 객체 조회
     public Free findFreeById(Long freeId) {
@@ -66,18 +60,25 @@ public class CommunityUtilService {
         if (!free.getUser().equals(user)) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
     }
 
-    // QFreeRepository에서 인기, 추천 게시글을 찾음
-    public HotAndRecommendsResponseDto getHotAndRecommendPosts(String category) {
-        return HotAndRecommendsResponseDto.toDto(qFreeRepository.getHotPosts(),
-                qFreeRepository.getRecommendsPosts(category));
+    // 게시글을 찾고 작성자를 검증
+    public Free validatePostAndWriter(User user, Long freeId) {
+        Free free = findFreeById(freeId);
+        validatePostWriter(user, free);
+        return free;
+    }
+
+    // 댓글 길이 검증
+    public static void validateCommentLength(String comment) {
+        if (comment.length() < 2) throw new CommunityException(CommunityErrorCode.INSUFFICIENT_LENGTH);
+        if (comment.length() > 800) throw new CommunityException(CommunityErrorCode.OVER_CONTENT_LENGTH);
     }
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
-    public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto, Free free) {
+    public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
         return CommentCreateResponseDto.toDto(
                 commentRepository.save(
                         Comment.builder()
-                                .free(free).contents(commentRequestDto.getContent())
+                                .free(findFreeById(commentRequestDto.getFreeId())).contents(commentRequestDto.getContent())
                                 .user(user).mentionedId(commentRequestDto.getMentionedId())
                                 .parentId(commentRequestDto.getRootCommentId()).build()));
     }
@@ -91,5 +92,12 @@ public class CommunityUtilService {
     // 댓글 작성자를 검증
     public static void validateCommentWriter(User user, Comment comment) {
         if (!comment.getUser().getUserId().equals(user.getUserId())) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+    }
+
+    // 댓글을 찾고 작성자를 검증
+    public Comment validateCommentAndWriter(User user, Long commentId) {
+        Comment comment = findCommentById(commentId);
+        validateCommentWriter(user, comment);
+        return comment;
     }
 }
