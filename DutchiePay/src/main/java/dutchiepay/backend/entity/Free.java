@@ -44,7 +44,7 @@ public class Free extends Auditing {
         this.contents = dto.getContent();
         this.category = dto.getCategory();
         this.postImg = dto.getThumbnail();
-        this.description = description;
+        this.description = description.substring(0, Math.min(description.length(), 100));
     }
 
 }

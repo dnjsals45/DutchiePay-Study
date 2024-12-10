@@ -1,9 +1,7 @@
 package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.community.dto.*;
-import dutchiepay.backend.domain.user.service.UserUtilService;
-import dutchiepay.backend.entity.Comment;
-import dutchiepay.backend.entity.Free;
+import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +17,8 @@ import static dutchiepay.backend.domain.community.service.CommunityUtilService.*
 public class FreeCommunityService {
 
     private final CommunityUtilService communityUtilService;
+    private final QFreeRepositoryImpl qFreeRepository;
+
 
     /**
      * 게시글 리스트 조회
@@ -27,7 +27,7 @@ public class FreeCommunityService {
      */
     public FreeListResponseDto getFreeList(String category, String filter, int limit, Long cursor) {
 
-        return communityUtilService.getFreeLists(category, filter, limit, cursor);
+        return qFreeRepository.getFreeLists(category, filter, limit, cursor);
     }
 
     /**
@@ -38,7 +38,7 @@ public class FreeCommunityService {
      */
     public FreePostResponseDto getFreePost(Long freeId) {
 
-        return communityUtilService.getFreePost(freeId);
+        return qFreeRepository.getFreePost(freeId);
     }
 
     /**
@@ -65,10 +65,8 @@ public class FreeCommunityService {
     public void updateFreePost(User user, UpdateFreeRequestDto updateFreeRequestDto) {
         String description = communityUtilService.validatePostLength(updateFreeRequestDto.getContent());
 
-        Free free = communityUtilService.findFreeById(updateFreeRequestDto.getFreeId());
-        validatePostWriter(user, free);
-
-        free.updateFree(updateFreeRequestDto, description);
+        communityUtilService.validatePostAndWriter(user, updateFreeRequestDto.getFreeId())
+                .updateFree(updateFreeRequestDto, description);
     }
 
     /**
@@ -79,10 +77,7 @@ public class FreeCommunityService {
      */
     @Transactional
     public void deleteFreePost(User user, Long freeId) {
-        Free free = communityUtilService.findFreeById(freeId);
-        validatePostWriter(user, free);
-
-        free.delete();
+        communityUtilService.validatePostAndWriter(user, freeId).delete();
     }
 
     /**
@@ -93,7 +88,8 @@ public class FreeCommunityService {
      */
     public HotAndRecommendsResponseDto hotAndRecommends(String category) {
 
-        return communityUtilService.getHotAndRecommendPosts(category);
+        return HotAndRecommendsResponseDto.toDto(qFreeRepository.getHotPosts(),
+                qFreeRepository.getRecommendsPosts(category));
     }
 
     /**
@@ -104,9 +100,8 @@ public class FreeCommunityService {
      */
     @Transactional
     public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
-
-        return communityUtilService.createComment(user, commentRequestDto
-                , communityUtilService.findFreeById(commentRequestDto.getFreeId()));
+        validateCommentLength(commentRequestDto.getContent());
+        return communityUtilService.createComment(user, commentRequestDto);
     }
 
     /**
@@ -117,10 +112,8 @@ public class FreeCommunityService {
     @Transactional
     public void updateComment(User user, CommentUpdateRequestDto updateCommentDto) {
 
-        Comment comment = communityUtilService.findCommentById(updateCommentDto.getCommentId());
-        validateCommentWriter(user, comment);
-
-        comment.updateContents(updateCommentDto.getContent());
+        communityUtilService.validateCommentAndWriter(user, updateCommentDto.getCommentId())
+                .updateComment(updateCommentDto.getContent());
     }
 
     /**
@@ -130,10 +123,6 @@ public class FreeCommunityService {
      */
     @Transactional
     public void deleteComment(User user, Long commentId) {
-        Comment comment = communityUtilService.findCommentById(commentId);
-        validateCommentWriter(user, comment);
-
-        comment.delete();
+        communityUtilService.validateCommentAndWriter(user, commentId).delete();
     }
-
 }
