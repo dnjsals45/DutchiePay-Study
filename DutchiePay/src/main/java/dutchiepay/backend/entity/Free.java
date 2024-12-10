@@ -46,4 +46,7 @@ public class Free extends Auditing {
         this.postImg = dto.getThumbnail();
     }
 
+    public void increaseHitCount() {
+        this.hits++;
+    }
 }

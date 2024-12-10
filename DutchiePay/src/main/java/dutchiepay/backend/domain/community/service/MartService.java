@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class MartService {
+    private final PostHitService postHitService;
     private final ShareRepository shareRepository;
 
     @Transactional
@@ -33,7 +34,8 @@ public class MartService {
         shareRepository.softDelete(shareId);
     }
 
-    public GetMartResponseDto getMartByShareId(Long shareId) {
+    public GetMartResponseDto getMartByShareId(User user, Long shareId) {
+        postHitService.increaseHitCount(user, "share", shareId);
         validateShare(shareId);
         return shareRepository.getMartByShareId(shareId);
     }

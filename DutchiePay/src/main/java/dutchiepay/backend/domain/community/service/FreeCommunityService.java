@@ -26,6 +26,7 @@ public class FreeCommunityService {
     private final FreeRepository freeRepository;
     private final CommentRepository commentRepository;
     private final UserUtilService userUtilService;
+    private final PostHitService postHitService;
 
 
     /**
@@ -44,11 +45,11 @@ public class FreeCommunityService {
      * @param freeId 조회할 게시글 Id
      * @return 게시글 상세 정보 dto
      */
-    public FreePostResponseDto getFreePost(Long freeId) {
-
+    public FreePostResponseDto getFreePost(User user, Long freeId) {
         Tuple freePost = qFreeRepository.getFreePost(freeId);
         Free free = freeRepository.findById(freeId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
+        postHitService.increaseHitCount(user, "free", freeId);
         int count = commentRepository.countCommentByFree(free);
 
         return FreePostResponseDto.toDto(free.getUser(), free, count);

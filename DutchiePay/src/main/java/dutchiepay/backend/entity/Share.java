@@ -85,4 +85,8 @@ public class Share extends Auditing {
     public void changeStatus(String status) {
         this.state = status;
     }
+
+    public void increaseHitCount() {
+        this.hits++;
+    }
 }
