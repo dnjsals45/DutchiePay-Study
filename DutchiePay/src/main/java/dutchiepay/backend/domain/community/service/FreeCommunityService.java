@@ -1,33 +1,23 @@
 package dutchiepay.backend.domain.community.service;
 
-import com.querydsl.core.Tuple;
-import dutchiepay.backend.domain.commerce.repository.CommentRepository;
-import dutchiepay.backend.domain.commerce.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.*;
-import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
-import dutchiepay.backend.domain.community.exception.CommunityException;
-import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
-import dutchiepay.backend.domain.user.service.UserUtilService;
+import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
-import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
+import static dutchiepay.backend.domain.community.service.CommunityUtilService.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FreeCommunityService {
 
-    private final QFreeRepositoryImpl qFreeRepository;
-    private final FreeRepository freeRepository;
-    private final CommentRepository commentRepository;
-    private final UserUtilService userUtilService;
-    private final PostHitService postHitService;
-
+    private final CommunityUtilService communityUtilService;
 
     /**
      * 게시글 리스트 조회
@@ -36,77 +26,60 @@ public class FreeCommunityService {
      */
     public FreeListResponseDto getFreeList(String category, String filter, int limit, Long cursor) {
 
-        return qFreeRepository.getFreeLists(category, filter, limit, cursor);
+        return communityUtilService.getFreeLists(category, filter, limit, cursor);
     }
 
     /**
      * 게시글 단건 조회
      *
+     * @param user  조회를 요청한 user
      * @param freeId 조회할 게시글 Id
      * @return 게시글 상세 정보 dto
      */
     public FreePostResponseDto getFreePost(User user, Long freeId) {
-        Tuple freePost = qFreeRepository.getFreePost(freeId);
-        Free free = freeRepository.findById(freeId)
-                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
-        postHitService.increaseHitCount(user, "free", freeId);
-        int count = commentRepository.countCommentByFree(free);
-
-        return FreePostResponseDto.toDto(free.getUser(), free, count);
+        return communityUtilService.getFreePost(user, freeId);
     }
 
     /**
      * 게시글 작성
-     *
+     * 길이 검증 -> 저장
      * @param user                 작성을 요청한 user
      * @param createFreeRequestDto 게시글 내용이 담긴 dto
      * @return 작성 완료한 게시글의 Id를 담은 map
      */
     @Transactional
     public Map<String, Long> createFreePost(User user, CreateFreeRequestDto createFreeRequestDto) {
-        String content = createFreeRequestDto.getContent();
-        if (content.replaceAll("<[^>]*>", "").length() < 2)
-            throw new CommunityException(CommunityErrorCode.INSUFFICIENT_LENGTH);
+        String description = communityUtilService.validatePostLength(createFreeRequestDto.getContent());
 
-        Free newPost = freeRepository.save(Free.builder()
-                .user(user)
-                .title(createFreeRequestDto.getTitle())
-                .contents(createFreeRequestDto.getContent())
-                .category(createFreeRequestDto.getCategory())
-                .postImg(createFreeRequestDto.getThumbnail()).build());
-        return Map.of("freeId", newPost.getFreeId());
+        return Map.of("freeId", communityUtilService.saveFree(user, createFreeRequestDto, description).getFreeId());
     }
 
     /**
      * 게시글 수정
-     *
+     * 길이 검증 -> 게시글 조회 -> 작성자 검증 -> update
      * @param user                 수정을 요청한 user
      * @param updateFreeRequestDto 수정 내용이 담긴 dto
      */
     @Transactional
     public void updateFreePost(User user, UpdateFreeRequestDto updateFreeRequestDto) {
-        String content = updateFreeRequestDto.getContent();
-        if (content.replaceAll("<[^>]*>", "").length() < 2)
-            throw new CommunityException(CommunityErrorCode.INSUFFICIENT_LENGTH);
+        String description = communityUtilService.validatePostLength(updateFreeRequestDto.getContent());
 
-        Free free = freeRepository.findById(updateFreeRequestDto.getFreeId())
-                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
-        if (!free.getUser().equals(user)) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+        Free free = communityUtilService.findFreeById(updateFreeRequestDto.getFreeId());
+        validatePostWriter(user, free);
 
-        free.updateFree(updateFreeRequestDto);
+        free.updateFree(updateFreeRequestDto, description);
     }
 
     /**
      * 게시글 삭제
-     *
+     * 게시글 조회 -> 작성자 검증
      * @param user   삭제를 요청한 user
      * @param freeId 삭제할 게시글 Id
      */
     @Transactional
     public void deleteFreePost(User user, Long freeId) {
-        Free free = freeRepository.findById(freeId)
-                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
-        if (!free.getUser().equals(user)) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+        Free free = communityUtilService.findFreeById(freeId);
+        validatePostWriter(user, free);
 
         free.delete();
     }
@@ -119,27 +92,47 @@ public class FreeCommunityService {
      */
     public HotAndRecommendsResponseDto hotAndRecommends(String category) {
 
-        return HotAndRecommendsResponseDto.toDto(qFreeRepository.getHotPosts(),
-                qFreeRepository.getRecommendsPosts(category));
+        return communityUtilService.getHotAndRecommendPosts(category);
     }
 
+    /**
+     * 댓글 작성
+     * @param user 댓글을 작성자
+     * @param commentRequestDto 댓글 내용이 담긴 dto
+     * @return 댓글 Id, 작성시간을 담는 dto
+     */
     @Transactional
-    public void addEntity() {
-        String[] categories = new String[]{"free", "info", "hobby", "qna"};
-        int index = 1;
-        for (Long i = 5L; i < 15L; i++) {
-            User user = userUtilService.findById(i);
-            for (int j = 1; j < 11; j++) {
-                freeRepository.save(Free.builder()
-                        .user(user)
-                        .title("Test" + index)
-                        .contents("Test Contents " + index)
-                        .category(categories[j % 4])
-                        .postImg(null)
-                        .hits(index + j)
-                        .description("test description for " + index).build());
-                index++;
-            }
-        }
+    public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
+
+        return communityUtilService.createComment(user, commentRequestDto
+                , communityUtilService.findFreeById(commentRequestDto.getFreeId()));
     }
+
+    /**
+     * 댓글 수정
+     * @param user 댓글을 수정하는 작성자
+     * @param updateCommentDto 수정할 내용이 담긴 dto
+     */
+    @Transactional
+    public void updateComment(User user, CommentUpdateRequestDto updateCommentDto) {
+
+        Comment comment = communityUtilService.findCommentById(updateCommentDto.getCommentId());
+        validateCommentWriter(user, comment);
+
+        comment.updateContents(updateCommentDto.getContent());
+    }
+
+    /**
+     * 댓글 삭제
+     * @param user 댓글을 삭제할 사용자
+     * @param commentId 삭제할 댓글
+     */
+    @Transactional
+    public void deleteComment(User user, Long commentId) {
+        Comment comment = communityUtilService.findCommentById(commentId);
+        validateCommentWriter(user, comment);
+
+        comment.delete();
+    }
+
 }
