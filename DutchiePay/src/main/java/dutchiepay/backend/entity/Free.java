@@ -39,11 +39,12 @@ public class Free extends Auditing {
     @Column(nullable = false)
     private String description;
 
-    public void updateFree(UpdateFreeRequestDto dto) {
+    public void updateFree(UpdateFreeRequestDto dto, String description) {
         this.title = dto.getTitle();
         this.contents = dto.getContent();
         this.category = dto.getCategory();
         this.postImg = dto.getThumbnail();
+        this.description = description;
     }
 
 }

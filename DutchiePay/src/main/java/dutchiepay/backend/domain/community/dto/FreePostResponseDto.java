@@ -18,10 +18,10 @@ public class FreePostResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private String category;
-    private Integer commentsCount;
+    private Long commentsCount;
     private Integer hit;
 
-    public static FreePostResponseDto toDto(User user, Free free, int count) {
+    public static FreePostResponseDto toDto(User user, Free free, Long count) {
         return FreePostResponseDto.builder()
                 .writerId(user.getUserId())
                 .writer(user.getNickname())
