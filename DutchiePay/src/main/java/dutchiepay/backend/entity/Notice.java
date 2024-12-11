@@ -27,7 +27,5 @@ public class Notice extends Auditing {
 
     private String writer;
 
-    private String message;
-
     private Boolean isRead;
 }

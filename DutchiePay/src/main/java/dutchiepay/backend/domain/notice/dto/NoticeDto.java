@@ -1,28 +1,39 @@
 package dutchiepay.backend.domain.notice.dto;
 
+import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.entity.Notice;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NoticeDto {
-    private Long noticeId;
     private String type;
     private String writer;
-    private String message;
-    private LocalDateTime createdAt;
+    private String relativeTime;
+    private Long id;
 
     public static NoticeDto toDto(Notice notice) {
         return NoticeDto.builder()
-                .noticeId(notice.getNoticeId())
                 .type(notice.getType())
                 .writer(notice.getWriter())
-                .message(notice.getMessage())
-                .createdAt(notice.getCreatedAt())
+                .relativeTime(ChronoUtil.timesAgo(notice.getCreatedAt()))
+                .id(notice.getOriginId())
                 .build();
+    }
+
+    public static List<NoticeDto> toDtoList(List<Notice> notices) {
+        List<NoticeDto> noticeDtoList = new ArrayList<>();
+
+        for (Notice n : notices) {
+            noticeDtoList.add(toDto(n));
+        }
+
+        return noticeDtoList;
     }
 }
