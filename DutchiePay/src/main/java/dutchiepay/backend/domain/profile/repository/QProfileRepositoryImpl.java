@@ -12,6 +12,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.profile.dto.GetMyLikesResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyPostsResponseDto;
+import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
+import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -52,6 +54,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     QComment comment = QComment.comment;
     QBuyCategory buyCategory = QBuyCategory.buyCategory;
     QCategory category = QCategory.category;
+    QReview review = QReview.review;
 
 
     @Override
@@ -77,7 +80,12 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                                         .from(score)
                                         .where(score.buy.eq(buy)), "rating"
                         ),
-                        score.count,
+                        ExpressionUtils.as(
+                                JPAExpressions
+                                        .select(review.count().castToNum(Integer.class))
+                                        .from(review)
+                                        .where(review.order.buy.eq(buy)), "reviewCount"
+                        ),
                         ExpressionUtils.as(
                                 Expressions.numberTemplate(
                                         Integer.class,
@@ -149,7 +157,9 @@ public class QProfileRepositoryImpl implements QProfileRepository {
     }
 
     @Override
-    public List<MyGoodsResponseDto> getMyGoods(User user, Pageable pageable) {
+    public MyGoodsResponseDto getMyGoods(User user, String filter, Pageable pageable) {
+        BooleanExpression filterCondition = getMyGoodsFilterCondition(filter);
+
         List<Tuple> tuple =  jpaQueryFactory
                 .select(orders.orderId,
                         orders.orderNum,
@@ -157,43 +167,56 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         orders.orderedAt,
                         product.productName,
                         orders.quantity,
+                        product.originalPrice,
                         product.salePrice,
-                        product.discountPercent,
                         orders.totalPrice,
                         orders.payment,
+                        orders.receiver,
                         orders.address,
                         orders.zipCode,
                         orders.detail,
                         orders.state,
+                        orders.message,
                         product.productImg,
                         store.storeName)
                 .from(orders)
                 .join(orders.product, product)
                 .join(product.store, store)
-                .where(orders.user.eq(user))
+                .where(orders.user.eq(user), filterCondition)
                 .orderBy(orders.orderedAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .limit(pageable.getPageSize() + 1)
                 .fetch();
 
-        List<MyGoodsResponseDto> result = new ArrayList<>();
-
-        if (tuple.isEmpty()) {
-            return result;
+        boolean hasNext = false;
+        List<Tuple> content = tuple;
+        if (tuple.size() > pageable.getPageSize()) {
+            hasNext = true;
+            content = tuple.subList(0, pageable.getPageSize());
         }
 
-        for (Tuple t : tuple) {
-            MyGoodsResponseDto dto = MyGoodsResponseDto.builder()
+        List<MyGoodsResponseDto.Goods> result = new ArrayList<>();
+
+        if (pageable.getPageNumber() == 0 && tuple.isEmpty()) {
+            throw new ProfileErrorException(ProfileErrorCode.NO_HISTORY_ORDER);
+        } else if (tuple.isEmpty()) {
+            throw new ProfileErrorException(ProfileErrorCode.NO_MORE_HISTORY_ORDER);
+        }
+
+
+        for (Tuple t : content) {
+            MyGoodsResponseDto.Goods dto = MyGoodsResponseDto.Goods.builder()
                     .orderId(t.get(orders.orderId))
                     .orderNum(t.get(orders.orderNum))
                     .buyId(t.get(buy.buyId))
                     .orderDate(t.get(orders.orderedAt).toLocalDate())
                     .productName(t.get(product.productName))
                     .quantity(t.get(orders.quantity))
-                    .productPrice(t.get(product.salePrice))
-                    .discountPercent(t.get(product.discountPercent))
+                    .productPrice(t.get(product.originalPrice))
+                    .discountPrice(t.get(product.salePrice))
                     .totalPrice(t.get(orders.totalPrice))
                     .payment(t.get(orders.payment))
+                    .receiver(t.get(orders.receiver))
                     .address(t.get(orders.address))
                     .zipCode(t.get(orders.zipCode))
                     .detail(t.get(orders.detail))
@@ -206,58 +229,71 @@ public class QProfileRepositoryImpl implements QProfileRepository {
             result.add(dto);
         }
 
-        return result;
+        return MyGoodsResponseDto.builder()
+                .goods(result)
+                .hasNext(hasNext)
+                .build();
     }
 
-    // QueryDsl 은 union 작성이 안된다.. native로 작성해야할까?
-    @Override
-    public List<MyPostsResponseDto> getMyPosts(User user, PageRequest pageable) {
-//        List<MyPostsResponseDto> shareResult = jpaQueryFactory
-//                .select(Projections.constructor(MyPostsResponseDto.class,
-//                        share.shareId.as("postId"),
-//                        share.title.as("title"),
-//                        share.createdAt.as("writeTime"),
-//                        share.contents.as("content"),
-//                        Expressions.asString("마트/배달").as("category"),
-//                        Expressions.nullExpression(String.class),
-//                        share.thumbnail.as("thumbnail")))
-//                .from(share)
-//                .where(share.userId.eq(user))
-//                .where(share.deletedAt.isNull())
-//                .orderBy(share.createdAt.desc())
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//
-//        List<MyPostsResponseDto> freeResult = jpaQueryFactory
-//                .select(Projections.constructor(MyPostsResponseDto.class,
-//                        free.freeId.as("postId"),
-//                        free.title.as("title"),
-//                        free.createdAt.as("writeTime"),
-//                        free.contents.as("content"),
-//                        Expressions.asString("자유").as("category"),
-//                        ExpressionUtils.as(
-//                                JPAExpressions
-//                                        .select(comment.count())
-//                                        .from(comment)
-//                                        .where(comment.freeId.eq(free))
-//                                        .where(comment.deletedAt.isNull()), "commentCount"),
-//                        Expressions.nullExpression(String.class)))
-//                .from(free)
-//                .where(free.user.eq(user))
-//                .where(free.deletedAt.isNull())
-//                .orderBy(free.createdAt.desc())
-//                .offset(pageable.getOffset())
-//                .fetch();
+    private BooleanExpression getMyGoodsFilterCondition(String filter) {
+        if (filter == null || filter.isEmpty()) {
+            return null;
+        }
 
-        String sql = "SELECT share_id as postId, title, created_at as writeTime, contents as content, '마트/배달' as category, NULL as commentCount, thumbnail " +
+        switch (filter) {
+            case "pending":
+                return orders.state.in(
+                        "공구진행중",
+                        "배송준비중",
+                        "공구실패",
+                        "구매취소"
+                );
+
+            case "shipped":
+                return orders.state.in(
+                        "배송중"
+                );
+
+            case "delivered":
+                return orders.state.in(
+                        "배송완료",
+                        "구매확정",
+                        "환불/교환"
+                );
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public MyPostsResponseDto getMyPosts(User user, PageRequest pageable) {
+        String sql = "SELECT " +
+                "share.share_id as postId, " +
+                "share.title, " +
+                "share.created_at as writeTime, " +
+                "share.contents as content, " +
+                "'마트/배달' as category, " +
+                "NULL as commentCount, " +
+                "share.thumbnail, " +
+                "user.nickname as writerNickname, " +
+                "user.profile_img as writerProfileImage " +
                 "FROM share " +
-                "WHERE user_id = :userId AND deleted_at IS NULL " +
+                "LEFT JOIN user ON share.user_id = user.user_id " +
+                "WHERE share.user_id = :userId AND share.deleted_at IS NULL " +
                 "UNION ALL " +
-                "SELECT free_id as postId, title, created_at as writeTime, contents as content, '자유' as category, " +
-                "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, NULL as thumbnail " +
+                "SELECT " +
+                "free.free_id as postId, " +
+                "free.title, " +
+                "free.created_at as writeTime, " +
+                "free.contents as content, " +
+                "'자유' as category, " +
+                "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, " +
+                "NULL as thumbnail, " +
+                "user.nickname as writerNickname, " +
+                "user.profile_img as writerProfileImage " +
                 "FROM free " +
-                "WHERE user_id = :userId AND deleted_at IS NULL " +
+                "LEFT JOIN user ON free.user_id = user.user_id " +
+                "WHERE free.user_id = :userId AND free.deleted_at IS NULL " +
                 "ORDER BY writeTime DESC " +
                 "LIMIT :limit OFFSET :offset";
 
@@ -269,32 +305,36 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         @SuppressWarnings("unchecked")
         List<Object[]> resultList = query.getResultList();
 
-        List<MyPostsResponseDto> result = new ArrayList<>();
+        List<MyPostsResponseDto.Post> result = new ArrayList<>();
 
         for (Object[] objects : resultList) {
-            LocalDateTime dbTime = ((Timestamp) objects[2]).toLocalDateTime();
+            LocalDateTime dataTime = ((Timestamp) objects[2]).toLocalDateTime();
 
-            long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
-            String writeTime = daysBetween + "일 전";
+            String writeTime = convertRelativeTime(dataTime);
 
-            MyPostsResponseDto data = MyPostsResponseDto.builder()
+            MyPostsResponseDto.Post data = MyPostsResponseDto.Post.builder()
                                     .postId((Long) objects[0])
                                     .title((String) objects[1])
                                     .writeTime(writeTime)
-                                    .content((String) objects[3])
+                                    .description((String) objects[3])
                                     .category((String) objects[4])
                                     .commentCount((Long) objects[5])
                                     .thumbnail((String) objects[6])
+                                    .writerNickname((String) objects[7])
+                                    .writerProfileImage((String) objects[8])
                                     .build();
 
             result.add(data);
         }
 
-        return result;
+        return MyPostsResponseDto.builder()
+                .totalPost(result.size())
+                .posts(result)
+                .build();
     }
 
     @Override
-    public List<MyPostsResponseDto> getMyCommentsPosts(User user, PageRequest pageable) {
+    public MyPostsResponseDto getMyCommentsPosts(User user, PageRequest pageable) {
         List<Tuple> queryResult = jpaQueryFactory
                 .select(
                         free.freeId,
@@ -318,30 +358,62 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        List<MyPostsResponseDto> result = new ArrayList<>();
+        List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
             LocalDateTime dbTime = tuple.get(free.createdAt);
 
             long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
             String writeTime = daysBetween + "일 전";
 
-            MyPostsResponseDto data = MyPostsResponseDto.builder()
+            MyPostsResponseDto.Post data = MyPostsResponseDto.Post.builder()
                     .postId(tuple.get(free.freeId))
                     .title(tuple.get(free.title))
                     .writeTime(writeTime)
-                    .content(tuple.get(free.contents))
+                    .description(tuple.get(free.contents))
                     .category(tuple.get(free.category))
                     .commentCount(tuple.get(5, Long.class))
                     .thumbnail(null)
+                    .writerNickname(null)
+                    .writerProfileImage(null)
                     .build();
 
             result.add(data);
         }
 
-        return result;
+        return MyPostsResponseDto.builder()
+                .totalPost(result.size())
+                .posts(result)
+                .build();
     }
 
     private BooleanExpression categoryEq(String categoryName) {
         return category != null ? category.name.eq(categoryName) : null;
+    }
+
+    private String convertRelativeTime(LocalDateTime createdAt) {
+        LocalDateTime now = LocalDateTime.now();
+
+        long minutes = ChronoUnit.MINUTES.between(createdAt, now);
+        long hours = ChronoUnit.HOURS.between(createdAt, now);
+        long days = ChronoUnit.DAYS.between(createdAt, now);
+        long weeks = ChronoUnit.WEEKS.between(createdAt, now);
+        long months = ChronoUnit.MONTHS.between(createdAt, now);
+        long years = ChronoUnit.YEARS.between(createdAt, now);
+
+        if (minutes < 1) {
+            return "방금 전";
+        } else if (minutes < 60) {
+            return minutes + "분 전";
+        } else if (hours < 24) {
+            return hours + "시간 전";
+        } else if (days < 7) {
+            return days + "일 전";
+        } else if (days < 30) {
+            return weeks + "주 전";
+        } else if (days < 365) {
+            return months + "달 전";
+        } else {
+            return years + "년 전";
+        }
     }
 }

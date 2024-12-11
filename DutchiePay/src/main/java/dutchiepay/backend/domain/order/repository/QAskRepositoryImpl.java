@@ -29,6 +29,7 @@ public class QAskRepositoryImpl implements QAskRepository{
                         ask.product.productName,
                         ask.contents,
                         ask.answer,
+                        ask.createdAt,
                         ask.answeredAt,
                         ask.secret
                 )
@@ -37,6 +38,7 @@ public class QAskRepositoryImpl implements QAskRepository{
                 .join(ask.buy)
                 .join(ask.product.store)
                 .where(ask.user.eq(user))
+                .where(ask.deletedAt.isNull())
                 .fetch();
 
         List<GetMyAskResponseDto> result = new ArrayList<>();
@@ -53,6 +55,7 @@ public class QAskRepositoryImpl implements QAskRepository{
                     .productName(t.get(ask.product.productName))
                     .content(t.get(ask.contents))
                     .answer(t.get(ask.answer))
+                    .createdAt(t.get(ask.createdAt))
                     .answeredAt(t.get(ask.answeredAt))
                     .isSecret(t.get(ask.secret))
                     .build());

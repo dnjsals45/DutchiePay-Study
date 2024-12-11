@@ -45,4 +45,52 @@ public class Score extends Auditing {
     @Column(nullable = false)
     private int count;
 
+    public void addReview(int rating) {
+        switch (rating) {
+            case 1:
+                this.one++;
+                break;
+            case 2:
+                this.two++;
+                break;
+            case 3:
+                this.three++;
+                break;
+            case 4:
+                this.four++;
+                break;
+            case 5:
+                this.five++;
+                break;
+            default:
+        }
+        this.count++;
+    }
+
+    public void removeReview(int rating) {
+        switch (rating) {
+            case 1:
+                this.one--;
+                break;
+            case 2:
+                this.two--;
+                break;
+            case 3:
+                this.three--;
+                break;
+            case 4:
+                this.four--;
+                break;
+            case 5:
+                this.five--;
+                break;
+            default:
+        }
+        this.count--;
+    }
+
+    public void updateReview(int oldRating, int newRating) {
+        removeReview(oldRating);
+        addReview(newRating);
+    }
 }

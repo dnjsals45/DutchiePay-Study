@@ -37,4 +37,12 @@ public class Buy extends Auditing {
     // 현재 수량
     @Column(nullable = false)
     private int nowCount;
+
+    public void upCount(int count) {
+        this.nowCount += count;
+    }
+
+    public void disCount(int count) {
+        this.nowCount = this.nowCount < count ? 0 : this.nowCount - count;
+    }
 }
