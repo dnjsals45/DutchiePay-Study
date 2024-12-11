@@ -44,6 +44,9 @@ public class Share extends Auditing {
     @Column(length = 500)
     private String thumbnail;
 
+    @Column(length = 1500)
+    private String images;
+
     // 일시
     private String date;
 
