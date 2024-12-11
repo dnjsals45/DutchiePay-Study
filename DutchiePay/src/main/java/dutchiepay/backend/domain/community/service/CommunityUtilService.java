@@ -5,42 +5,22 @@ import dutchiepay.backend.domain.commerce.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
 import dutchiepay.backend.domain.community.exception.CommunityException;
-import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
-    private final QFreeRepositoryImpl qFreeRepository;
     private final FreeRepository freeRepository;
     private final CommentRepository commentRepository;
-    private final PostHitService postHitService;
-
-    // QFreeRepository에서 게시글 목록 조회
-    public FreeListResponseDto getFreeLists(String category, String filter, int limit, Long cursor) {
-        return qFreeRepository.getFreeLists(category, filter, limit, cursor);
-    }
 
     // 게시글 Id로 Free 객체 조회
     public Free findFreeById(Long freeId) {
-        return freeRepository.findById(freeId)
+        return freeRepository.findByFreeIdAndDeletedAtIsNull(freeId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
-    }
-
-    // QFreeRepository에서 게시글 단건 조회
-    public FreePostResponseDto getFreePost(User user, Long freeId) {
-        FreePostResponseDto result = qFreeRepository.getFreePost(freeId);
-
-        // 문제 없을 경우 조회수 증가
-        postHitService.increaseHitCount(user, "free", freeId);
-
-        return result;
     }
 
     // 게시글의 길이를 검증한 후 저장
@@ -68,40 +48,48 @@ public class CommunityUtilService {
         if (!free.getUser().equals(user)) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
     }
 
-    // QFreeRepository에서 인기, 추천 게시글을 찾음
-    public HotAndRecommendsResponseDto getHotAndRecommendPosts(String category) {
-        return HotAndRecommendsResponseDto.toDto(qFreeRepository.getHotPosts(),
-                qFreeRepository.getRecommendsPosts(category));
+    // 게시글을 찾고 작성자를 검증
+    public Free validatePostAndWriter(User user, Long freeId) {
+        Free free = findFreeById(freeId);
+        validatePostWriter(user, free);
+        return free;
     }
 
-    // 원댓 목록 조회
-    public CommentResponseDto getComments(Long freeId, Long cursor, int limit) {
-        return qFreeRepository.getComments(freeId, cursor, limit);
+    // 댓글 길이 검증
+    public static void validateCommentLength(String comment) {
+        if (comment.length() < 2) throw new CommunityException(CommunityErrorCode.INSUFFICIENT_LENGTH);
+        if (comment.length() > 800) throw new CommunityException(CommunityErrorCode.OVER_CONTENT_LENGTH);
     }
 
-    // 답댓 목록 조회
-    public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
-        return qFreeRepository.getReComments(commentId, type);
-    }
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
-    public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto, Free free) {
+    public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
+        // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
+        findCommentById(commentRequestDto.getRootCommentId());
+        findCommentById(commentRequestDto.getMentionedId());
         return CommentCreateResponseDto.toDto(
                 commentRepository.save(
                         Comment.builder()
-                                .free(free).contents(commentRequestDto.getContent())
+                                .free(findFreeById(commentRequestDto.getFreeId())).contents(commentRequestDto.getContent())
                                 .user(user).mentionedId(commentRequestDto.getMentionedId())
                                 .parentId(commentRequestDto.getRootCommentId()).build()));
     }
 
     // commentId로 Comment 객체를 찾음
     public Comment findCommentById(Long commentId) {
-        return commentRepository.findById(commentId)
+        return commentRepository.findByCommentIdAndDeletedAtIsNull(commentId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_COMMENT));
     }
 
     // 댓글 작성자를 검증
     public static void validateCommentWriter(User user, Comment comment) {
         if (!comment.getUser().getUserId().equals(user.getUserId())) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+    }
+
+    // 댓글을 찾고 작성자를 검증
+    public Comment validateCommentAndWriter(User user, Long commentId) {
+        Comment comment = findCommentById(commentId);
+        validateCommentWriter(user, comment);
+        return comment;
     }
 }
