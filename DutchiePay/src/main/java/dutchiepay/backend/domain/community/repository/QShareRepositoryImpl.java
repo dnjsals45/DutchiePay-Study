@@ -42,9 +42,9 @@ public class QShareRepositoryImpl implements QShareRepository{
         }
 
         if (u != null) {
-            condition = condition.and(share.user.location.eq(u.getLocation()));
+            condition = condition.and(share.location.eq(u.getLocation()));
         } else  {
-            condition = condition.and(share.user.location.eq("서울시 중구"));
+            condition = condition.and(share.location.eq("서울시 중구"));
         }
 
         List<Tuple> results = jpaQueryFactory
