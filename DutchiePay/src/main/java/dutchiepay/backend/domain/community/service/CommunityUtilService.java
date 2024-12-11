@@ -33,19 +33,21 @@ public class CommunityUtilService {
 
     // 게시글 작성 시 Free 객체 생성 후 저장
     public Free saveFree(User user, CreateFreeRequestDto createFreeRequestDto, String description) {
+
         return freeRepository.save(Free.builder()
                 .user(user)
                 .title(createFreeRequestDto.getTitle())
                 .contents(createFreeRequestDto.getContent())
                 .category(createFreeRequestDto.getCategory())
-                .postImg(createFreeRequestDto.getThumbnail())
+                .thumbnail(createFreeRequestDto.getThumbnail())
+                .images(String.join(",", createFreeRequestDto.getImages()))
                 .description(description.substring(0, Math.min(description.length(), 100)))
                 .build());
     }
 
     // 게시글 작성자를 검증
     public static void validatePostWriter(User user, Free free) {
-        if (!free.getUser().equals(user)) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+        if (!free.getUser().getUserId().equals(user.getUserId())) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
     }
 
     // 게시글을 찾고 작성자를 검증
@@ -53,6 +55,12 @@ public class CommunityUtilService {
         Free free = findFreeById(freeId);
         validatePostWriter(user, free);
         return free;
+    }
+
+    // 게시글 수정
+    public void updatePost(User user, UpdateFreeRequestDto updateFreeRequestDto, String description) {
+        Free free = validatePostAndWriter(user, updateFreeRequestDto.getFreeId());
+        free.updateFree(updateFreeRequestDto, description, String.join(",", updateFreeRequestDto.getImages()));
     }
 
     // 댓글 길이 검증

@@ -2,7 +2,9 @@ package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
+import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,17 +63,26 @@ public class FreeCommunityService {
     }
 
     /**
+     * 게시글 수정용 단건 조회
+     * @param user 조회를 요청한 user
+     * @param freeId 조회할 게시글 Id
+     * @return 게시글 상세 정보 dto
+     */
+    public FreeForUpdateDto getFreePostForUpdate(User user, Long freeId) {
+        return FreeForUpdateDto.toDto(communityUtilService.validatePostAndWriter(user, freeId));
+    }
+
+    /**
      * 게시글 수정
-     * 길이 검증 -> 게시글 조회 -> 작성자 검증 -> update
+     * 길이 검증 -> 작성자 검증 -> update
      * @param user                 수정을 요청한 user
      * @param updateFreeRequestDto 수정 내용이 담긴 dto
      */
     @Transactional
     public void updateFreePost(User user, UpdateFreeRequestDto updateFreeRequestDto) {
         String description = communityUtilService.validatePostLength(updateFreeRequestDto.getContent());
+        communityUtilService.updatePost(user, updateFreeRequestDto, description);
 
-        communityUtilService.validatePostAndWriter(user, updateFreeRequestDto.getFreeId())
-                .updateFree(updateFreeRequestDto, description);
     }
 
     /**

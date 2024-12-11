@@ -22,7 +22,7 @@ public class FreeCommunityController {
 
     @Operation(summary = "자유게시판 리스트 조회(구현중)")
     @GetMapping("/list")
-    public ResponseEntity<FreeListResponseDto> getFreePList(@RequestParam(value = "category", required = false) String category,
+    public ResponseEntity<FreeListResponseDto> getFreeList(@RequestParam(value = "category", required = false) String category,
                                                             @RequestParam("filter") String filter,
                                                             @RequestParam("limit") int limit,
                                                             @RequestParam(value = "cursor", required = false) Long cursor) {
@@ -30,7 +30,7 @@ public class FreeCommunityController {
     }
 
     @Operation(summary = "자유게시판 상세 조회(구현중)")
-    @GetMapping()
+    @GetMapping
     @PreAuthorize("isAuthenticated()")
     public FreePostResponseDto getFreePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                            @RequestParam("freeId") Long freeId) {
@@ -44,6 +44,14 @@ public class FreeCommunityController {
     public ResponseEntity<Map<String, Long>> createFreePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @Valid @RequestBody CreateFreeRequestDto createFreeRequestDto) {
         return ResponseEntity.ok(freeCommunityService.createFreePost(userDetails.getUser(), createFreeRequestDto));
+    }
+
+    @Operation(summary = "자유게시판 상세 조회(수정용)")
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public FreeForUpdateDto getFreePostForUpdate(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                 @PathVariable("id") Long freeId) {
+        return freeCommunityService.getFreePostForUpdate(userDetails.getUser(), freeId);
     }
 
     @Operation(summary = "자유게시판 글 수정(구현중)")
