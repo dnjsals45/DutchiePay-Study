@@ -18,6 +18,12 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NoticeController {
     private final NoticeService noticeService;
 
+    @GetMapping("")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getNotices(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(noticeService.getNotices(userDetails.getUser()));
+    }
+
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {
