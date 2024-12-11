@@ -44,10 +44,24 @@ public class NoticeUtilService {
 
     public Notice createCommentNotice(String writer, Comment comment) {
         if (comment.getParentId() == null) {
+            if (validatePostAuthor(writer, comment)) {
+                return null;
+            }
             return createPostCommentNotice(writer, comment);
         } else {
+            if (validateCommentAuthor(writer, comment)) {
+                return null;
+            }
             return createReplyCommentNotice(writer, comment);
         }
+    }
+
+    private boolean validatePostAuthor(String writer, Comment comment) {
+        return comment.getFree().getUser().getNickname().equals(writer);
+    }
+
+    private boolean validateCommentAuthor(String writer, Comment comment) {
+        return comment.getUser().getNickname().equals(writer);
     }
 
     private Notice createPostCommentNotice(String writer, Comment comment) {

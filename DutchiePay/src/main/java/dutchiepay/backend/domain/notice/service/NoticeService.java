@@ -47,7 +47,9 @@ public class NoticeService {
     public void sendCommentNotice(String writer, Comment comment) {
         Notice notice = noticeUtilService.createCommentNotice(writer, comment);
 
-        sendNotice(notice.getUser(), notice);
+        if (notice != null) {
+            sendNotice(notice.getUser(), notice);
+        }
     }
 
     public void sendNotice(User user, Notice notice) {
