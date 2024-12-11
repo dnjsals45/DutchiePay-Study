@@ -2,6 +2,7 @@ package dutchiepay.backend.domain.notice.controller;
 
 import dutchiepay.backend.domain.notice.service.NoticeService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +19,14 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NoticeController {
     private final NoticeService noticeService;
 
+    @Operation(summary = "알림 리스트 조회", description = "최근 7일간 발생한 알림 리스트를 조회합니다.")
     @GetMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getNotices(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(noticeService.getNotices(userDetails.getUser()));
     }
 
+    @Operation(summary = "알림 구독", description = "응답으로 읽지않은 알림이 있는지 없는지 여부 보내줌")
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {

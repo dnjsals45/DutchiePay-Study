@@ -72,4 +72,8 @@ public class NoticeUtilService {
                 .isRead(false)
                 .build());
     }
+
+    public boolean existUnreadNotification(User user, LocalDateTime time) {
+        return noticeRepository.existUnreadNotification(user, time);
+    }
 }

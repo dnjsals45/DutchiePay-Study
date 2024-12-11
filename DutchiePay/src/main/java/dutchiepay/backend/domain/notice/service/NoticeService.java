@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.notice.service;
 
 import dutchiepay.backend.domain.ChronoUtil;
+import dutchiepay.backend.domain.community.dto.UnreadStatus;
 import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
 import dutchiepay.backend.domain.notice.dto.NoticeDto;
 import dutchiepay.backend.entity.Comment;
@@ -55,7 +56,6 @@ public class NoticeService {
         if (sseEmitter != null) {
             try {
                 sseEmitter.send(SseEmitter.event()
-                        .name("notice")
                         .data(NoticeDto.toDto(notice)));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -64,16 +64,16 @@ public class NoticeService {
     }
 
     private void sendUnreadNotification(User user) {
-        List<Notice> notices = noticeUtilService.findByUserAndIsReadFalseAndCreatedAtAfter(user, LocalDateTime.now().minusDays(7));
-        List<NoticeDto> sendNotice = NoticeDto.toDtoList(notices);
+        boolean status = noticeUtilService.existUnreadNotification(user, LocalDateTime.now().minusDays(7));
 
         SseEmitter sseEmitter = emitters.get(user.getUserId());
 
         if (sseEmitter != null) {
             try {
                 sseEmitter.send(SseEmitter.event()
-                        .name("notice")
-                        .data(sendNotice));
+                        .data(UnreadStatus.builder()
+                                .isUnread(status)
+                                .build()));
             } catch (Exception e) {
                 e.printStackTrace();
             }

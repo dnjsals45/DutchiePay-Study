@@ -13,4 +13,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
     @Query("SELECT n FROM Notice n WHERE n.user = :user AND n.createdAt >= :time AND n.deletedAt IS NULL ORDER BY n.createdAt DESC")
     List<Notice> findRecentNotices(User user, LocalDateTime time);
+
+    @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM Notice n WHERE n.user = :user AND n.isRead = false AND n.createdAt >= :time AND n.deletedAt IS NULL")
+    boolean existUnreadNotification(User user, LocalDateTime time);
 }
