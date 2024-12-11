@@ -69,9 +69,7 @@ public class FreeCommunityService {
      * @return 게시글 상세 정보 dto
      */
     public FreeForUpdateDto getFreePostForUpdate(User user, Long freeId) {
-        Free free = communityUtilService.findFreeById(freeId);
-        validatePostWriter(user, free);
-        return FreeForUpdateDto.toDto(free, communityUtilService.findImages(free));
+        return FreeForUpdateDto.toDto(communityUtilService.validatePostAndWriter(user, freeId));
     }
 
     /**

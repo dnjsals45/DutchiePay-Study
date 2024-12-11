@@ -5,23 +5,17 @@ import dutchiepay.backend.domain.commerce.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
 import dutchiepay.backend.domain.community.exception.CommunityException;
-import dutchiepay.backend.domain.community.repository.ContentImgRepository;
 import dutchiepay.backend.entity.Comment;
-import dutchiepay.backend.entity.ContentImg;
 import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
     private final FreeRepository freeRepository;
     private final CommentRepository commentRepository;
-    private final ContentImgRepository contentImgRepository;
 
     // 게시글 Id로 Free 객체 조회
     public Free findFreeById(Long freeId) {
@@ -39,29 +33,16 @@ public class CommunityUtilService {
 
     // 게시글 작성 시 Free 객체 생성 후 저장
     public Free saveFree(User user, CreateFreeRequestDto createFreeRequestDto, String description) {
-        Free newFree = freeRepository.save(Free.builder()
+
+        return freeRepository.save(Free.builder()
                 .user(user)
                 .title(createFreeRequestDto.getTitle())
                 .contents(createFreeRequestDto.getContent())
                 .category(createFreeRequestDto.getCategory())
                 .thumbnail(createFreeRequestDto.getThumbnail())
+                .images(String.join(",", createFreeRequestDto.getImages()))
                 .description(description.substring(0, Math.min(description.length(), 100)))
                 .build());
-        saveContentImages(createFreeRequestDto.getImages(), newFree);
-
-        return newFree;
-    }
-
-    // 게시글 Id로 게시글에 등록된 content Image 들을 찾음
-    public List<ContentImg> findImages(Free free) {
-        return contentImgRepository.findContentImgByFree(free);
-    }
-
-    // ContentImg 객체를 만들어 저장
-    private void saveContentImages(List<String> images, Free newFree) {
-        for (String image : images) {
-            contentImgRepository.save(ContentImg.builder().free(newFree).url(image).build());
-        }
     }
 
     // 게시글 작성자를 검증
@@ -77,13 +58,9 @@ public class CommunityUtilService {
     }
 
     // 게시글 수정
-    // 현재 freeId로 contentImg 찾고 다 삭제 후 dto로 update
     public void updatePost(User user, UpdateFreeRequestDto updateFreeRequestDto, String description) {
         Free free = validatePostAndWriter(user, updateFreeRequestDto.getFreeId());
-        List<ContentImg> images = findImages(free);
-        contentImgRepository.deleteAll(images);
-        saveContentImages(updateFreeRequestDto.getImages(), free);
-        free.updateFree(updateFreeRequestDto, description);
+        free.updateFree(updateFreeRequestDto, description, String.join(",", updateFreeRequestDto.getImages()));
     }
 
     // 댓글 길이 검증
