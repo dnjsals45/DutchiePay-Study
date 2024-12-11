@@ -21,6 +21,10 @@ public class Notice extends Auditing {
 
     private String type;
 
+    private String origin;
+
+    private Long originId;
+
     private String writer;
 
     private String message;
