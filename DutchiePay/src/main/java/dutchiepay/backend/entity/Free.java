@@ -31,7 +31,7 @@ public class Free extends Auditing {
     private String category;
 
     @Column(length = 500)
-    private String postImg;
+    private String thumbnail;
 
     @Column(nullable = false)
     private int hits;
@@ -43,7 +43,7 @@ public class Free extends Auditing {
         this.title = dto.getTitle();
         this.contents = dto.getContent();
         this.category = dto.getCategory();
-        this.postImg = dto.getThumbnail();
+        this.thumbnail = dto.getThumbnail();
         this.description = description.substring(0, Math.min(description.length(), 100));
     }
 
