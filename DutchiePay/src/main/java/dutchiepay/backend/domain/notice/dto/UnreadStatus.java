@@ -1,4 +1,4 @@
-package dutchiepay.backend.domain.community.dto;
+package dutchiepay.backend.domain.notice.dto;
 
 import lombok.*;
 
