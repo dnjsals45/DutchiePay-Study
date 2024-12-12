@@ -35,7 +35,7 @@ public class FreeListResponseDto {
                     .createdAt(createdAt)
                     .category(free.getCategory())
                     .commentsCount(count)
-                    .thumbnail(free.getPostImg())
+                    .thumbnail(free.getThumbnail())
                     .writerProfileImg(free.getUser().getProfileImg())
                     .build();
         }
