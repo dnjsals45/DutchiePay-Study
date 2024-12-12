@@ -17,9 +17,9 @@ public class MartService {
     private final ShareRepository shareRepository;
 
     @Transactional
-    public void createMart(User user, CreateMartRequestDto req) {
+    public CreateShareResponseDto createMart(User user, CreateMartRequestDto req) {
         validateTitle(req.getTitle());
-        createShareEntity(req, user.getLocation());
+        return CreateShareResponseDto.from(createShareEntity(req, user.getLocation()));
     }
 
     @Transactional
@@ -58,7 +58,7 @@ public class MartService {
         }
     }
 
-    private void createShareEntity(CreateMartRequestDto req, String location) {
+    private Share createShareEntity(CreateMartRequestDto req, String location) {
         Share newShare = Share.builder()
                 .title(req.getTitle())
                 .date(req.getDate())
@@ -76,6 +76,8 @@ public class MartService {
                 .build();
 
         shareRepository.save(newShare);
+
+        return newShare;
     }
 
     private void validateCategory(String category) {

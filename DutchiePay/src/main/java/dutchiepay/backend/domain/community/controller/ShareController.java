@@ -50,8 +50,7 @@ public class ShareController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createMart(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         @RequestBody @Valid CreateMartRequestDto req) {
-        martService.createMart(userDetails.getUser(), req);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(martService.createMart(userDetails.getUser(), req));
     }
 
     @Operation(summary = "마트/배달 게시글 수정")
