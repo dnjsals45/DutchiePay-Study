@@ -71,16 +71,17 @@ public class CommunityUtilService {
 
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
-    public CommentCreateResponseDto createComment(User user, CommentCreateRequestDto commentRequestDto) {
-        // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
-        findCommentById(commentRequestDto.getRootCommentId());
-        findCommentById(commentRequestDto.getMentionedId());
-        return CommentCreateResponseDto.toDto(
-                commentRepository.save(
+    public Comment createComment(User user, CommentCreateRequestDto commentRequestDto) {
+        if (commentRequestDto.getRootCommentId() != null && commentRequestDto.getMentionedId() != null) {
+            // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
+            findCommentById(commentRequestDto.getRootCommentId());
+            findCommentById(commentRequestDto.getMentionedId());
+        }
+        return commentRepository.save(
                         Comment.builder()
                                 .free(findFreeById(commentRequestDto.getFreeId())).contents(commentRequestDto.getContent())
                                 .user(user).mentionedId(commentRequestDto.getMentionedId())
-                                .parentId(commentRequestDto.getRootCommentId()).build()));
+                                .parentId(commentRequestDto.getRootCommentId()).build());
     }
 
     // commentId로 Comment 객체를 찾음
