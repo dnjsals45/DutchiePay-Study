@@ -16,7 +16,7 @@ public class CommunityController {
     private final MartService martService;
 
     @GetMapping("/recent-posts")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getUserCompleteRecentDeals(@RequestParam Long userId) {
         return ResponseEntity.ok().body(communityService.getUserCompleteRecentDeals(userId));
     }

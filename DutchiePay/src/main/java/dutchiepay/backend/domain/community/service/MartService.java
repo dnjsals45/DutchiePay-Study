@@ -101,8 +101,4 @@ public class MartService {
 
         share.changeStatus(req.getStatus());
     }
-
-    public Object getUserDoneDeals(Long userId) {
-        return null;
-    }
 }
