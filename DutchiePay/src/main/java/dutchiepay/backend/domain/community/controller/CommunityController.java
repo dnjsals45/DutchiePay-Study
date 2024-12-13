@@ -1,20 +1,26 @@
 package dutchiepay.backend.domain.community.controller;
 
 import dutchiepay.backend.domain.community.dto.ChangeStatusRequestDto;
+import dutchiepay.backend.domain.community.service.CommunityService;
 import dutchiepay.backend.domain.community.service.MartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/community")
 public class CommunityController {
+    private final CommunityService communityService;
     private final MartService martService;
+
+    @GetMapping("/recent-posts")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> getUserCompleteRecentDeals(@RequestParam Long userId) {
+        return ResponseEntity.ok().body(communityService.getUserCompleteRecentDeals(userId));
+    }
+
 
     @PatchMapping("/status")
     @PreAuthorize("isAuthenticated()")
@@ -24,4 +30,5 @@ public class CommunityController {
         }
         return ResponseEntity.ok().build();
     }
+
 }

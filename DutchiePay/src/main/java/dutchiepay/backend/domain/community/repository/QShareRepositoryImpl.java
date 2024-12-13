@@ -7,15 +7,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.domain.community.dto.GetMartListResponseDto;
 import dutchiepay.backend.domain.community.dto.GetMartResponseDto;
+import dutchiepay.backend.domain.community.dto.GetUserCompleteRecentDealsDto;
 import dutchiepay.backend.entity.QShare;
 import dutchiepay.backend.entity.QUser;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,5 +115,22 @@ public class QShareRepositoryImpl implements QShareRepository{
                 .where(share.shareId.eq(shareId))
                 .where(share.deletedAt.isNull())
                 .fetchOne();
+    }
+
+    @Override
+    public List<GetUserCompleteRecentDealsDto> getUserCompleteRecentDeals(Long userId) {
+        return jpaQueryFactory
+                .select(Projections.constructor(GetUserCompleteRecentDealsDto.class,
+                        share.shareId.as("postId"),
+                        share.category,
+                        share.title,
+                        share.createdAt))
+                .from(share)
+                .where(share.user.userId.eq(userId))
+                .where(share.state.eq("모집완료"))
+                .where(share.deletedAt.isNull())
+                .orderBy(share.createdAt.desc())
+                .limit(5)
+                .fetch();
     }
 }
