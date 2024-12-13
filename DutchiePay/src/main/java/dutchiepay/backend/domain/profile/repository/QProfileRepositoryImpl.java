@@ -275,10 +275,10 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "'마트/배달' as category, " +
                 "NULL as commentCount, " +
                 "share.thumbnail, " +
-                "user.nickname as writerNickname, " +
-                "user.profile_img as writerProfileImage " +
+                "users.nickname as writerNickname, " +
+                "users.profile_img as writerProfileImage " +
                 "FROM share " +
-                "LEFT JOIN user ON share.user_id = user.user_id " +
+                "LEFT JOIN users ON share.user_id = users.user_id " +
                 "WHERE share.user_id = :userId AND share.deleted_at IS NULL " +
                 "UNION ALL " +
                 "SELECT " +
@@ -289,10 +289,10 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "'자유' as category, " +
                 "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, " +
                 "NULL as thumbnail, " +
-                "user.nickname as writerNickname, " +
-                "user.profile_img as writerProfileImage " +
+                "users.nickname as writerNickname, " +
+                "users.profile_img as writerProfileImage " +
                 "FROM free " +
-                "LEFT JOIN user ON free.user_id = user.user_id " +
+                "LEFT JOIN users ON free.user_id = users.user_id " +
                 "WHERE free.user_id = :userId AND free.deleted_at IS NULL " +
                 "ORDER BY writeTime DESC " +
                 "LIMIT :limit OFFSET :offset";
