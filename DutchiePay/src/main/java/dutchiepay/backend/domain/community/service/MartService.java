@@ -19,6 +19,7 @@ public class MartService {
     @Transactional
     public CreateShareResponseDto createMart(User user, CreateMartRequestDto req) {
         validateTitle(req.getTitle());
+        validateCategory(req.getCategory());
         return CreateShareResponseDto.from(createShareEntity(req, user.getLocation()));
     }
 
