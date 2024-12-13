@@ -20,7 +20,7 @@ public class MartService {
     public CreateShareResponseDto createMart(User user, CreateMartRequestDto req) {
         validateTitle(req.getTitle());
         validateCategory(req.getCategory());
-        return CreateShareResponseDto.from(createShareEntity(req, user.getLocation()));
+        return CreateShareResponseDto.from(createShareEntity(req, user));
     }
 
     @Transactional
@@ -59,13 +59,14 @@ public class MartService {
         }
     }
 
-    private Share createShareEntity(CreateMartRequestDto req, String location) {
+    private Share createShareEntity(CreateMartRequestDto req, User user) {
         Share newShare = Share.builder()
+                .user(user)
                 .title(req.getTitle())
                 .date(req.getDate())
                 .maximum(req.getMaximum())
                 .meetingPlace(req.getMeetingPlace())
-                .location(location)
+                .location(user.getLocation())
                 .state("모집중")
                 .latitude(req.getLatitude())
                 .longitude(req.getLongitude())
