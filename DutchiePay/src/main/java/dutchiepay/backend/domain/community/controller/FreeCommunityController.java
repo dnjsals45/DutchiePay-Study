@@ -119,6 +119,6 @@ public class FreeCommunityController {
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                               @RequestParam("commentId") Long commentId) {
         freeCommunityService.deleteComment(userDetails.getUser(), commentId);
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.noContent().build();
     }
 }
