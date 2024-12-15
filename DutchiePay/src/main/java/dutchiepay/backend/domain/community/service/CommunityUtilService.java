@@ -25,7 +25,7 @@ public class CommunityUtilService {
 
     // 게시글의 길이를 검증한 후 저장
     public String validatePostLength(String content) {
-        String description = content.replaceAll("<[^>]*>", "");
+        String description = content.replaceAll("<[^>]*>", "").replaceAll("^\"|\"$", "");
         if (description.length() < 2)
             throw new CommunityException(CommunityErrorCode.INSUFFICIENT_LENGTH);
         return description;
