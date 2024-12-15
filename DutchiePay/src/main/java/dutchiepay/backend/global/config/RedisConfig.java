@@ -7,11 +7,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisKeyValueAdapter;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @EnableCaching
 @Configuration
+@EnableRedisRepositories(
+        enableKeyspaceEvents = RedisKeyValueAdapter.EnableKeyspaceEvents.ON_STARTUP,
+        keyspaceNotificationsConfigParameter = ""
+)
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -20,8 +26,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private String port;
 
-   /* @Value("${REDIS_PASSWORD}")
-    private String password;*/
+    @Value("${REDIS_PASSWORD}")
+    private String password;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
