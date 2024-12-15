@@ -29,7 +29,7 @@ public class ReCommentResponseDto {
                 .profileImg(comment.getUser().getProfileImg())
                 .content(comment.getContents())
                 .createdAt(comment.getCreatedAt())
-                .isModified(comment.getUpdatedAt() == null)
+                .isModified(comment.getUpdatedAt().isAfter(comment.getCreatedAt()))
                 .userState(comment.getUser().getState() == 0 ? "회원" : "탈퇴")
                 .mentionedUserState(mentionedComment.getUser().getState() == 0 ? "회원" : "탈퇴")
                 .build();
