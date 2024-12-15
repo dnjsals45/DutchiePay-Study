@@ -38,12 +38,20 @@ public class ShareController {
     }
 
     @Operation(summary = "마트/배달 게시글 상세 조회")
-    @GetMapping(value = "")
+    @GetMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getMartByShareId(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                               @RequestParam Long shareId) {
         return ResponseEntity.ok().body(martService.getMartByShareId(userDetails.getUser(), shareId));
     }
+
+    @Operation(summary = "마트/배달 게시글 상세 조회(수정용)")
+    @GetMapping("/{shareId}")
+    @PreAuthorize("isAuthenticated() && @shareAuthorManager.isShareAuthor(#shareId, authentication.getPrincipal())")
+    public ResponseEntity<?> getMArtByShareIdForUpdate(@PathVariable Long shareId) {
+        return ResponseEntity.ok().body(martService.getMartByShareIdForUpdate(shareId));
+    }
+
 
     @Operation(summary = "마트/배달 게시글 작성")
     @PostMapping("")

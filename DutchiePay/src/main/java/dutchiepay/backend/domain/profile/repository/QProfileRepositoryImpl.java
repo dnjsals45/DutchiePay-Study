@@ -302,6 +302,16 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .setParameter("limit", pageable.getPageSize())
                 .setParameter("offset", pageable.getOffset());
 
+        String countSql = "SELECT COUNT(*) FROM (" +
+                "SELECT share_id FROM share WHERE user_id = :userId AND deleted_at IS NULL " +
+                "UNION ALL " +
+                "SELECT free_id FROM free WHERE user_id = :userId AND deleted_at IS NULL" +
+                ") AS combined_posts";
+
+        Query countQuery = entityManager.createNativeQuery(countSql)
+                .setParameter("userId", user.getUserId());
+        Integer totalPostCount = ((Number) countQuery.getSingleResult()).intValue();
+
         @SuppressWarnings("unchecked")
         List<Object[]> resultList = query.getResultList();
 
@@ -328,7 +338,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         }
 
         return MyPostsResponseDto.builder()
-                .totalPost(result.size())
+                .totalPost(totalPostCount)
                 .posts(result)
                 .build();
     }
@@ -358,6 +368,13 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        Long totalPostCount = jpaQueryFactory
+                .select(free.freeId.countDistinct())
+                .from(free)
+                .innerJoin(comment).on(comment.free.eq(free).and(comment.deletedAt.isNull()))
+                .where(comment.user.eq(user))
+                .fetchOne();
+
         List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
             LocalDateTime dbTime = tuple.get(free.createdAt);
@@ -381,7 +398,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
         }
 
         return MyPostsResponseDto.builder()
-                .totalPost(result.size())
+                .totalPost(totalPostCount.intValue())
                 .posts(result)
                 .build();
     }

@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.domain.community.dto.GetMartListResponseDto;
 import dutchiepay.backend.domain.community.dto.GetMartResponseDto;
+import dutchiepay.backend.domain.community.dto.GetMartUpdateResponseDto;
 import dutchiepay.backend.domain.community.dto.GetUserCompleteRecentDealsDto;
 import dutchiepay.backend.entity.QShare;
 import dutchiepay.backend.entity.QUser;
@@ -132,5 +133,39 @@ public class QShareRepositoryImpl implements QShareRepository{
                 .orderBy(share.createdAt.desc())
                 .limit(5)
                 .fetch();
+    }
+
+    @Override
+    public GetMartUpdateResponseDto getMartByShareIdForUpdate(Long shareId) {
+        Tuple result = jpaQueryFactory
+                .select(share.title,
+                        share.category,
+                        share.contents,
+                        share.meetingPlace,
+                        share.longitude,
+                        share.latitude,
+                        share.date,
+                        share.maximum,
+                        share.thumbnail,
+                        share.images)
+                .from(share)
+                .where(share.shareId.eq(shareId))
+                .where(share.deletedAt.isNull())
+                .fetchOne();
+
+        String[] images = result.get(share.images) == null ? new String[0] : result.get(share.images).split(",");
+
+        return GetMartUpdateResponseDto.builder()
+                .title(result.get(share.title))
+                .category(result.get(share.category))
+                .content(result.get(share.contents))
+                .meetingPlace(result.get(share.meetingPlace))
+                .longitude(result.get(share.longitude))
+                .latitude(result.get(share.latitude))
+                .date(result.get(share.date))
+                .maximum(result.get(share.maximum))
+                .thumbnail(result.get(share.thumbnail))
+                .images(images)
+                .build();
     }
 }
