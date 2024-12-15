@@ -41,6 +41,11 @@ public class MartService {
         return shareRepository.getMartByShareId(shareId);
     }
 
+    public GetMartUpdateResponseDto getMartByShareIdForUpdate(Long shareId) {
+        validateShare(shareId);
+        return shareRepository.getMartByShareIdForUpdate(shareId);
+    }
+
     public GetMartListResponseDto getMartList(User user, String category, Long cursor, Integer limit) {
         validateCategory(category);
         return shareRepository.getMartList(user, category, cursor, limit);
