@@ -78,6 +78,7 @@ public class MartService {
                 .contents(req.getContent())
                 .thumbnail(req.getThumbnail())
                 .category(req.getCategory())
+                .images(String.join(",", req.getImages()))
                 .now(1)
                 .hits(0)
                 .build();
@@ -88,7 +89,7 @@ public class MartService {
     }
 
     private void validateCategory(String category) {
-        if (!category.equals("mart") && !category.equals("delivery")) {
+        if (category != null && !category.equals("mart") && !category.equals("delivery")) {
             throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
         }
     }

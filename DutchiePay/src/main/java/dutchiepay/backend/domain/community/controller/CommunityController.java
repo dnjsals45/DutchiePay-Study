@@ -3,6 +3,7 @@ package dutchiepay.backend.domain.community.controller;
 import dutchiepay.backend.domain.community.dto.ChangeStatusRequestDto;
 import dutchiepay.backend.domain.community.service.CommunityService;
 import dutchiepay.backend.domain.community.service.MartService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +16,8 @@ public class CommunityController {
     private final CommunityService communityService;
     private final MartService martService;
 
-    @GetMapping("/recent-posts")
+    @Operation(summary = "최근 거래 완료글 조회")
+    @GetMapping("/recent-post")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getUserCompleteRecentDeals(@RequestParam Long userId) {
         return ResponseEntity.ok().body(communityService.getUserCompleteRecentDeals(userId));
