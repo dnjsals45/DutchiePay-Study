@@ -447,4 +447,12 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         }
         return photo == 1 ? review.reviewImg.isNotNull() : null;
     }
+
+    public List<String> findAllTags() {
+        return jpaQueryFactory
+                .select(buy.tags)
+                .from(buy)
+                .where(buy.tags.isNotNull())
+                .fetch();
+    }
 }
