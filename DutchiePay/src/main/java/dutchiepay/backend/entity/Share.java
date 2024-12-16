@@ -76,13 +76,14 @@ public class Share extends Auditing {
 
     public void update(UpdateMartRequestDto req) {
         this.title = req.getTitle();
-        this.maximum = req.getMaximum();
+        this.date = req.getDate();
         this.meetingPlace = req.getMeetingPlace();
         this.latitude = req.getLatitude();
         this.longitude = req.getLongitude();
         this.contents = req.getContent();
         this.thumbnail = req.getThumbnail();
         this.category = req.getCategory();
+        this.images = String.join(",", req.getImages());
     }
 
     public void changeStatus(String status) {
