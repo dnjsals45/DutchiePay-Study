@@ -16,6 +16,8 @@ public class ChatRoom extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatroomId;
 
+    private String chatRoomName;
+
     private Long postId;
 
     private Integer maxPartInc;

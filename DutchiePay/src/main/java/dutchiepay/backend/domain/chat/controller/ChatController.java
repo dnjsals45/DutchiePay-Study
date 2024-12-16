@@ -39,4 +39,10 @@ public class ChatController {
                                                     @RequestParam String chatRoomId) {
         return ResponseEntity.ok(chatroomService.getChatRoomMessageList(userDetails.getUser(), Long.valueOf(chatRoomId)));
     }
+
+    @GetMapping("/api/chat/list")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getChatRoomList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(chatroomService.getChatRoomList(userDetails.getUser()));
+    }
 }

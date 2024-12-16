@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.chat.repository;
 
+import dutchiepay.backend.entity.User;
 import dutchiepay.backend.entity.UserChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,4 +16,9 @@ public interface UserChatroomRepository extends JpaRepository<UserChatRoom, Long
 
     @Query("SELECT ucr.lastMessageId FROM UserChatRoom ucr WHERE ucr.user.userId = :userId AND ucr.chatroom.chatroomId = :chatRoomId")
     Long findLastMessageId(long userId, Long chatRoomId);
+
+    List<UserChatRoom> findAllByUser(User user);
+
+    @Query("SELECT ucr FROM UserChatRoom ucr WHERE ucr.user.userId = :userId")
+    List<UserChatRoom> findAllByUserId(Long userId);
 }

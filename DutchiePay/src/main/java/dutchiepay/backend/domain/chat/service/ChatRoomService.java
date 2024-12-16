@@ -2,6 +2,7 @@ package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.ChatMessage;
 import dutchiepay.backend.domain.chat.dto.CursorResponse;
+import dutchiepay.backend.domain.chat.dto.GetChatRoomListResponseDto;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
@@ -12,6 +13,9 @@ import dutchiepay.backend.entity.User;
 import dutchiepay.backend.entity.UserChatRoom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -140,5 +144,20 @@ public class ChatRoomService {
         }
 
         return count;
+    }
+
+    public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
+        return GetChatRoomListResponseDto.from(userChatroomRepository.findAllByUser(user));
+    }
+
+    public void sendListUnreadMessage(String userId) {
+        List<UserChatRoom> userChatRoomList = userChatroomRepository.findAllByUserId(Long.valueOf(userId));
+
+        String destination = "/chat/list/message";
+
+        simpMessagingTemplate.convertAndSendToUser(
+                userId,
+                destination,
+                "hello");
     }
 }
