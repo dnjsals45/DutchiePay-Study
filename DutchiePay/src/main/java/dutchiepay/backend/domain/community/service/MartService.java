@@ -78,6 +78,7 @@ public class MartService {
                 .contents(req.getContent())
                 .thumbnail(req.getThumbnail())
                 .category(req.getCategory())
+                .images(String.join(",", req.getImages()))
                 .now(1)
                 .hits(0)
                 .build();

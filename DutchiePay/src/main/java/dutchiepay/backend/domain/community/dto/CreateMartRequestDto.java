@@ -19,5 +19,6 @@ public class CreateMartRequestDto {
     private String longitude;
     private String content;
     private String thumbnail;
+    private String[] images;
     private String category;
 }
