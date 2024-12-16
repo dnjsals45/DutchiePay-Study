@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.search.service;
 
+import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.repository.BuyRepository;
 import dutchiepay.backend.domain.commerce.repository.QBuyRepository;
 import dutchiepay.backend.domain.commerce.repository.QBuyRepositoryImpl;
@@ -7,6 +8,7 @@ import dutchiepay.backend.domain.search.dto.CommerceSearchResponseDto;
 import dutchiepay.backend.domain.search.dto.DictionaryResponseDto;
 import dutchiepay.backend.domain.search.repository.QSearchRepository;
 import dutchiepay.backend.entity.Buy;
+import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +32,8 @@ public class SearchService {
         return DictionaryResponseDto.builder().tags(tags).build();
     }
 
-    public CommerceSearchResponseDto commerceSearch(String keyword, String filter, int end, Long cursor, int limit) {
+    public GetBuyListResponseDto commerceSearch(User user, String keyword, String filter, int end, Long cursor, int limit) {
 
-        return null;
+        return qSearchRepository.searchCommerce(user, filter, keyword, end, cursor, limit);
     }
 }
