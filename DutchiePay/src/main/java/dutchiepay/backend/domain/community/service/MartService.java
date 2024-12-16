@@ -88,7 +88,7 @@ public class MartService {
     }
 
     private void validateCategory(String category) {
-        if (!category.equals("mart") && !category.equals("delivery")) {
+        if (category != null && !category.equals("mart") && !category.equals("delivery")) {
             throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
         }
     }
