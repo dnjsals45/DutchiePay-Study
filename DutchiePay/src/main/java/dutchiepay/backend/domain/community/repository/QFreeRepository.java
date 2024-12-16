@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.community.repository;
 
 import dutchiepay.backend.domain.community.dto.*;
+import dutchiepay.backend.entity.Free;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface QFreeRepository {
 
     List<HotAndRecommendsResponseDto.Posts> getRecommendsPosts(String category);
 
-    CommentResponseDto getComments(Long freeId, Long cursor, int limit);
+    CommentResponseDto getComments(Free free, Long cursor, int limit);
 
     List<ReCommentResponseDto> getReComments(Long commentId, String type);
 }

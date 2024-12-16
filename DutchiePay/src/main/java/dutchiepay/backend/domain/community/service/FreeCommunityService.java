@@ -118,7 +118,7 @@ public class FreeCommunityService {
      * @return 댓글 목록 dto
      */
     public CommentResponseDto getComments(Long freeId, Long cursor, int limit) {
-        return qFreeRepository.getComments(freeId, cursor, limit);
+        return qFreeRepository.getComments(communityUtilService.findFreeById(freeId), cursor, limit);
     }
 
     /**

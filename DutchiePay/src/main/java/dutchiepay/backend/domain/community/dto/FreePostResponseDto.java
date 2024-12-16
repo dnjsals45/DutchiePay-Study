@@ -19,7 +19,7 @@ public class FreePostResponseDto {
     private LocalDateTime createdAt;
     private String category;
     private Long commentsCount;
-    private Integer hit;
+    private Integer hits;
 
     public static FreePostResponseDto toDto(User user, Free free, Long count) {
         return FreePostResponseDto.builder()
@@ -30,7 +30,8 @@ public class FreePostResponseDto {
                 .content(free.getContents())
                 .createdAt(free.getCreatedAt())
                 .category(free.getCategory())
-                .hit(free.getHits())
+                .commentsCount(count)
+                .hits(free.getHits())
                 .build();
 
     }

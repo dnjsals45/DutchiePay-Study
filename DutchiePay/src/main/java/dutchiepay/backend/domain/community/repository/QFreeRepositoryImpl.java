@@ -145,7 +145,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     }
 
     @Override
-    public CommentResponseDto getComments(Long freeId, Long cursor, int limit) {
+    public CommentResponseDto getComments(Free free, Long cursor, int limit) {
         if (cursor == null) cursor = 0L;
 
         // commentId가 cursor보다 크거나 같으면서, deletedAt이 Null이거나(삭제되지 않았거나)
@@ -153,7 +153,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         // parentId가 null이 아닌 댓글들(답글들)의 parentId 목록 안에 있는 댓글들(답글이 있는 댓글들) 조회
         List<Comment> comments = jpaQueryFactory
                 .selectFrom(comment)
-                .where(comment.commentId.goe(cursor),
+                .where(comment.free.eq(free),
+                        comment.commentId.goe(cursor),
                         comment.deletedAt.isNull(),
                         comment.parentId.isNull()
                                 .or(comment.deletedAt.isNotNull()
