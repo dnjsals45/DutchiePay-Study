@@ -27,7 +27,7 @@ public class CommerceController {
 
     private final CommerceService commerceService;
 
-    @Operation(summary = "공동구매 리스트 조회(구현중)")
+    @Operation(summary = "공동구매 리스트 조회")
     @GetMapping(value = "/list")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> getBuyList(@RequestParam("filter") String filter,
@@ -45,7 +45,7 @@ public class CommerceController {
         return ResponseEntity.ok().body(commerceService.getBuyList(user, filter, category, end, cursor, limit));
     }
 
-    @Operation(summary = "공동구매 상품 상세 페이지(구현중)")
+    @Operation(summary = "공동구매 상품 상세 페이지")
     @GetMapping(value = "", params = "buyId")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> getBuyPage(@RequestParam("buyId") Long buyId) {
@@ -59,7 +59,7 @@ public class CommerceController {
         return ResponseEntity.ok().body(commerceService.getBuyPage(user, buyId));
     }
 
-    @Operation(summary = "상품 후기 조회(구현중)")
+    @Operation(summary = "상품 후기 조회")
     @GetMapping("/review")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> getProductReview(@RequestParam("buyId") Long buyId,
@@ -69,7 +69,7 @@ public class CommerceController {
         return ResponseEntity.ok().body(commerceService.getProductReview(buyId, photo, page, limit));
     }
 
-    @Operation(summary = "상품 좋아요 기능(구현중)")
+    @Operation(summary = "상품 좋아요 기능")
     @PatchMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> likes(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -78,7 +78,7 @@ public class CommerceController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "상품 문의내역 조회(구현 완료)")
+    @Operation(summary = "상품 문의내역 조회")
     @GetMapping("/asks")
     @PreAuthorize("permitAll()")
     public ResponseEntity<List<BuyAskResponseDto>> getBuyAsks(@RequestParam("buyId") Long buyId,
@@ -87,7 +87,7 @@ public class CommerceController {
         return ResponseEntity.ok(commerceService.getBuyAsks(buyId, page, limit));
     }
 
-    @Operation(summary = "결제 정보 불러오기(구현 완료)")
+    @Operation(summary = "결제 정보 불러오기")
     @GetMapping("/delivery")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PaymentInfoResponseDto> getPaymentInfo(@RequestParam("buyId") Long buyId) {

@@ -18,7 +18,7 @@ public class OauthController {
 
     private final UserService userService;
 
-    @Operation(summary = "소셜 로그인(구현 완료)")
+    @Operation(summary = "소셜 로그인")
     @GetMapping("/signup")
     @PreAuthorize("permitAll()")
     public String signup(@RequestParam String type) {
@@ -26,7 +26,7 @@ public class OauthController {
         return "redirect:/oauth2/authorization/" + type;
     }
 
-    @Operation(summary = "소셜 회원 탈퇴(구현 완료)")
+    @Operation(summary = "소셜 회원 탈퇴")
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unlink(HttpServletRequest request,

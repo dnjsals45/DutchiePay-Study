@@ -20,7 +20,7 @@ import java.util.Map;
 public class FreeCommunityController {
     private final FreeCommunityService freeCommunityService;
 
-    @Operation(summary = "자유게시판 리스트 조회(구현중)")
+    @Operation(summary = "자유게시판 리스트 조회")
     @GetMapping("/list")
     public ResponseEntity<FreeListResponseDto> getFreeList(@RequestParam(value = "category", required = false) String category,
                                                             @RequestParam("filter") String filter,
@@ -30,7 +30,7 @@ public class FreeCommunityController {
         return ResponseEntity.ok(freeCommunityService.getFreeList(category, filter, word, limit, cursor));
     }
 
-    @Operation(summary = "자유게시판 상세 조회(구현중)")
+    @Operation(summary = "자유게시판 상세 조회")
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public FreePostResponseDto getFreePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -39,7 +39,7 @@ public class FreeCommunityController {
         return freeCommunityService.getFreePost(userDetails.getUser(), freeId);
     }
 
-    @Operation(summary = "자유게시판 글 작성(구현중)")
+    @Operation(summary = "자유게시판 글 작성")
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Long>> createFreePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -55,7 +55,7 @@ public class FreeCommunityController {
         return freeCommunityService.getFreePostForUpdate(userDetails.getUser(), freeId);
     }
 
-    @Operation(summary = "자유게시판 글 수정(구현중)")
+    @Operation(summary = "자유게시판 글 수정")
     @PatchMapping
     @PreAuthorize("isAuthenticated()")
     public void updateFreePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -64,7 +64,7 @@ public class FreeCommunityController {
         freeCommunityService.updateFreePost(userDetails.getUser(), updateFreeRequestDto);
     }
 
-    @Operation(summary = "자유게시판 글 삭제(구현중)")
+    @Operation(summary = "자유게시판 글 삭제")
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
     public void deleteFree(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -72,7 +72,7 @@ public class FreeCommunityController {
         freeCommunityService.deleteFreePost(userDetails.getUser(), freeId);
     }
 
-    @Operation(summary = "자유게시판 인기/추천 게시글 조회(구현중)")
+    @Operation(summary = "자유게시판 인기/추천 게시글 조회")
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<HotAndRecommendsResponseDto> hotAndRecommends(@RequestParam("category") String category) {
@@ -96,7 +96,7 @@ public class FreeCommunityController {
         return ResponseEntity.ok(freeCommunityService.getReComments(commentId, type));
     }
 
-    @Operation(summary = "댓글 작성(구현중)")
+    @Operation(summary = "댓글 작성")
     @PostMapping("/comments")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentCreateResponseDto> createComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -104,7 +104,7 @@ public class FreeCommunityController {
         return ResponseEntity.ok(freeCommunityService.createComment(userDetails.getUser(), commentRequestDto));
     }
 
-    @Operation(summary = "댓글 수정(구현중)")
+    @Operation(summary = "댓글 수정")
     @PatchMapping("/comments")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -114,7 +114,7 @@ public class FreeCommunityController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "댓글 삭제(구현중)")
+    @Operation(summary = "댓글 삭제")
     @DeleteMapping("/comments")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
