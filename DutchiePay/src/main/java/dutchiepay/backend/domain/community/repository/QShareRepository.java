@@ -9,7 +9,7 @@ import dutchiepay.backend.entity.User;
 import java.util.List;
 
 public interface QShareRepository {
-    GetMartListResponseDto getMartList(User user, String category, Long cursor, Integer limit);
+    GetMartListResponseDto getMartList(User user, String category, String word, Long cursor, Integer limit);
 
     GetMartResponseDto getMartByShareId(Long shareId);
 

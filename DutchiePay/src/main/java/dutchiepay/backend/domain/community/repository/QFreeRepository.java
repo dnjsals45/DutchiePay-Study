@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface QFreeRepository {
 
-    FreeListResponseDto getFreeLists(String category, String filter, int limit, Long cursor);
+    FreeListResponseDto getFreeLists(String category, String filter, String word, int limit, Long cursor);
     FreePostResponseDto getFreePost(Long freeId);
 
     List<HotAndRecommendsResponseDto.Posts> getHotPosts();

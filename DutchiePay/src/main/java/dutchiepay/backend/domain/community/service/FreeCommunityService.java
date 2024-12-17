@@ -32,9 +32,9 @@ public class FreeCommunityService {
      *
      * @return 게시글 리스트 dto
      */
-    public FreeListResponseDto getFreeList(String category, String filter, int limit, Long cursor) {
+    public FreeListResponseDto getFreeList(String category, String filter, String word, int limit, Long cursor) {
 
-        return qFreeRepository.getFreeLists(category, filter, limit, cursor);
+        return qFreeRepository.getFreeLists(category, filter, word, limit, cursor);
     }
 
     /**

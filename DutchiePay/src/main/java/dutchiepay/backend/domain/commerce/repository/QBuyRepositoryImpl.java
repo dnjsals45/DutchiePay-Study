@@ -3,9 +3,7 @@ package dutchiepay.backend.domain.commerce.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -24,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -164,7 +161,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
 
     @Override
-    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, int end, Long cursor, int limit) {
+    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, String word, int end, Long cursor, int limit) {
         if (cursor == null) {
             cursor = Long.MAX_VALUE;
         }
@@ -182,6 +179,11 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         if (end == 0) {
             BooleanExpression dateCondition = buy.deadline.after(LocalDate.now().minusDays(1));
             conditions = conditions == null ? dateCondition : conditions.and(dateCondition);
+        }
+
+        if (word != null && !word.isEmpty()) {
+            BooleanExpression searchCondition = buy.title.contains(word);
+            conditions =  conditions == null ? searchCondition : conditions.and(searchCondition);
         }
 
         OrderSpecifier[] orderBy;

@@ -26,6 +26,7 @@ public class ShareController {
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> getMartList(@RequestParam(required = false) String category,
                                          @RequestParam(required = false) Long cursor,
+                                         @RequestParam(required = false) String word,
                                          @RequestParam Integer limit) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -34,7 +35,7 @@ public class ShareController {
             user = userDetails.getUser();
         }
 
-        return ResponseEntity.ok().body(martService.getMartList(user, category, cursor, limit));
+        return ResponseEntity.ok().body(martService.getMartList(user, category, word, cursor, limit));
     }
 
     @Operation(summary = "마트/배달 게시글 상세 조회")

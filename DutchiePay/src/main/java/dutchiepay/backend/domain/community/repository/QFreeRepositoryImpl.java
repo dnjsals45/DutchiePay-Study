@@ -33,7 +33,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     QComment comment = QComment.comment;
 
     @Override
-    public FreeListResponseDto getFreeLists(String category, String filter, int limit, Long cursor) {
+    public FreeListResponseDto getFreeLists(String category, String filter, String word, int limit, Long cursor) {
         // 커서 초기화
         if (cursor == null) cursor = Long.MAX_VALUE;
 
@@ -47,6 +47,12 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         if (StringUtils.hasText(category)) {
             query.where(free.category.eq(category));
         }
+
+        // word가 있으면 검색 조건에 word 추가
+        if (StringUtils.hasText(word)) {
+            query.where(free.title.contains(word));
+        }
+
         OrderSpecifier[] orderSpecifier;
         switch (filter) {
             case "new":

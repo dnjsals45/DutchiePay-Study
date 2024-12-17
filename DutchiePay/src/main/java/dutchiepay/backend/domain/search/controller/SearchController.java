@@ -1,7 +1,6 @@
 package dutchiepay.backend.domain.search.controller;
 
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
-import dutchiepay.backend.domain.search.dto.CommerceSearchResponseDto;
 import dutchiepay.backend.domain.search.dto.DictionaryResponseDto;
 import dutchiepay.backend.domain.search.service.SearchService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
@@ -24,7 +23,7 @@ public class SearchController {
 
     @Operation(summary = "검색 사전")
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<DictionaryResponseDto> getSearchDictionary() {
         return ResponseEntity.ok(searchService.getSearchDictionary());
     }
@@ -39,7 +38,7 @@ public class SearchController {
                                                                 @RequestParam(value="cursor", required = false) Long cursor,
                                                                 @RequestParam("limit") int limit) {
         return ResponseEntity.ok(searchService.commerceSearch(userDetails == null? null: userDetails.getUser(),
-                                                                keyword, filter, end, cursor, limit));
+                                                                filter, keyword, end, cursor, limit));
     }
 
 }

@@ -25,8 +25,9 @@ public class FreeCommunityController {
     public ResponseEntity<FreeListResponseDto> getFreeList(@RequestParam(value = "category", required = false) String category,
                                                             @RequestParam("filter") String filter,
                                                             @RequestParam("limit") int limit,
+                                                            @RequestParam(value = "word", required = false) String word,
                                                             @RequestParam(value = "cursor", required = false) Long cursor) {
-        return ResponseEntity.ok(freeCommunityService.getFreeList(category, filter, limit, cursor));
+        return ResponseEntity.ok(freeCommunityService.getFreeList(category, filter, word, limit, cursor));
     }
 
     @Operation(summary = "자유게시판 상세 조회(구현중)")
