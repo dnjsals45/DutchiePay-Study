@@ -40,9 +40,6 @@ public class SearchService {
      * @return 검색 결과가 담긴 dto
      */
     public GetBuyListResponseDto commerceSearch(User user, String filter, String keyword, int end, Long cursor, int limit) {
-        System.out.println("CommerceSearch");
-        System.out.println(keyword);
-        System.out.println(filter);
 
         return qBuyRepository.getBuyList(user, filter, null, keyword, end, cursor, limit);
     }

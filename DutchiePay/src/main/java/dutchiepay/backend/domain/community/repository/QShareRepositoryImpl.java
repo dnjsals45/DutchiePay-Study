@@ -89,7 +89,6 @@ public class QShareRepositoryImpl implements QShareRepository{
 
         Long nextCursor = results.size() == limit ? results.get(results.size() - 1).get(share.shareId) : null;
 
-        System.out.println(results.size());
         return GetMartListResponseDto.builder()
                 .posts(martList)
                 .cursor(nextCursor)
