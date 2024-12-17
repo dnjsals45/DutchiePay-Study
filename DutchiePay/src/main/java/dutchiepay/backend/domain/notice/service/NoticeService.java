@@ -1,6 +1,5 @@
 package dutchiepay.backend.domain.notice.service;
 
-import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.domain.notice.dto.UnreadStatus;
 import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
 import dutchiepay.backend.domain.notice.dto.NoticeDto;
