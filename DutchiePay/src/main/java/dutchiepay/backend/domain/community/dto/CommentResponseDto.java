@@ -1,9 +1,9 @@
 package dutchiepay.backend.domain.community.dto;
+import com.querydsl.core.Tuple;
 import dutchiepay.backend.entity.Comment;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,27 +14,21 @@ public class CommentResponseDto {
     private Long cursor;
 
     @Getter
-    @Builder
+    @NoArgsConstructor
     public static class CommentDetail {
         private Long commentId;
         private String nickname;
         private String profileImg;
-        private String content;
+        private String contents;
         private LocalDateTime createdAt;
         private Boolean isModified;
         private String userState;
+        private Boolean hasMore;
 
-        public static CommentDetail toDto(Comment comment) {
-            return CommentDetail.builder()
-                    .commentId(comment.getCommentId())
-                    .nickname(comment.getUser().getNickname())
-                    .profileImg(comment.getUser().getProfileImg())
-                    .content(comment.getContents())
-                    .createdAt(comment.getCreatedAt())
-                    .isModified(comment.getUpdatedAt() == null)
-                    .userState(comment.getUser().getState() == 0? "회원" : "탈퇴")
-                    .build();
+        public void setHasMore(boolean hasMore) {
+            this.hasMore = hasMore;
         }
+
     }
     public static CommentResponseDto toDto(List<CommentDetail> comments, Long cursor) {
         return CommentResponseDto.builder().comments(comments).cursor(cursor).build();
