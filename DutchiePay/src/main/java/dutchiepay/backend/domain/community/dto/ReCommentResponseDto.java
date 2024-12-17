@@ -28,26 +28,17 @@ public class ReCommentResponseDto {
     public static ReCommentResponseDto toDto(Tuple tuple, Tuple mentionedUser) {
         boolean originUserLeaved = tuple.get(comment.user.state) != 0;
         boolean mentionedUserLeaved = mentionedUser.get(comment.user.state) != 0;
-        ReCommentResponseDtoBuilder builder = ReCommentResponseDto.builder();
-        if (originUserLeaved) {
-            builder.nickname(null)
-                    .profileImg(null)
-                    .isModified(null)
-                    .userState("탈퇴");
-        } else {
-            builder.nickname(tuple.get(comment.user.nickname))
-                    .profileImg(tuple.get(comment.user.profileImg))
-                    .isModified(tuple.get(comment.updatedAt).isAfter(tuple.get(comment.createdAt)))
-                    .userState("회원");
-        }
-        if (mentionedUserLeaved) {
-            builder.mentionedNickname(null).mentionedUserState("탈퇴");
-        } else {
-            builder.mentionedNickname(mentionedUser.get(comment.user.nickname)).mentionedUserState("회원");
-        }
 
-        return builder.commentId(tuple.get(comment.commentId))
+        return ReCommentResponseDto.builder()
+                .commentId(tuple.get(comment.commentId))
+                .mentionedNickname(mentionedUserLeaved ? null : tuple.get(comment.user.nickname))
+                .nickname(originUserLeaved ? null : tuple.get(comment.user.nickname))
+                .profileImg(originUserLeaved ? null : tuple.get(comment.user.profileImg))
                 .contents(tuple.get(comment.contents))
-                .createdAt(tuple.get(comment.createdAt)).build();
+                .createdAt(tuple.get(comment.createdAt))
+                .isModified(originUserLeaved ? null : tuple.get(comment.updatedAt).isAfter(tuple.get(comment.createdAt)))
+                .userState(originUserLeaved ? "탈퇴" : "회원")
+                .mentionedUserState(mentionedUserLeaved ? "탈퇴" : "회원")
+                .build();
     }
 }

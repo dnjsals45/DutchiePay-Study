@@ -30,23 +30,16 @@ public class CommentResponseDto {
         private Boolean hasMore;
 
         public static CommentDetail toDto(Tuple tuple, boolean hasMore) {
-            CommentDetailBuilder builder = CommentDetail.builder();
             boolean leaved = tuple.get(comment.user.state) != 0;
             boolean deleted = tuple.get(comment.deletedAt) != null;
-            if (deleted || leaved) {
-                builder.nickname(null)
-                        .profileImg(null)
-                        .isModified(null);
-            } else {
-                builder.nickname(tuple.get(comment.user.nickname))
-                        .profileImg(tuple.get(comment.user.profileImg))
-                        .createdAt(tuple.get(comment.createdAt))
-                        .isModified(tuple.get(comment.updatedAt).isAfter(tuple.get(comment.createdAt)));
-            }
-            if (deleted) builder.contents("삭제된 댓글입니다.");
-            else builder.contents(tuple.get(comment.contents));
 
-            return builder.commentId(tuple.get(comment.commentId)).userState(leaved ? "탈퇴" : "회원")
+            return CommentDetail.builder().commentId(tuple.get(comment.commentId))
+                    .nickname(deleted || leaved ? null : tuple.get(comment.user.nickname))
+                    .profileImg(deleted || leaved ? null : tuple.get(comment.user.profileImg))
+                    .contents(deleted ? "삭제된 댓글입니다." : tuple.get(comment.contents))
+                    .createdAt(tuple.get(comment.createdAt))
+                    .isModified(deleted || leaved ? null : tuple.get(comment.updatedAt).isAfter(tuple.get(comment.createdAt)))
+                    .userState(leaved ? "탈퇴" : "회원")
                     .hasMore(hasMore).build();
         }
 
