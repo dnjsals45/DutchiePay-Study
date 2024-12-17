@@ -129,6 +129,7 @@ public class CommerceService {
                 .deadline(addEntityDto.getDeadline())
                 .skeleton(addEntityDto.getSkeleton())
                 .nowCount(0)
+                .tags(addEntityDto.getTag())
                 .build());
 
         for (String c : addEntityDto.getCategory()) {

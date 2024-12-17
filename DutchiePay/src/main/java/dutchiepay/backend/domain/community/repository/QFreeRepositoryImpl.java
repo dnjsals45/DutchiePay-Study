@@ -1,6 +1,12 @@
 package dutchiepay.backend.domain.community.repository;
 
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -151,8 +157,17 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         // commentId가 cursor보다 크거나 같으면서, deletedAt이 Null이거나(삭제되지 않았거나)
         // deletedAt이 Null이 아니고(삭제 되었고),
         // parentId가 null이 아닌 댓글들(답글들)의 parentId 목록 안에 있는 댓글들(답글이 있는 댓글들) 조회
-        List<Comment> comments = jpaQueryFactory
-                .selectFrom(comment)
+        List<CommentResponseDto.CommentDetail> comments = jpaQueryFactory
+                .select(Projections.fields(CommentResponseDto.CommentDetail.class,
+                        comment.commentId,
+                        comment.user.nickname,
+                        comment.user.profileImg,
+                        comment.contents,
+                        comment.createdAt,
+                        comment.updatedAt.after(comment.createdAt).as("isModified"),
+                        comment.user.state.when(0).then("회원").otherwise("탈퇴").as("userState"))
+                        )
+                .from(comment)
                 .where(comment.free.eq(free),
                         comment.commentId.goe(cursor),
                         comment.deletedAt.isNull(),
@@ -171,8 +186,19 @@ public class QFreeRepositoryImpl implements QFreeRepository {
                 .fetch();
 
         Long nextCursor = comments.size() > limit ? comments.get(limit).getCommentId() : null;
-        return CommentResponseDto.toDto(
-                comments.stream().map(CommentResponseDto.CommentDetail::toDto).collect(Collectors.toList()), nextCursor);
+        comments.forEach(comment -> {
+            comment.setHasMore(countRecomments(comment.getCommentId()) > 5);
+        });
+        return CommentResponseDto.toDto(comments, nextCursor);
+    }
+
+    private Long countRecomments(Long commentId) {
+        return jpaQueryFactory
+                .select(comment.count())
+                .from(comment)
+                .where(comment.parentId.eq(commentId),
+                        comment.deletedAt.isNull())
+                .fetchFirst();
     }
 
     /**
