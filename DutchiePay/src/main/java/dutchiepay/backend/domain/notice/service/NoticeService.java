@@ -77,28 +77,4 @@ public class NoticeService {
             }
         }
     }
-
-
-
-//    private List<GetNoticeListResponseDto> makeNoticeListResponse(Map<String, List<Notice>> originNoticeMap) {
-//        List<GetNoticeListResponseDto> response = new ArrayList<>();
-//
-//        for (List<Notice> l : originNoticeMap.values()) {
-//            if (!l.isEmpty()) {
-//                Notice latestNotice = l.get(0);
-//
-//                GetNoticeListResponseDto dto = GetNoticeListResponseDto.builder()
-//                        .type(latestNotice.getType())
-//                        .origin(latestNotice.getOrigin())
-//                        .relativeTime(ChronoUtil.timesAgo(latestNotice.getCreatedAt()))
-//                        .id(latestNotice.getOriginId())
-//                        .count(l.size())
-//                        .build();
-//
-//                response.add(dto);
-//            }
-//        }
-//
-//        return response;
-//    }
 }
