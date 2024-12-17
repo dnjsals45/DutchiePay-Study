@@ -163,21 +163,22 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         // commentId가 cursor보다 크거나 같으면서, deletedAt이 Null이거나(삭제되지 않았거나)
         // deletedAt이 Null이 아니고(삭제 되었고),
         // parentId가 null이 아닌 댓글들(답글들)의 parentId 목록 안에 있는 댓글들(답글이 있는 댓글들) 조회
-        List<CommentResponseDto.CommentDetail> comments = jpaQueryFactory
-                .select(Projections.fields(CommentResponseDto.CommentDetail.class,
+        List<Tuple> comments = jpaQueryFactory
+                .select(
                         comment.commentId,
                         comment.user.nickname,
                         comment.user.profileImg,
                         comment.contents,
                         comment.createdAt,
-                        comment.updatedAt.after(comment.createdAt).as("isModified"),
-                        comment.user.state.when(0).then("회원").otherwise("탈퇴").as("userState"))
+                        comment.updatedAt,
+                        comment.user.state,
+                        comment.deletedAt
                         )
                 .from(comment)
                 .where(comment.free.eq(free),
                         comment.commentId.goe(cursor),
-                        comment.deletedAt.isNull(),
-                        comment.parentId.isNull()
+                        comment.parentId.isNull(),
+                        comment.deletedAt.isNull()
                                 .or(comment.deletedAt.isNotNull()
                                         .and(comment.commentId.in(
                                                 JPAExpressions
@@ -188,14 +189,14 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
                                 )
                 )
+                .orderBy(comment.createdAt.asc())
                 .limit(limit + 1)
                 .fetch();
 
-        Long nextCursor = comments.size() > limit ? comments.get(limit).getCommentId() : null;
-        comments.forEach(comment -> {
-            comment.setHasMore(countRecomments(comment.getCommentId()) > 5);
-        });
-        return CommentResponseDto.toDto(comments, nextCursor);
+        Long nextCursor = comments.size() > limit ? comments.get(limit).get(comment.commentId) : null;
+        return CommentResponseDto.toDto(comments.stream()
+                .map(c -> CommentResponseDto.CommentDetail.toDto(c,
+                        countRecomments(c.get(comment.commentId)) > 5)).toList(), nextCursor);
     }
 
     private Long countRecomments(Long commentId) {
@@ -218,19 +219,31 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
 
 
-        JPAQuery<Comment> query = jpaQueryFactory.selectFrom(comment)
+        JPAQuery<Tuple> query = jpaQueryFactory
+                .select(comment.commentId,
+                        comment.mentionedId,
+                        comment.user.nickname,
+                        comment.user.profileImg,
+                        comment.contents,
+                        comment.createdAt,
+                        comment.updatedAt,
+                        comment.user.state)
+                .from(comment)
                 .where(comment.parentId.eq(commentId), comment.deletedAt.isNull());
         if (type.equals("first")) query.limit(5);
         else if (type.equals("rest")) query.offset(6);
         else throw new CommunityException(CommunityErrorCode.ILLEGAL_TYPE);
 
-        List<Comment> reComments = query.fetch();
+        List<Tuple> reComments = query.fetch();
 
-        return reComments.stream().map(r -> ReCommentResponseDto.toDto(r, findById(r.getMentionedId()))).collect(Collectors.toList());
+        return reComments.stream().map(r -> ReCommentResponseDto.toDto(r, findMentionedCommentUserById(r.get(comment.mentionedId))))
+                .collect(Collectors.toList());
     }
 
-    private Comment findById(Long commentId) {
-        return jpaQueryFactory.selectFrom(comment)
+    private Tuple findMentionedCommentUserById(Long commentId) {
+        return jpaQueryFactory.select(comment.user.nickname,
+                        comment.user.state)
+                .from(comment)
                 .where(comment.commentId.eq(commentId))
                 .fetchFirst();
     }
