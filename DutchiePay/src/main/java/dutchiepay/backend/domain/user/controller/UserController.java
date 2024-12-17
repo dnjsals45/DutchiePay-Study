@@ -38,14 +38,14 @@ public class UserController {
     private final UserService userService;
     private final SmsService smsService;
 
-    @Operation(summary = "이메일 찾기(구현 완료)", description = "휴대폰 번호를 이용한 이메일 찾기")
+    @Operation(summary = "이메일 찾기", description = "휴대폰 번호를 이용한 이메일 찾기")
     @PostMapping("/email")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto req) {
         return ResponseEntity.ok().body(userService.findEmail(req));
     }
 
-    @Operation(summary = "닉네임 검사 중복확인(구현 완료)", operationId = "닉네임 중복확인")
+    @Operation(summary = "닉네임 검사 중복확인", operationId = "닉네임 중복확인")
     @GetMapping(value = "", params = "nickname")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> isExistNickname(@RequestParam(required = false) String nickname) {
@@ -56,7 +56,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 검사 중복확인(구현 완료)", operationId = "이메일 중복확인")
+    @Operation(summary = "이메일 검사 중복확인", operationId = "이메일 중복확인")
     @GetMapping(value = "", params = "email")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> isExistEmail(@RequestParam(required = false) String email) {
@@ -67,7 +67,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "비회원 비밀번호 찾기(구현 완료)")
+    @Operation(summary = "비회원 비밀번호 찾기")
     @PostMapping("/pwd")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto req) {
@@ -75,7 +75,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "비회원 비밀번호 재설정(구현 완료)")
+    @Operation(summary = "비회원 비밀번호 재설정")
     @PatchMapping("/pwd-nonuser")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> changePasswordNonUser(
@@ -84,7 +84,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "회원 비밀번호 재설정(구현 완료)")
+    @Operation(summary = "회원 비밀번호 재설정")
     @PatchMapping("/pwd-user")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePasswordUser(
@@ -100,7 +100,7 @@ public class UserController {
         return ResponseEntity.ok().body(smsService.sendVerificationMessage(req.getPhone()));
     }
 
-    @Operation(summary = "회원가입(구현 완료)")
+    @Operation(summary = "회원가입")
     @PostMapping("/signup")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
@@ -108,7 +108,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "로그아웃(구현 완료)")
+    @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> logout(
@@ -119,7 +119,7 @@ public class UserController {
         return ResponseEntity.ok().body(null);
     }
 
-    @Operation(summary = "회원 탈퇴(구현 완료)")
+    @Operation(summary = "회원 탈퇴")
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -128,14 +128,14 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "자동로그인(구현 완료)")
+    @Operation(summary = "자동로그인")
     @PostMapping("/relogin")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> reLogin(@Valid @RequestBody UserReLoginRequestDto requestDto) {
         return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
     }
 
-    @Operation(summary = "access Token 재발급(구현 완료)")
+    @Operation(summary = "access Token 재발급")
     @PostMapping("/reissue")
     @PreAuthorize("permitAll()")
     public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto) {

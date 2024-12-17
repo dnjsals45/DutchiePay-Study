@@ -1,20 +1,13 @@
 package dutchiepay.backend.domain.search.service;
 
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
-import dutchiepay.backend.domain.commerce.repository.BuyRepository;
-import dutchiepay.backend.domain.commerce.repository.QBuyRepository;
 import dutchiepay.backend.domain.commerce.repository.QBuyRepositoryImpl;
-import dutchiepay.backend.domain.search.dto.CommerceSearchResponseDto;
 import dutchiepay.backend.domain.search.dto.DictionaryResponseDto;
-import dutchiepay.backend.domain.search.repository.QSearchRepository;
-import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,9 +15,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SearchService {
 
-    private final QSearchRepository qSearchRepository;
     private final QBuyRepositoryImpl qBuyRepository;
 
+    /**
+     * Buy 엔티티의 모든 tags를 리턴하는 메서드
+     * @return tags가 들어있는 dto
+     */
     public DictionaryResponseDto getSearchDictionary() {
         Set<String> tags = qBuyRepository.findAllTags().stream()
                 .flatMap(s -> Arrays.stream(s.split(", ")))
@@ -32,8 +28,19 @@ public class SearchService {
         return DictionaryResponseDto.builder().tags(tags).build();
     }
 
-    public GetBuyListResponseDto commerceSearch(User user, String keyword, String filter, int end, Long cursor, int limit) {
+    /**
+     * 공동구매 검색 결과 반환
+     * QBuyRepositoryImpl의 getBuyList 사용
+     * @param user 회원이면 user 정보, 비회원이면 null
+     * @param keyword 검색할 단어
+     * @param filter 필터링 조건
+     * @param end 마감된 공구 포함여부
+     * @param cursor 다음으로 검색할 Id
+     * @param limit 반환할 개수
+     * @return 검색 결과가 담긴 dto
+     */
+    public GetBuyListResponseDto commerceSearch(User user, String filter, String keyword, int end, Long cursor, int limit) {
 
-        return qSearchRepository.searchCommerce(user, filter, keyword, end, cursor, limit);
+        return qBuyRepository.getBuyList(user, filter, null, keyword, end, cursor, limit);
     }
 }

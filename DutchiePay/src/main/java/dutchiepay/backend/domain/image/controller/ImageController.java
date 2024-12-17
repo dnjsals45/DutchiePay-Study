@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ImageController {
     private final S3ImageService s3ImageService;
 
-    @Operation(summary = "이미지 업로드(구현 완료)", description = "파일 명을 바탕으로 한 presigned url을 반환.(유효기간 15분)")
+    @Operation(summary = "이미지 업로드", description = "파일 명을 바탕으로 한 presigned url을 반환.(유효기간 15분)")
     @PostMapping
     public ResponseEntity<?> getPreSignedUrl(@Valid @RequestBody GetPreSignedUrlRequestDto request) {
         return ResponseEntity.ok().body(s3ImageService.getPreSignedUrl(request.getFileName()));

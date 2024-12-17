@@ -24,14 +24,14 @@ public class ProfileController {
     /**
      * GET
      */
-    @Operation(summary = "마이페이지 조회 (구현은 완료하였지만 주문 상태 코드 확정 X)")
+    @Operation(summary = "마이페이지 조회")
     @GetMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myPage(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok().body(profileService.myPage(userDetails.getUser()));
     }
 
-    @Operation(summary = "구매 내역(배송) 조회 (구현 완료)")
+    @Operation(summary = "구매 내역(배송) 조회")
     @GetMapping("/mygoods")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myGoods(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -42,7 +42,7 @@ public class ProfileController {
     }
 
     // 타입은 post / comment 중 하나
-    @Operation(summary = "작성 글/댓글단 게시글 조회 (구현 완료)")
+    @Operation(summary = "작성 글/댓글단 게시글 조회")
     @GetMapping("/posts")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myPosts(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -52,21 +52,21 @@ public class ProfileController {
         return ResponseEntity.ok().body(profileService.getMyPosts(userDetails.getUser(), type, page, limit));
     }
 
-    @Operation(summary = "좋아요 누른 상품 조회 (구현 완료)")
+    @Operation(summary = "좋아요 누른 상품 조회")
     @GetMapping("/like")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myLike(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok().body(profileService.getMyLike(userDetails.getUser()));
     }
 
-    @Operation(summary = "내가 쓴 후기 조회 (구현 완료)")
+    @Operation(summary = "내가 쓴 후기 조회")
     @GetMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myReviews(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok().body(reviewService.getMyReviews(userDetails.getUser()));
     }
 
-    @Operation(summary = "후기 1개 조회 (구현 완료)", description = "reviewId 입력하지 않을 시 내가 쓴 후기 전체 조회")
+    @Operation(summary = "후기 1개 조회", description = "reviewId 입력하지 않을 시 내가 쓴 후기 전체 조회")
     @GetMapping(value = "/reviews", params = "reviewId")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getOneReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -74,7 +74,7 @@ public class ProfileController {
         return ResponseEntity.ok().body(reviewService.getOneReview(userDetails.getUser(), reviewId));
     }
 
-    @Operation(summary = "내가 쓴 문의 내역 조회 (구현 완료)")
+    @Operation(summary = "내가 쓴 문의 내역 조회")
     @GetMapping("/asks")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> myAsks(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -85,7 +85,7 @@ public class ProfileController {
     /**
      * POST
      */
-    @Operation(summary = "상품 후기 작성 (구현 완료)")
+    @Operation(summary = "상품 후기 작성")
     @PostMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -94,7 +94,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "상품 문의 작성 (구현 완료)")
+    @Operation(summary = "상품 문의 작성")
     @PostMapping("/asks")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -106,7 +106,7 @@ public class ProfileController {
     /**
      * PATCH
      */
-    @Operation(summary = "닉네임 변경 (구현 완료)")
+    @Operation(summary = "닉네임 변경")
     @PatchMapping("/nickname")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changeNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -115,7 +115,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "프로필 이미지 변경 (구현 완료)")
+    @Operation(summary = "프로필 이미지 변경")
     @PatchMapping("/image")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changeProfileImage(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -124,7 +124,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "지역 변경 (구현 완료)")
+    @Operation(summary = "지역 변경")
     @PatchMapping("/location")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changeLocation(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -133,7 +133,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "전화번호 변경 (구현 완료)")
+    @Operation(summary = "전화번호 변경")
     @PatchMapping("/phone")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePhone(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -154,7 +154,7 @@ public class ProfileController {
     /**
      * DELETE
      */
-    @Operation(summary = "후기 삭제 (구현 완료)")
+    @Operation(summary = "후기 삭제")
     @DeleteMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -163,7 +163,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "문의 삭제 (구현 완료)")
+    @Operation(summary = "문의 삭제")
     @DeleteMapping("/asks")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteAsk(@AuthenticationPrincipal UserDetailsImpl userDetails,

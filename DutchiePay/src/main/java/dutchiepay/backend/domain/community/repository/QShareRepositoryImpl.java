@@ -28,7 +28,7 @@ public class QShareRepositoryImpl implements QShareRepository{
     QShare share = QShare.share;
 
     @Override
-    public GetMartListResponseDto getMartList(User u, String category, Long cursor, Integer limit) {
+    public GetMartListResponseDto getMartList(User u, String category, String word, Long cursor, Integer limit) {
         if (cursor == null) {
             cursor = Long.MAX_VALUE;
         }
@@ -38,6 +38,10 @@ public class QShareRepositoryImpl implements QShareRepository{
 
         if (category != null && !category.isEmpty()) {
             condition = condition.and(share.category.eq(category));
+        }
+
+        if (word != null && !word.isEmpty()) {
+            condition = condition.and(share.title.contains(word));
         }
 
         if (u != null) {
