@@ -8,9 +8,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetNoticeListResponseDto {
+    private Long noticeId;
     private String type;
     private String origin;
+    private String content;
     private String relativeTime;
-    private Long id;
-    private Integer count;
+    private Long pageId;
+    private Integer commentId;
+    private Boolean hasMore;
 }
