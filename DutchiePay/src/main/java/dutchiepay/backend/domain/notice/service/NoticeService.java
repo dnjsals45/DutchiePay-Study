@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,11 +24,9 @@ public class NoticeService {
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     public List<GetNoticeListResponseDto> getNotices(User user) {
-        List<Notice> notices = noticeUtilService.findRecentNotices(user, LocalDateTime.now().minusDays(7));
+        return noticeUtilService.findRecentNotices(user);
 
-        Map<String, List<Notice>> originNoticeMap = noticeUtilService.makeNoticeMapByOrigin(notices);
 
-        return makeNoticeListResponse(originNoticeMap);
     }
 
     public SseEmitter subscribe(User user) {
@@ -84,25 +81,25 @@ public class NoticeService {
 
 
 
-    private List<GetNoticeListResponseDto> makeNoticeListResponse(Map<String, List<Notice>> originNoticeMap) {
-        List<GetNoticeListResponseDto> response = new ArrayList<>();
-
-        for (List<Notice> l : originNoticeMap.values()) {
-            if (!l.isEmpty()) {
-                Notice latestNotice = l.get(0);
-
-                GetNoticeListResponseDto dto = GetNoticeListResponseDto.builder()
-                        .type(latestNotice.getType())
-                        .origin(latestNotice.getOrigin())
-                        .relativeTime(ChronoUtil.timesAgo(latestNotice.getCreatedAt()))
-                        .id(latestNotice.getOriginId())
-                        .count(l.size())
-                        .build();
-
-                response.add(dto);
-            }
-        }
-
-        return response;
-    }
+//    private List<GetNoticeListResponseDto> makeNoticeListResponse(Map<String, List<Notice>> originNoticeMap) {
+//        List<GetNoticeListResponseDto> response = new ArrayList<>();
+//
+//        for (List<Notice> l : originNoticeMap.values()) {
+//            if (!l.isEmpty()) {
+//                Notice latestNotice = l.get(0);
+//
+//                GetNoticeListResponseDto dto = GetNoticeListResponseDto.builder()
+//                        .type(latestNotice.getType())
+//                        .origin(latestNotice.getOrigin())
+//                        .relativeTime(ChronoUtil.timesAgo(latestNotice.getCreatedAt()))
+//                        .id(latestNotice.getOriginId())
+//                        .count(l.size())
+//                        .build();
+//
+//                response.add(dto);
+//            }
+//        }
+//
+//        return response;
+//    }
 }

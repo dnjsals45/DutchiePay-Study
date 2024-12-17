@@ -14,6 +14,6 @@ public class GetNoticeListResponseDto {
     private String content;
     private String relativeTime;
     private Long pageId;
-    private Integer commentId;
+    private Long commentId;
     private Boolean hasMore;
 }

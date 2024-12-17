@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.notice.service;
 
 import dutchiepay.backend.domain.community.service.CommunityUtilService;
+import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
 import dutchiepay.backend.domain.notice.repository.NoticeRepository;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Notice;
@@ -20,8 +21,8 @@ public class NoticeUtilService {
     private final NoticeRepository noticeRepository;
     private final CommunityUtilService communityUtilService;
 
-    public List<Notice> findRecentNotices(User user, LocalDateTime time) {
-        return noticeRepository.findRecentNotices(user, time);
+    public List<GetNoticeListResponseDto> findRecentNotices(User user) {
+        return noticeRepository.findRecentNotices(user);
     }
 
     public List<Notice> findByUserAndIsReadFalseAndCreatedAtAfter(User user, LocalDateTime minus) {
