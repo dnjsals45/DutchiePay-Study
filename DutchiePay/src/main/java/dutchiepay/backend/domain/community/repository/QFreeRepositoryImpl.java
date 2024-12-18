@@ -194,7 +194,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
                 .fetch();
 
         Long nextCursor = comments.size() > limit ? comments.get(limit).get(comment.commentId) : null;
-        return CommentResponseDto.toDto(comments.stream()
+        return CommentResponseDto.toDto(comments.stream().limit(limit)
                 .map(c -> CommentResponseDto.CommentDetail.toDto(c,
                         countRecomments(c.get(comment.commentId)) > 5)).toList(), nextCursor);
     }
