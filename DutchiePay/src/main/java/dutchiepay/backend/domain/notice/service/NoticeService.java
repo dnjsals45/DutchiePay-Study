@@ -5,6 +5,7 @@ import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
 import dutchiepay.backend.domain.notice.dto.NoticeDto;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Notice;
+import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,6 @@ public class NoticeService {
 
     public List<GetNoticeListResponseDto> getNotices(User user) {
         return noticeUtilService.findRecentNotices(user);
-
-
     }
 
     public SseEmitter subscribe(User user) {
@@ -48,6 +47,14 @@ public class NoticeService {
         }
     }
 
+    public void createAndSendCommerceNotice(Order order, String status) {
+        Notice notice = noticeUtilService.createCommerceNotice(order, status);
+
+        if (notice != null) {
+            sendNotice(notice.getUser(), notice);
+        }
+    }
+
     public void sendNotice(User user, Notice notice) {
         SseEmitter sseEmitter = emitters.get(user.getUserId());
 
@@ -55,8 +62,11 @@ public class NoticeService {
             try {
                 sseEmitter.send(SseEmitter.event()
                         .data(NoticeDto.toDto(notice)));
+                noticeUtilService.readNotice(notice);
             } catch (Exception e) {
                 e.printStackTrace();
+                emitters.remove(user.getUserId());
+                sseEmitter.completeWithError(e);
             }
         }
     }
@@ -74,6 +84,8 @@ public class NoticeService {
                                 .build()));
             } catch (Exception e) {
                 e.printStackTrace();
+                emitters.remove(user.getUserId());
+                sseEmitter.completeWithError(e);
             }
         }
     }

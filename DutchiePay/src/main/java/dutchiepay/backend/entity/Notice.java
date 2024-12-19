@@ -32,4 +32,8 @@ public class Notice extends Auditing {
     private String writer;
 
     private Boolean isRead;
+
+    public void read() {
+        this.isRead = true;
+    }
 }
