@@ -182,7 +182,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         }
 
         if (word != null && !word.isEmpty()) {
-            BooleanExpression searchCondition = buy.title.contains(word);
+            BooleanExpression searchCondition = buy.title.contains(word).or(buy.tags.contains(word));
             conditions =  conditions == null ? searchCondition : conditions.and(searchCondition);
         }
 

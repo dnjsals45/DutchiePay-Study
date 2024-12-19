@@ -5,7 +5,6 @@ import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
 import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
-import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
 import dutchiepay.backend.domain.user.dto.UserReLoginResponseDto;
 import dutchiepay.backend.domain.user.dto.UserReissueRequestDto;
 import dutchiepay.backend.domain.user.dto.UserReissueResponseDto;
@@ -17,8 +16,7 @@ import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,11 +69,8 @@ public class UserService {
 
     @Transactional
     public void logout(Long userId, HttpServletRequest request) {
-        User user = userUtilService.findById(userId);
-
         redisService.addBlackList(userId, jwtUtil.getJwtFromHeader(request));
-        user.deleteRefreshToken();
-        userRepository.save(user);
+        redisService.deleteRefreshToken(redisService.getRefreshToken(userId));
     }
 
     public void existsNickname(String nickname) {
@@ -229,11 +224,13 @@ public class UserService {
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
     }
 
-    public UserReLoginResponseDto reLogin(String refreshToken) {
+    public UserReLoginResponseDto reLogin(HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+        if (refreshToken == null) throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
+        
         Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-
         return UserReLoginResponseDto.toDto(user, reissueAccessToken(userId), user.getPhone() != null);
     }
 
@@ -242,9 +239,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserReissueResponseDto reissue(UserReissueRequestDto requestDto) {
+    public UserReissueResponseDto reissue(UserReissueRequestDto requestDto, HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+        if (refreshToken == null) throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
 
-        Long userId = redisService.findUserIdFromRefreshToken(requestDto.getRefresh());
+        Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
 
         String accessToken = requestDto.getAccess();
         if (!redisService.isTokenBlackListed(accessToken)) {
@@ -252,6 +251,17 @@ public class UserService {
         }
 
         return UserReissueResponseDto.toDto(reissueAccessToken(userId));
+    }
+
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        // 쿠키에서 refresh token을 꺼내 전달
+        if (cookies != null)
+            for (Cookie cookie : cookies)
+                if (cookie.getName().equals("refresh"))
+                    return cookie.getValue();
+        return null;
     }
 
 }

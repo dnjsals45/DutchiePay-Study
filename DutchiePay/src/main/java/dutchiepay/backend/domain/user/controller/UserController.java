@@ -5,30 +5,23 @@ import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.PhoneAuthRequestDto;
 import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
-import dutchiepay.backend.domain.user.dto.UserReLoginRequestDto;
 import dutchiepay.backend.domain.user.dto.UserReissueRequestDto;
 import dutchiepay.backend.domain.user.dto.UserSignupRequestDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
 import dutchiepay.backend.domain.user.exception.UserErrorException;
 import dutchiepay.backend.domain.user.service.UserService;
-import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import dutchiepay.backend.global.sms.SmsService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -79,7 +72,7 @@ public class UserController {
     @PatchMapping("/pwd-nonuser")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> changePasswordNonUser(
-        @Valid @RequestBody NonUserChangePasswordRequestDto req) {
+            @Valid @RequestBody NonUserChangePasswordRequestDto req) {
         userService.changeNonUserPassword(req);
         return ResponseEntity.ok().build();
     }
@@ -88,8 +81,8 @@ public class UserController {
     @PatchMapping("/pwd-user")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePasswordUser(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Valid @RequestBody UserChangePasswordRequestDto req) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody UserChangePasswordRequestDto req) {
         userService.changeUserPassword(userDetails.getUser(), req);
         return ResponseEntity.ok().build();
     }
@@ -112,11 +105,11 @@ public class UserController {
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> logout(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        HttpServletRequest request) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletRequest request) {
 
         userService.logout(userDetails.getUserId(), request);
-        return ResponseEntity.ok().body(null);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "회원 탈퇴")
@@ -131,14 +124,15 @@ public class UserController {
     @Operation(summary = "자동로그인")
     @PostMapping("/relogin")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<?> reLogin(@Valid @RequestBody UserReLoginRequestDto requestDto) {
-        return ResponseEntity.ok().body(userService.reLogin(requestDto.getRefresh()));
+    public ResponseEntity<?> reLogin(HttpServletRequest request) {
+        return ResponseEntity.ok().body(userService.reLogin(request));
     }
 
     @Operation(summary = "access Token 재발급")
     @PostMapping("/reissue")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto) {
-        return ResponseEntity.ok().body(userService.reissue(requestDto));
+    public ResponseEntity<?> reissue(@Valid @RequestBody UserReissueRequestDto requestDto,
+                                     HttpServletRequest request) {
+        return ResponseEntity.ok().body(userService.reissue(requestDto, request));
     }
 }

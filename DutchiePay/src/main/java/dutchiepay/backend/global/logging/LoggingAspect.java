@@ -37,8 +37,8 @@ public class LoggingAspect {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("Refresh-Token")) { // 프론트에서 어떻게 보내줄지 모르니 나중에 수정
-                    log.debug("요청 쿠키 값 : {}", cookie.getName() + "=" + cookie.getValue());
+                if (cookie.getName().equals("refresh")) { // 프론트에서 어떻게 보내줄지 모르니 나중에 수정
+                    log.debug("요청 쿠키 값 : {}", cookie.getName() + " = " + cookie.getValue());
                 }
             }
         }
