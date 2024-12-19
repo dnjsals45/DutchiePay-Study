@@ -19,6 +19,7 @@ import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -229,11 +230,14 @@ public class UserService {
             .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND)).delete();
     }
 
-    public UserReLoginResponseDto reLogin(String refreshToken) {
+    public UserReLoginResponseDto reLogin(HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+        if (refreshToken == null) throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
+        
         Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-
+        redisService.deleteRefreshToken(redisService.getRefreshToken(userId));
         return UserReLoginResponseDto.toDto(user, reissueAccessToken(userId), user.getPhone() != null);
     }
 
@@ -242,9 +246,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserReissueResponseDto reissue(UserReissueRequestDto requestDto) {
+    public UserReissueResponseDto reissue(UserReissueRequestDto requestDto, HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+        if (refreshToken == null) throw new UserErrorException(UserErrorCode.INVALID_REFRESH_TOKEN);
 
-        Long userId = redisService.findUserIdFromRefreshToken(requestDto.getRefresh());
+        Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
 
         String accessToken = requestDto.getAccess();
         if (!redisService.isTokenBlackListed(accessToken)) {
@@ -252,6 +258,17 @@ public class UserService {
         }
 
         return UserReissueResponseDto.toDto(reissueAccessToken(userId));
+    }
+
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        // 쿠키에서 refresh token을 꺼내 전달
+        if (cookies != null)
+            for (Cookie cookie : cookies)
+                if (cookie.getName().equals("refresh"))
+                    return cookie.getValue();
+        return null;
     }
 
 }

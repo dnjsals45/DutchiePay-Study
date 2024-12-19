@@ -15,7 +15,4 @@ public class UserReissueRequestDto {
 
     @NotBlank(message = "액세스 토큰을 입력해주세요.")
     private String access;
-
-    @NotBlank(message = "리프레시 토큰을 입력해주세요.")
-    private String refresh;
 }
