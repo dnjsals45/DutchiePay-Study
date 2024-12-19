@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.scheduler;
 
+import dutchiepay.backend.domain.notice.service.NoticeService;
 import dutchiepay.backend.domain.order.repository.OrderRepository;
 import dutchiepay.backend.domain.order.service.OrderService;
 import dutchiepay.backend.entity.Buy;
@@ -21,6 +22,7 @@ import java.util.List;
 public class OrderStatusUpdateSchedule {
     private final OrderService orderService;
     private final OrderRepository orderRepository;
+    private final NoticeService noticeService;
 
     private static final String IN_PROGRESS = "공구진행중";
     private static final String PREPARING_SHIPMENT = "배송준비중";
@@ -54,10 +56,12 @@ public class OrderStatusUpdateSchedule {
                 if (buy.getNowCount() >= buy.getSkeleton()) {
                     order.changeStatus(PREPARING_SHIPMENT);
                     updateList.add(order);
+                    noticeService.createAndSendCommerceNotice(order, PREPARING_SHIPMENT);
                 } else {
                     order.changeStatus(FAILED);
                     orderService.autoCancelPurchase(order.getOrderId());
                     updateList.add(order);
+                    noticeService.createAndSendCommerceNotice(order, FAILED);
                 }
             }
         }

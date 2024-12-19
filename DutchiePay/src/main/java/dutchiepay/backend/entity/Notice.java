@@ -23,9 +23,17 @@ public class Notice extends Auditing {
 
     private String origin;
 
+    private String content;
+
     private Long originId;
+
+    private Long commentId;
 
     private String writer;
 
     private Boolean isRead;
+
+    public void read() {
+        this.isRead = true;
+    }
 }
