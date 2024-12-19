@@ -32,7 +32,7 @@ public class OrderStatusUpdateSchedule {
     private static final String FAILED = "공구실패";
     private static final String EXCHANGE_REQUESTED = "교환요청";
 
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 5 0 * * ?")
     @Transactional
     public void orderStatusUpdate() {
         log.info("주문 상태 업데이트 스케쥴링 시작");
