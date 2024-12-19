@@ -5,7 +5,6 @@ import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
 import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.NonUserChangePasswordRequestDto;
 import dutchiepay.backend.domain.user.dto.UserChangePasswordRequestDto;
-import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
 import dutchiepay.backend.domain.user.dto.UserReLoginResponseDto;
 import dutchiepay.backend.domain.user.dto.UserReissueRequestDto;
 import dutchiepay.backend.domain.user.dto.UserReissueResponseDto;
@@ -17,8 +16,6 @@ import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -72,11 +69,8 @@ public class UserService {
 
     @Transactional
     public void logout(Long userId, HttpServletRequest request) {
-        User user = userUtilService.findById(userId);
-
         redisService.addBlackList(userId, jwtUtil.getJwtFromHeader(request));
-        user.deleteRefreshToken();
-        userRepository.save(user);
+        redisService.deleteRefreshToken(redisService.getRefreshToken(userId));
     }
 
     public void existsNickname(String nickname) {
@@ -237,7 +231,6 @@ public class UserService {
         Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        redisService.deleteRefreshToken(redisService.getRefreshToken(userId));
         return UserReLoginResponseDto.toDto(user, reissueAccessToken(userId), user.getPhone() != null);
     }
 

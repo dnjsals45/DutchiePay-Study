@@ -109,7 +109,7 @@ public class UserController {
             HttpServletRequest request) {
 
         userService.logout(userDetails.getUserId(), request);
-        return ResponseEntity.ok().body(null);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "회원 탈퇴")
