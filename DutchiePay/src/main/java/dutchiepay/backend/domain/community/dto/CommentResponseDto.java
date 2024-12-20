@@ -27,9 +27,9 @@ public class CommentResponseDto {
         private LocalDateTime createdAt;
         private Boolean isModified;
         private String userState;
-        private Boolean hasMore;
+        private Long reCommentCount;
 
-        public static CommentDetail toDto(Tuple tuple, boolean hasMore) {
+        public static CommentDetail toDto(Tuple tuple, Long count) {
             boolean leaved = tuple.get(comment.user.state) != 0;
             boolean deleted = tuple.get(comment.deletedAt) != null;
 
@@ -40,7 +40,7 @@ public class CommentResponseDto {
                     .createdAt(tuple.get(comment.createdAt))
                     .isModified(deleted || leaved ? null : tuple.get(comment.updatedAt).isAfter(tuple.get(comment.createdAt)))
                     .userState(leaved ? "탈퇴" : "회원")
-                    .hasMore(hasMore).build();
+                    .reCommentCount(count).build();
         }
 
     }

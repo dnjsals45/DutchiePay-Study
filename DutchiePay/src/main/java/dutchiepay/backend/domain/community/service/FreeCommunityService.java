@@ -128,6 +128,7 @@ public class FreeCommunityService {
      * @return 답글 목록 dto
      */
     public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
+        communityUtilService.findComment(commentId);
         return qFreeRepository.getReComments(commentId, type);
     }
 
