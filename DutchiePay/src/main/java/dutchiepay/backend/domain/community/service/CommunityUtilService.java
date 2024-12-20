@@ -95,15 +95,22 @@ public class CommunityUtilService {
             throw new CommunityException(CommunityErrorCode.INVALID_POST);
     }
 
-    // commentId로 Comment 객체를 찾음
+    // commentId로 삭제되지 않은 Comment 객체를 찾음
     public Comment findCommentById(Long commentId) {
         return commentRepository.findByCommentIdAndDeletedAtIsNull(commentId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_COMMENT));
     }
 
+    // commentId로 Comment 객체를 찾음
+    public void findComment(Long commentId) {
+        commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_COMMENT));
+    }
+
     // 댓글 작성자를 검증
     public static void validateCommentWriter(User user, Comment comment) {
-        if (!comment.getUser().getUserId().equals(user.getUserId())) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+        if (!comment.getUser().getUserId().equals(user.getUserId()))
+            throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
     }
 
     // 댓글을 찾고 작성자를 검증

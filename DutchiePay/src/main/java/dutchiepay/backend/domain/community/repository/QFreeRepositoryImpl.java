@@ -218,7 +218,6 @@ public class QFreeRepositoryImpl implements QFreeRepository {
      */
     public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
 
-
         JPAQuery<Tuple> query = jpaQueryFactory
                 .select(comment.commentId,
                         comment.mentionedId,
