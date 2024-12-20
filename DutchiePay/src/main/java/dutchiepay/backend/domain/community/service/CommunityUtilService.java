@@ -11,6 +11,8 @@ import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
@@ -72,10 +74,9 @@ public class CommunityUtilService {
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
     public Comment createComment(User user, CommentCreateRequestDto commentRequestDto) {
+        // 답글이면 검증 수행
         if (commentRequestDto.getRootCommentId() != null && commentRequestDto.getMentionedId() != null) {
-            // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
-            findCommentById(commentRequestDto.getRootCommentId());
-            findCommentById(commentRequestDto.getMentionedId());
+            validateCommentCreateRequest(commentRequestDto);
         }
         return commentRepository.save(
                         Comment.builder()
@@ -84,15 +85,32 @@ public class CommunityUtilService {
                                 .parentId(commentRequestDto.getRootCommentId()).build());
     }
 
-    // commentId로 Comment 객체를 찾음
+    private void validateCommentCreateRequest(CommentCreateRequestDto commentRequestDto) {
+        // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
+        // root Comment나 mentioned Comment의 freeId와 현재 freeId가 다르면 exception 발생
+        Comment rootComment = findCommentById(commentRequestDto.getRootCommentId());
+        Comment mentionedComment = findCommentById(commentRequestDto.getMentionedId());
+        if (!(rootComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())) &&
+                !(mentionedComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())))
+            throw new CommunityException(CommunityErrorCode.INVALID_POST);
+    }
+
+    // commentId로 삭제되지 않은 Comment 객체를 찾음
     public Comment findCommentById(Long commentId) {
         return commentRepository.findByCommentIdAndDeletedAtIsNull(commentId)
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_COMMENT));
     }
 
+    // commentId로 Comment 객체를 찾음
+    public void findComment(Long commentId) {
+        commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_COMMENT));
+    }
+
     // 댓글 작성자를 검증
     public static void validateCommentWriter(User user, Comment comment) {
-        if (!comment.getUser().getUserId().equals(user.getUserId())) throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
+        if (!comment.getUser().getUserId().equals(user.getUserId()))
+            throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
     }
 
     // 댓글을 찾고 작성자를 검증

@@ -173,7 +173,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
                         comment.updatedAt,
                         comment.user.state,
                         comment.deletedAt
-                        )
+                )
                 .from(comment)
                 .where(comment.free.eq(free),
                         comment.commentId.goe(cursor),
@@ -195,8 +195,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
         Long nextCursor = comments.size() > limit ? comments.get(limit).get(comment.commentId) : null;
         return CommentResponseDto.toDto(comments.stream().limit(limit)
-                .map(c -> CommentResponseDto.CommentDetail.toDto(c,
-                        countRecomments(c.get(comment.commentId)) > 5)).toList(), nextCursor);
+                .map(c -> CommentResponseDto.CommentDetail.toDto(c, countRecomments(c.get(comment.commentId)))).toList(), nextCursor);
     }
 
     private Long countRecomments(Long commentId) {
@@ -212,12 +211,12 @@ public class QFreeRepositoryImpl implements QFreeRepository {
      * commentId에 달려있는 답댓 목록 -> type에 따라 다르게
      * parentId가 commentId인 애들 다 찾고 각 애들마다 mentionedId로 다시 comment 찾기
      * deletedAt이 null인(삭제되지 않은) 댓글들만 찾음
+     *
      * @param commentId 답글이 달린 원 댓글
-     * @param type 처음부터 5개인지, 6번째부터 그 이후인지
+     * @param type      처음부터 5개인지, 6번째부터 그 이후인지
      * @return 대댓글 목록
      */
     public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
-
 
         JPAQuery<Tuple> query = jpaQueryFactory
                 .select(comment.commentId,
