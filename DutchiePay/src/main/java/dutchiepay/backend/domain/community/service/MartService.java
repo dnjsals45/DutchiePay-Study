@@ -53,7 +53,7 @@ public class MartService {
 
     private void updateMartEntity(UpdateMartRequestDto req) {
         Share share = shareRepository.findById(req.getShareId())
-                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_SHARE));
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
 
         share.update(req);
     }
@@ -96,14 +96,14 @@ public class MartService {
 
     private void validateShare(Long shareId) {
         if (!shareRepository.existsById(shareId)) {
-            throw new CommunityException(CommunityErrorCode.INVALID_SHARE);
+            throw new CommunityException(CommunityErrorCode.INVALID_POST);
         }
     }
 
     @Transactional
     public void changeStatus(ChangeStatusRequestDto req) {
         Share share = shareRepository.findById(req.getPostId())
-                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_SHARE));
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
 
         share.changeStatus(req.getStatus());
     }

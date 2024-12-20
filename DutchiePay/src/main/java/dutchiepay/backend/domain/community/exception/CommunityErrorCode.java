@@ -12,7 +12,7 @@ public enum CommunityErrorCode implements StatusCode {
     /**
      * 400 Bad Request
      */
-    INVALID_SHARE(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글입니다."),
+    INVALID_POST(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글입니다."),
     INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "유효하지 않은 카테고리입니다."),
     OVER_TITLE_LENGTH(HttpStatus.BAD_REQUEST, "제목은 60자 이하로 입력해주세요."),
     UNMATCHED_WRITER(HttpStatus.BAD_REQUEST, "작성자가 일치하지 않습니다."),

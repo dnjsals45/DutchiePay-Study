@@ -11,6 +11,8 @@ import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
@@ -74,8 +76,12 @@ public class CommunityUtilService {
     public Comment createComment(User user, CommentCreateRequestDto commentRequestDto) {
         if (commentRequestDto.getRootCommentId() != null && commentRequestDto.getMentionedId() != null) {
             // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
-            findCommentById(commentRequestDto.getRootCommentId());
-            findCommentById(commentRequestDto.getMentionedId());
+            // root Comment나 mentioned Comment의 freeId와 현재 freeId가 다르면 exception 발생
+            Comment rootComment = findCommentById(commentRequestDto.getRootCommentId());
+            Comment mentionedComment = findCommentById(commentRequestDto.getMentionedId());
+            if (!(rootComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())) &&
+                    !(mentionedComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())))
+                throw new CommunityException(CommunityErrorCode.INVALID_POST);
         }
         return commentRepository.save(
                         Comment.builder()
