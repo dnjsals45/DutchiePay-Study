@@ -1,5 +1,6 @@
 package dutchiepay.backend.entity;
 
+import dutchiepay.backend.domain.community.dto.UpdatePurchaseRequestDto;
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,6 +42,14 @@ public class Purchase extends Auditing {
     @Column(nullable = false, length = 15)
     private String location;
 
+    // 위도
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String latitude;
+
+    // 경도
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String longitude;
+
     //상태
     @Column(nullable = false, length = 10)
     private String state;
@@ -53,4 +62,32 @@ public class Purchase extends Auditing {
     @Column(nullable = false, length = 50)
     private String meetingPlace;
 
+    //상품
+    @Column(nullable = false)
+    private String goods;
+
+    @Column(nullable = false)
+    private String category;
+
+    @Column(length = 1500)
+    private String images;
+
+    public void updatePurchase(UpdatePurchaseRequestDto updateDto) {
+        this.title = updateDto.getTitle();
+        this.contents = updateDto.getContent();
+        this.price = updateDto.getPrice();
+        this.category = updateDto.getCategory();
+        this.images = String.join(",", updateDto.getImages());
+        this.thumbnail = updateDto.getThumbnail();
+        this.goods = updateDto.getGoods();
+        this.latitude = updateDto.getLatitude();
+        this.longitude = updateDto.getLongitude();
+        this.meetingPlace = updateDto.getMeetingPlace();
+    }
+
+    public void changeState(String state) {
+        this.state = state;
+    }
+
+    public void increaseHitCount() {this.hits++;}
 }
