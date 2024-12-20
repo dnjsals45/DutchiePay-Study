@@ -3,8 +3,10 @@ package dutchiepay.backend.domain.community.service;
 import dutchiepay.backend.domain.commerce.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.HitTrack;
 import dutchiepay.backend.domain.community.repository.HitTrackRepository;
+import dutchiepay.backend.domain.community.repository.PurchaseRepository;
 import dutchiepay.backend.domain.community.repository.ShareRepository;
 import dutchiepay.backend.entity.Free;
+import dutchiepay.backend.entity.Purchase;
 import dutchiepay.backend.entity.Share;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostHitService {
     private final FreeRepository freeRepository;
     private final ShareRepository shareRepository;
+    private final PurchaseRepository purchaseRepository;
     private final HitTrackRepository hitTrackRepository;
 
     @Transactional
@@ -48,7 +51,11 @@ public class PostHitService {
         } else if (type.equals("share")) {
             return shareRepository.findById(postId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid post type"));
-        } else {
+        } else if (type.equals("purchase")) {
+            return purchaseRepository.findById(postId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid post type"));
+        }
+        else {
             return null;
         }
     }
@@ -58,6 +65,8 @@ public class PostHitService {
             freePost.increaseHitCount();
         } else if (type.equals("share") && post instanceof Share sharePost) {
             sharePost.increaseHitCount();
+        } else if (type.equals("purchase") && post instanceof Purchase purchasePost) {
+            purchasePost.increaseHitCount();
         }
     }
 }

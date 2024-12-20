@@ -42,8 +42,9 @@ public class PurchaseController {
     @Operation(summary = "나눔/거래 상세 조회")
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PurchaseResponseDto> getPurchase(@RequestParam("purchaseId") Long purchaseId) {
-        return ResponseEntity.ok(purchaseService.getPurchase(purchaseId));
+    public ResponseEntity<PurchaseResponseDto> getPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                           @RequestParam("purchaseId") Long purchaseId) {
+        return ResponseEntity.ok(purchaseService.getPurchase(userDetails.getUser(), purchaseId));
     }
 
     @Operation(summary = "나눔/거래 게시글 작성")

@@ -20,6 +20,7 @@ public class PurchaseService {
 
     private final QPurchaseRepositoryImpl qPurchaseRepositoryImpl;
     private final PurchaseRepository purchaseRepository;
+    private final PostHitService postHitService;
 
     /**
      * 나눔/거래 리스트 조회
@@ -39,8 +40,8 @@ public class PurchaseService {
      * @param purchaseId 조회 할 게시글 Id
      * @return 게시글 내용이 담긴 dto
      */
-    public PurchaseResponseDto getPurchase(Long purchaseId) {
-
+    public PurchaseResponseDto getPurchase(User user, Long purchaseId) {
+        postHitService.increaseHitCount(user, "purchase", purchaseId);
         return qPurchaseRepositoryImpl.getPurchase(purchaseId);
     }
 
