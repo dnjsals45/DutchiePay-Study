@@ -74,20 +74,25 @@ public class CommunityUtilService {
 
     // 댓글 작성 시 Comment 객체 생성 후 저장
     public Comment createComment(User user, CommentCreateRequestDto commentRequestDto) {
+        // 답글이면 검증 수행
         if (commentRequestDto.getRootCommentId() != null && commentRequestDto.getMentionedId() != null) {
-            // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
-            // root Comment나 mentioned Comment의 freeId와 현재 freeId가 다르면 exception 발생
-            Comment rootComment = findCommentById(commentRequestDto.getRootCommentId());
-            Comment mentionedComment = findCommentById(commentRequestDto.getMentionedId());
-            if (!(rootComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())) &&
-                    !(mentionedComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())))
-                throw new CommunityException(CommunityErrorCode.INVALID_POST);
+            validateCommentCreateRequest(commentRequestDto);
         }
         return commentRepository.save(
                         Comment.builder()
                                 .free(findFreeById(commentRequestDto.getFreeId())).contents(commentRequestDto.getContent())
                                 .user(user).mentionedId(commentRequestDto.getMentionedId())
                                 .parentId(commentRequestDto.getRootCommentId()).build());
+    }
+
+    private void validateCommentCreateRequest(CommentCreateRequestDto commentRequestDto) {
+        // root 댓글과 mentioned 댓글을 찾아서 deleteAt이 null인지 확인 -> 삭제된 댓글이면 exception 발생
+        // root Comment나 mentioned Comment의 freeId와 현재 freeId가 다르면 exception 발생
+        Comment rootComment = findCommentById(commentRequestDto.getRootCommentId());
+        Comment mentionedComment = findCommentById(commentRequestDto.getMentionedId());
+        if (!(rootComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())) &&
+                !(mentionedComment.getFree().getFreeId().equals(commentRequestDto.getFreeId())))
+            throw new CommunityException(CommunityErrorCode.INVALID_POST);
     }
 
     // commentId로 Comment 객체를 찾음
