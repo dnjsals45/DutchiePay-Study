@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.notice.service;
 
+import dutchiepay.backend.domain.notice.dto.NewNoticeDto;
 import dutchiepay.backend.domain.notice.dto.UnreadStatus;
 import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
 import dutchiepay.backend.domain.notice.dto.NoticeDto;
@@ -61,7 +62,9 @@ public class NoticeService {
         if (sseEmitter != null) {
             try {
                 sseEmitter.send(SseEmitter.event()
-                        .data(NoticeDto.toDto(notice)));
+                        .data(NewNoticeDto.builder()
+                                .message("NEW_NOTICE")
+                                .build()));
                 noticeUtilService.readNotice(notice);
             } catch (Exception e) {
                 e.printStackTrace();
