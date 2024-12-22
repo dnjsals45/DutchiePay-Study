@@ -3,7 +3,6 @@ package dutchiepay.backend.domain.notice.service;
 import dutchiepay.backend.domain.notice.dto.NewNoticeDto;
 import dutchiepay.backend.domain.notice.dto.UnreadStatus;
 import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
-import dutchiepay.backend.domain.notice.dto.NoticeDto;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Notice;
 import dutchiepay.backend.entity.Order;
