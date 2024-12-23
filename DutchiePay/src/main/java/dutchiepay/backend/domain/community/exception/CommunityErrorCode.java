@@ -20,6 +20,7 @@ public enum CommunityErrorCode implements StatusCode {
     ILLEGAL_FILTER(HttpStatus.BAD_REQUEST, "필터 값이 유효하지 않습니다."),
     OVER_CONTENT_LENGTH(HttpStatus.BAD_REQUEST, "제한된 길이를 초과하였습니다."),
     ILLEGAL_TYPE(HttpStatus.BAD_REQUEST, "타입 값이 유효하지 않습니다."),
+    BLANK_WORD(HttpStatus.BAD_REQUEST, "검색어가 입력되지 않았습니다."),
     /**
      * 404 Not Found
      */
