@@ -1,6 +1,5 @@
 package dutchiepay.backend.domain.notice.repository;
 
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -30,45 +29,39 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
     public List<GetNoticeListResponseDto> findRecentNotices(User user) {
         QNotice subNotice = new QNotice("subNotice");
 
-        List<Tuple> notices = jpaQueryFactory
-                .select(
-                        notice,
-                        JPAExpressions
-                                .select(notice.count())
-                                .from(notice)
-                                .where(
-                                        baseNoticeCondition(user),
-                                        noticeTypeCondition()
-                                )
-                )
-                .from(notice)
+        List<Notice> notices = jpaQueryFactory
+                .selectFrom(notice)
                 .where(
                         baseNoticeCondition(user),
-                        noticeTypeCondition()
-                )
-                .groupBy(notice.origin, notice.type)
-                .having(
-                        notice.noticeId.eq(
-                                JPAExpressions
-                                        .select(subNotice.noticeId)
-                                        .from(subNotice)
-                                        .where(
-                                                subNotice.user.eq(user),
-                                                subNotice.origin.eq(notice.origin),
-                                                subNotice.type.eq(notice.type)
-                                        )
-                                        .orderBy(subNotice.createdAt.desc())
-                                        .limit(1)
-                        )
+                        noticeTypeCondition(),
+                        JPAExpressions
+                                .select(subNotice.createdAt.max())
+                                .from(subNotice)
+                                .where(
+                                        subNotice.user.eq(user),
+                                        subNotice.origin.eq(notice.origin),
+                                        subNotice.type.eq(notice.type),
+                                        subNotice.isRead.eq(false),
+                                        baseNoticeCondition(user)
+                                )
+                                .eq(notice.createdAt)
                 )
                 .orderBy(notice.createdAt.desc())
                 .fetch();
 
         List<GetNoticeListResponseDto> result = new ArrayList<>();
 
-        for (Tuple t : notices) {
-            Notice n = t.get(0, Notice.class);
-            Long originNoticeCount = t.get(1, Long.class);
+        for (Notice n : notices) {
+            Long originNoticeCount = jpaQueryFactory
+                    .select(notice.count())
+                    .from(notice)
+                    .where(
+                            notice.user.eq(user),
+                            notice.origin.eq(n.getOrigin()),
+                            notice.type.eq(n.getType()),
+                            baseNoticeCondition(user)
+                    )
+                    .fetchOne();
 
             GetNoticeListResponseDto dto = GetNoticeListResponseDto.builder()
                     .noticeId(n.getNoticeId())
@@ -88,11 +81,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
     }
 
     private BooleanExpression noticeTypeCondition() {
-        return notice.type.eq("commerce").and(notice.originId.isNull())
-                .or(
-                        notice.type.in("comment", "reply", "chat")
-                                .and(notice.origin.isNotNull())
-                );
+        return notice.type.in("commerce_success", "commerce_fail", "comment", "reply", "chat");
     }
 
     private BooleanExpression baseNoticeCondition(User user) {
