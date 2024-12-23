@@ -106,4 +106,8 @@ public class NoticeUtilService {
     public void readAllNotices(User user) {
         noticeRepository.readAllNotices(user);
     }
+
+    public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
+        return noticeRepository.getMoreNotices(user, noticeId);
+    }
 }

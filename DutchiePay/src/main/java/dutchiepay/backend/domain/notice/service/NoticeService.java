@@ -73,6 +73,10 @@ public class NoticeService {
         }
     }
 
+    public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
+        return noticeUtilService.getMoreNotices(user, noticeId);
+    }
+
     public void readAllNotices(User user) {
         noticeUtilService.readAllNotices(user);
     }
