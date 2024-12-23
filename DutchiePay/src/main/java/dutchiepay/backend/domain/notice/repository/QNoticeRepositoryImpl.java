@@ -80,6 +80,44 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
         return result;
     }
 
+    @Override
+    public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
+        String origin = jpaQueryFactory
+                .select(notice.origin)
+                .from(notice)
+                .where(notice.noticeId.eq(noticeId))
+                .fetchOne();
+
+        List<Notice> notices = jpaQueryFactory
+                .selectFrom(notice)
+                .where(
+                        notice.origin.eq(origin)
+                                .and(notice.isRead.eq(false))
+                                .and(notice.user.eq(user))
+                )
+                .orderBy(notice.noticeId.desc())
+                .fetch();
+
+        List<GetNoticeListResponseDto> result = new ArrayList<>();
+
+        for (Notice n : notices) {
+            GetNoticeListResponseDto dto = GetNoticeListResponseDto.builder()
+                    .noticeId(n.getNoticeId())
+                    .type(n.getType())
+                    .origin(n.getOrigin())
+                    .content(n.getContent())
+                    .relativeTime(ChronoUtil.formatDateTime(n.getCreatedAt()))
+                    .pageId(n.getOriginId())
+                    .commentId(n.getCommentId())
+                    .hasMore(false)
+                    .build();
+
+            result.add(dto);
+        }
+
+        return result;
+    }
+
     private BooleanExpression noticeTypeCondition() {
         return notice.type.in("commerce_success", "commerce_fail", "comment", "reply", "chat");
     }

@@ -8,9 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
@@ -31,5 +29,21 @@ public class NoticeController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(noticeService.subscribe(userDetails.getUser()));
+    }
+
+    @Operation(summary = "알림 전체 삭제", description = "알림을 읽음처리 합니다.")
+    @DeleteMapping("")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deleteAllNotices(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        noticeService.readAllNotices(userDetails.getUser());
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "알림 추가 목록")
+    @GetMapping(value = "", params = "noticeId")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMoreNotices(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            @RequestParam(required = false) Long noticeId) {
+        return ResponseEntity.ok(noticeService.getMoreNotices(userDetails.getUser(), noticeId));
     }
 }

@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface QNoticeRepository {
     List<GetNoticeListResponseDto> findRecentNotices(User user);
+
+    List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId);
 }

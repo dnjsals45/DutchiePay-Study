@@ -73,6 +73,14 @@ public class NoticeService {
         }
     }
 
+    public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
+        return noticeUtilService.getMoreNotices(user, noticeId);
+    }
+
+    public void readAllNotices(User user) {
+        noticeUtilService.readAllNotices(user);
+    }
+
     private void sendUnreadNotification(User user) {
         boolean status = noticeUtilService.existUnreadNotification(user, LocalDateTime.now().minusDays(7));
 
