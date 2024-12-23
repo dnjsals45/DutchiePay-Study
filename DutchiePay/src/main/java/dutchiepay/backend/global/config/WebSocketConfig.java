@@ -1,7 +1,6 @@
 package dutchiepay.backend.global.config;
 
 import dutchiepay.backend.global.websocket.interceptor.AuthChannelInterceptor;
-import dutchiepay.backend.global.websocket.interceptor.AuthHandShakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
