@@ -101,4 +101,9 @@ public class NoticeUtilService {
     public void readNotice(Notice notice) {
         notice.read();
     }
+
+    @Transactional
+    public void readAllNotices(User user) {
+        noticeRepository.readAllNotices(user);
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,5 +32,13 @@ public class NoticeController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(noticeService.subscribe(userDetails.getUser()));
+    }
+
+    @Operation(summary = "알림 전체 삭제", description = "알림을 읽음처리 합니다.")
+    @DeleteMapping("")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deleteAllNotices(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        noticeService.readAllNotices(userDetails.getUser());
+        return ResponseEntity.ok().build();
     }
 }

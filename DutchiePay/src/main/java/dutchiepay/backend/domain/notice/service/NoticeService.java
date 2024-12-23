@@ -73,6 +73,10 @@ public class NoticeService {
         }
     }
 
+    public void readAllNotices(User user) {
+        noticeUtilService.readAllNotices(user);
+    }
+
     private void sendUnreadNotification(User user) {
         boolean status = noticeUtilService.existUnreadNotification(user, LocalDateTime.now().minusDays(7));
 
