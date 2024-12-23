@@ -2,10 +2,13 @@ package dutchiepay.backend.domain.search.service;
 
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.repository.QBuyRepositoryImpl;
+import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
+import dutchiepay.backend.domain.community.exception.CommunityException;
 import dutchiepay.backend.domain.search.dto.DictionaryResponseDto;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -41,6 +44,7 @@ public class SearchService {
      */
     public GetBuyListResponseDto commerceSearch(User user, String filter, String keyword, int end, Long cursor, int limit) {
 
+        if (!StringUtils.hasText(keyword)) throw new CommunityException(CommunityErrorCode.BLANK_WORD);
         return qBuyRepository.getBuyList(user, filter, null, keyword, end, cursor, limit);
     }
 }

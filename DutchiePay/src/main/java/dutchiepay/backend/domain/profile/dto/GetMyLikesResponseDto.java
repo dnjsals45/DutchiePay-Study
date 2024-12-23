@@ -10,8 +10,8 @@ public class GetMyLikesResponseDto {
     private Long buyId;
     private String[] category;
     private String productName;
-    private Integer originalPrice;
-    private Integer salePrice;
+    private Integer productPrice;
+    private Integer discountPrice;
     private Integer discountPercent;
     private String productImg;
     private Double rating;
