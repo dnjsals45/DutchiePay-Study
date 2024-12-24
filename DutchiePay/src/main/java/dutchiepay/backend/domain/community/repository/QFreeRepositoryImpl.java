@@ -4,9 +4,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,6 +28,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
     QFree free = QFree.free;
     QComment comment = QComment.comment;
+    QUser user = QUser.user;
 
     @Override
     public FreeListResponseDto getFreeLists(String category, String filter, String word, int limit, Long cursor) {
@@ -110,53 +108,74 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
     @Override
     public FreePostResponseDto getFreePost(Long freeId) {
-        Free result = jpaQueryFactory
-                .selectFrom(free)
+        FreePostResponseDto result = jpaQueryFactory
+                .select(Projections.constructor(FreePostResponseDto.class,
+                        user.userId.as("writerId"),
+                        user.nickname.as("writer"),
+                        user.profileImg.as("writerProfileImage"),
+                        free.title,
+                        free.contents,
+                        free.createdAt,
+                        free.category,
+                        ExpressionUtils.as(countComments(freeId), "commentsCount"),
+                        free.hits))
+                .from(free).
+                leftJoin(free.user, user)
                 .where(free.freeId.eq(freeId),
                         free.deletedAt.isNull())
                 .fetchFirst();
 
         if (result == null) throw new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST);
 
-        return FreePostResponseDto.toDto(result.getUser(), result, countComments(result));
+        return result;
     }
 
     @Override
     public List<HotAndRecommendsResponseDto.Posts> getHotPosts() {
 
         return jpaQueryFactory
-                .selectFrom(free)
+                .select(free.freeId,
+                        free.user.profileImg.as("writerProfileImg"),
+                        free.user.nickname.as("writer"),
+                        free.title)
+                .from(free)
+                .leftJoin(free.user, user)
                 .where(free.createdAt.goe(LocalDateTime.now().minusDays(7)),
                         free.deletedAt.isNull())
                 .orderBy(free.hits.desc())
                 .limit(5)
                 .fetch()
                 .stream()
-                .map(free -> HotAndRecommendsResponseDto.Posts.toDto(free, countComments(free)))
+                .map(f -> HotAndRecommendsResponseDto.Posts.toDto(f, countComments(f.get(free.freeId)).fetchFirst()))
                 .toList();
     }
 
     @Override
     public List<HotAndRecommendsResponseDto.Posts> getRecommendsPosts(String category) {
+
         return jpaQueryFactory
-                .selectFrom(free)
+                .select(free.freeId,
+                        free.user.profileImg.as("writerProfileImg"),
+                        free.user.nickname.as("writer"),
+                        free.title)
+                .from(free)
+                .leftJoin(free.user, user)
                 .where(free.category.eq(category),
                         free.deletedAt.isNull())
                 .orderBy(free.createdAt.desc())
                 .limit(5)
                 .fetch()
                 .stream()
-                .map(free -> HotAndRecommendsResponseDto.Posts.toDto(free, countComments(free)))
+                .map(f -> HotAndRecommendsResponseDto.Posts.toDto(f, countComments(f.get(free.freeId)).fetchFirst()))
                 .toList();
     }
 
-    private Long countComments(Free free) {
+    private JPAQuery<Long> countComments(Long freeId) {
         return jpaQueryFactory
                 .select(comment.count())
                 .from(comment)
-                .where(comment.free.eq(free),
-                        comment.deletedAt.isNull())
-                .fetchFirst();
+                .where(comment.free.freeId.eq(freeId),
+                        comment.deletedAt.isNull());
     }
 
     @Override
