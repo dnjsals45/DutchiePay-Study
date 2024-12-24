@@ -11,6 +11,7 @@ import dutchiepay.backend.entity.ChatRoom;
 import dutchiepay.backend.entity.Message;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.entity.UserChatRoom;
+import dutchiepay.backend.domain.chat.dto.ChatRoomUnreadMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -150,11 +151,21 @@ public class ChatRoomService {
     public void sendListUnreadMessage(String userId) {
         List<UserChatRoom> userChatRoomList = userChatroomRepository.findAllByUserId(Long.valueOf(userId));
 
-        String destination = "/chat/list/message";
+        List<ChatRoomUnreadMessageDto> dto = new ArrayList<>();
+
+        for (UserChatRoom userChatRoom : userChatRoomList) {
+            ChatRoom chatRoom = userChatRoom.getChatroom();
+
+            dto.add(ChatRoomUnreadMessageDto.builder()
+                    .chatRoomId(chatRoom.getChatroomId())
+                    .unreadCount(0L)
+                    .message("test")
+                    .build());
+        }
 
         simpMessagingTemplate.convertAndSendToUser(
                 userId,
-                destination,
-                "hello");
+                "/chat/list/message",
+                dto);
     }
 }
