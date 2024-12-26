@@ -70,9 +70,6 @@ dependencies {
     // PortOne
     implementation 'com.github.iamport:iamport-rest-client-java:0.2.21'
 
-    // Jsoup(HTML 파서)
-    implementation 'org.jsoup:jsoup:1.18.3'
-
     // Test용 DB 사용
     runtimeOnly 'com.mysql:mysql-connector-j'
 }
