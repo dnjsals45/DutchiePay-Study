@@ -1,12 +1,10 @@
 package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.community.dto.*;
-import dutchiepay.backend.domain.community.repository.QFreeRepositoryImpl;
+import dutchiepay.backend.domain.community.repository.FreeRepository;
 import dutchiepay.backend.domain.notice.service.NoticeService;
 import dutchiepay.backend.entity.Comment;
-import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
-import dutchiepay.backend.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +21,8 @@ public class FreeCommunityService {
 
     private final CommunityUtilService communityUtilService;
     private final PostHitService postHitService;
-    private final QFreeRepositoryImpl qFreeRepository;
     private final NoticeService noticeService;
+    private final FreeRepository freeRepository;
 
 
     /**
@@ -34,7 +32,7 @@ public class FreeCommunityService {
      */
     public FreeListResponseDto getFreeList(String category, String filter, String word, int limit, Long cursor) {
 
-        return qFreeRepository.getFreeLists(category, filter, word, limit, cursor);
+        return freeRepository.getFreeLists(category, filter, word, limit, cursor);
     }
 
     /**
@@ -44,11 +42,12 @@ public class FreeCommunityService {
      * @param freeId 조회할 게시글 Id
      * @return 게시글 상세 정보 dto
      */
+    @Transactional
     public FreePostResponseDto getFreePost(User user, Long freeId) {
 
         postHitService.increaseHitCount(user, "free", freeId);
 
-        return qFreeRepository.getFreePost(freeId);
+        return freeRepository.getFreePost(freeId);
     }
 
     /**
@@ -106,8 +105,8 @@ public class FreeCommunityService {
      */
     public HotAndRecommendsResponseDto hotAndRecommends(String category) {
 
-        return HotAndRecommendsResponseDto.toDto(qFreeRepository.getHotPosts(),
-                qFreeRepository.getRecommendsPosts(category));
+        return HotAndRecommendsResponseDto.toDto(freeRepository.getHotPosts(),
+                freeRepository.getRecommendsPosts(category));
     }
 
     /**
@@ -118,7 +117,7 @@ public class FreeCommunityService {
      * @return 댓글 목록 dto
      */
     public CommentResponseDto getComments(Long freeId, Long cursor, int limit) {
-        return qFreeRepository.getComments(communityUtilService.findFreeById(freeId), cursor, limit);
+        return freeRepository.getComments(communityUtilService.findFreeById(freeId), cursor, limit);
     }
 
     /**
@@ -129,7 +128,7 @@ public class FreeCommunityService {
      */
     public List<ReCommentResponseDto> getReComments(Long commentId, String type) {
         communityUtilService.findComment(commentId);
-        return qFreeRepository.getReComments(commentId, type);
+        return freeRepository.getReComments(commentId, type);
     }
 
     /**
