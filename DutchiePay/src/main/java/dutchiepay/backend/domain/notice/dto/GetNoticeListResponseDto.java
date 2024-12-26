@@ -16,4 +16,5 @@ public class GetNoticeListResponseDto {
     private Long pageId;
     private Long commentId;
     private Boolean hasMore;
+    private Long count;
 }

@@ -42,7 +42,8 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                                         subNotice.origin.eq(notice.origin),
                                         subNotice.type.eq(notice.type),
                                         subNotice.isRead.eq(false),
-                                        baseNoticeCondition(user)
+                                        subNotice.createdAt.goe(LocalDateTime.now().minusDays(7)),
+                                        subNotice.deletedAt.isNull()
                                 )
                                 .eq(notice.createdAt)
                 )
@@ -59,7 +60,9 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                             notice.user.eq(user),
                             notice.origin.eq(n.getOrigin()),
                             notice.type.eq(n.getType()),
-                            baseNoticeCondition(user)
+                            notice.isRead.eq(false),
+                            notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
+                            notice.deletedAt.isNull()
                     )
                     .fetchOne();
 
@@ -72,6 +75,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                     .pageId(n.getOriginId())
                     .commentId(n.getCommentId())
                     .hasMore(originNoticeCount > 1)
+                    .count(originNoticeCount)
                     .build();
 
             result.add(dto);
