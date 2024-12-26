@@ -1,7 +1,9 @@
 package dutchiepay.backend.domain.community.service;
 
-import dutchiepay.backend.domain.commerce.repository.FreeRepository;
+import dutchiepay.backend.domain.community.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.HitTrack;
+import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
+import dutchiepay.backend.domain.community.exception.CommunityException;
 import dutchiepay.backend.domain.community.repository.HitTrackRepository;
 import dutchiepay.backend.domain.community.repository.PurchaseRepository;
 import dutchiepay.backend.domain.community.repository.ShareRepository;
@@ -24,9 +26,6 @@ public class PostHitService {
     @Transactional
     public void increaseHitCount(User user, String type, Long postId) {
         Object post = findPostType(type, postId);
-        if (post == null) {
-            return;
-        }
 
         String hitTrackKey = user.getUserId() + "_" + postId + "_" + type;
 
@@ -45,19 +44,15 @@ public class PostHitService {
     }
 
     private Object findPostType(String type, Long postId) {
-        if (type.equals("free")) {
-            return freeRepository.findById(postId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid post type"));
-        } else if (type.equals("share")) {
-            return shareRepository.findById(postId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid post type"));
-        } else if (type.equals("purchase")) {
-            return purchaseRepository.findById(postId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid post type"));
-        }
-        else {
-            return null;
-        }
+        return switch (type) {
+            case "free" -> freeRepository.findById(postId)
+                    .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
+            case "share" -> shareRepository.findById(postId)
+                    .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
+            case "purchase" -> purchaseRepository.findById(postId)
+                    .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
+            default -> throw new CommunityException(CommunityErrorCode.INVALID_POST_TYPE);
+        };
     }
 
     private void incrementHitCount(Object post, String type) {

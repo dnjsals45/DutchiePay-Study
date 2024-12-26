@@ -285,7 +285,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "free.free_id as postId, " +
                 "free.title, " +
                 "free.created_at as writeTime, " +
-                "free.contents as content, " +
+                "free.description as content, " +
                 "'자유' as category, " +
                 "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, " +
                 "NULL as thumbnail, " +

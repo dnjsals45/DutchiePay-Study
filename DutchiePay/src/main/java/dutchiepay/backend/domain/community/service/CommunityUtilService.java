@@ -1,7 +1,7 @@
 package dutchiepay.backend.domain.community.service;
 
 import dutchiepay.backend.domain.commerce.repository.CommentRepository;
-import dutchiepay.backend.domain.commerce.repository.FreeRepository;
+import dutchiepay.backend.domain.community.repository.FreeRepository;
 import dutchiepay.backend.domain.community.dto.*;
 import dutchiepay.backend.domain.community.exception.CommunityErrorCode;
 import dutchiepay.backend.domain.community.exception.CommunityException;
@@ -10,8 +10,6 @@ import dutchiepay.backend.entity.Free;
 import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
