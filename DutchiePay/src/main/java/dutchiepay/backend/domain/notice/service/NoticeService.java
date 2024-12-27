@@ -3,12 +3,15 @@ package dutchiepay.backend.domain.notice.service;
 import dutchiepay.backend.domain.notice.dto.NewNoticeDto;
 import dutchiepay.backend.domain.notice.dto.UnreadStatus;
 import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
+import dutchiepay.backend.domain.notice.exception.NoticeErrorCode;
+import dutchiepay.backend.domain.notice.exception.NoticeException;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Notice;
 import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
@@ -98,5 +101,16 @@ public class NoticeService {
                 sseEmitter.completeWithError(e);
             }
         }
+    }
+
+    @Transactional
+    public void readSingleNotice(User user, Long noticeId) {
+        Notice notice = noticeUtilService.findById(noticeId);
+
+        if (!notice.getUser().getUserId().equals(user.getUserId())) {
+            throw new NoticeException(NoticeErrorCode.NOTICE_USER_MISS_MATCH);
+        }
+
+        notice.read();
     }
 }

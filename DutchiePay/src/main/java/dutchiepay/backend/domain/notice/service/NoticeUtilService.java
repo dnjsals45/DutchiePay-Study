@@ -2,6 +2,8 @@ package dutchiepay.backend.domain.notice.service;
 
 import dutchiepay.backend.domain.community.service.CommunityUtilService;
 import dutchiepay.backend.domain.notice.dto.GetNoticeListResponseDto;
+import dutchiepay.backend.domain.notice.exception.NoticeErrorCode;
+import dutchiepay.backend.domain.notice.exception.NoticeException;
 import dutchiepay.backend.domain.notice.repository.NoticeRepository;
 import dutchiepay.backend.entity.Comment;
 import dutchiepay.backend.entity.Notice;
@@ -109,5 +111,10 @@ public class NoticeUtilService {
 
     public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
         return noticeRepository.getMoreNotices(user, noticeId);
+    }
+
+    public Notice findById(Long noticeId) {
+        return noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new NoticeException(NoticeErrorCode.INVALID_NOTICE));
     }
 }

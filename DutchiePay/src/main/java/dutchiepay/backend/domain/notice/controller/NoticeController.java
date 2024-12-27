@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.notice.controller;
 
+import dutchiepay.backend.domain.notice.dto.NoticeIdDto;
 import dutchiepay.backend.domain.notice.service.NoticeService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,5 +46,14 @@ public class NoticeController {
     public ResponseEntity<?> getMoreNotices(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                             @RequestParam(required = false) Long noticeId) {
         return ResponseEntity.ok(noticeService.getMoreNotices(userDetails.getUser(), noticeId));
+    }
+
+    @Operation(summary = "알림 읽음 개별 처리")
+    @PatchMapping("")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> readNotice(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @RequestBody NoticeIdDto noticeIdDto) {
+        noticeService.readSingleNotice(userDetails.getUser(), noticeIdDto.getNoticeId());
+        return ResponseEntity.ok().build();
     }
 }
