@@ -31,7 +31,7 @@ public class ReCommentResponseDto {
 
         return ReCommentResponseDto.builder()
                 .commentId(tuple.get(comment.commentId))
-                .mentionedNickname(mentionedUserLeaved ? null : tuple.get(comment.user.nickname))
+                .mentionedNickname(mentionedUserLeaved ? null : mentionedUser.get(comment.user.nickname))
                 .nickname(originUserLeaved ? null : tuple.get(comment.user.nickname))
                 .profileImg(originUserLeaved ? null : tuple.get(comment.user.profileImg))
                 .contents(tuple.get(comment.contents))
