@@ -3,6 +3,7 @@ package dutchiepay.backend.global.exception;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.community.exception.CommunityException;
 import dutchiepay.backend.domain.delivery.exception.DeliveryErrorException;
+import dutchiepay.backend.domain.notice.exception.NoticeException;
 import dutchiepay.backend.domain.order.exception.AskErrorException;
 import dutchiepay.backend.domain.order.exception.OrderErrorException;
 import dutchiepay.backend.domain.order.exception.ReviewErrorException;
@@ -88,6 +89,13 @@ public class CustomExceptionHandler {
         log.warn("handleCommunityException : {}", e.getMessage());
         final ErrorMessage message = ErrorMessage.of(e.getMessage());
         return ResponseEntity.status(e.getCommunityErrorCode().getHttpStatus()).body(message);
+    }
+
+    @ExceptionHandler(NoticeException.class)
+    protected ResponseEntity<?> handleNoticeException(NoticeException e) {
+        log.warn("handleNoticeException : {}", e.getMessage());
+        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        return ResponseEntity.status(e.getNoticeErrorCode().getHttpStatus()).body(message);
     }
 
     /**
