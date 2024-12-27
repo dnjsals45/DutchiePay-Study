@@ -67,7 +67,6 @@ public class NoticeService {
                         .data(NewNoticeDto.builder()
                                 .message("NEW_NOTICE")
                                 .build()));
-                noticeUtilService.readNotice(notice);
             } catch (Exception e) {
                 e.printStackTrace();
                 emitters.remove(user.getUserId());
