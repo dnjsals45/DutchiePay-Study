@@ -44,7 +44,8 @@ public class NoticeUtilService {
     }
 
     private boolean validateCommentAuthor(String writer, Comment comment) {
-        return comment.getUser().getNickname().equals(writer);
+        Comment c = communityUtilService.findCommentById(comment.getParentId());
+        return c.getUser().getNickname().equals(writer);
     }
 
     private Notice createPostCommentNotice(String writer, Comment comment) {
