@@ -13,6 +13,7 @@ public class GetNoticeListResponseDto {
     private String origin;
     private String content;
     private String relativeTime;
+    private String writer;
     private Long pageId;
     private Long commentId;
     private Boolean hasMore;
