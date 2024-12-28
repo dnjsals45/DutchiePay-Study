@@ -29,8 +29,8 @@ public class HotAndRecommendsResponseDto {
         public static Posts toDto(Tuple result, Long count) {
             return Posts.builder()
                     .freeId(result.get(free.freeId))
-                    .writerProfileImg(result.get(user.profileImg))
-                    .writer(result.get(user.nickname))
+                    .writerProfileImg(result.get(free.user.profileImg))
+                    .writer(result.get(free.user.nickname))
                     .title(result.get(free.title))
                     .commentCount(count)
                     .build();
