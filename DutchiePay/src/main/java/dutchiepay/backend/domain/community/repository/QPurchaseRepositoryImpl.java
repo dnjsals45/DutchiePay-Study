@@ -76,7 +76,7 @@ public class QPurchaseRepositoryImpl {
                         user.profileImg.as("writerProfileImage"),
                         purchase.title,
                         purchase.category,
-                        purchase.contents,
+                        purchase.contents.as("content"),
                         purchase.goods,
                         purchase.price,
                         purchase.meetingPlace,
