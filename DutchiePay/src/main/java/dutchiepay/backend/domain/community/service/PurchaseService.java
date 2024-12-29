@@ -119,11 +119,14 @@ public class PurchaseService {
 
     /**
      * 게시글 상태 변경
+     * 상태에 "완료" 글자가 있으면 예외 발생
      * @param req 게시글 Id와 변경할 상태가 담겨있는 dto
      */
+    @Transactional
     public void changeStatus(ChangeStatusRequestDto req) {
-        purchaseRepository.findById(req.getPostId())
-                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST))
-                .changeState(req.getStatus());
+        Purchase purchase = purchaseRepository.findById(req.getPostId())
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
+        if (purchase.getState().contains("완료")) throw new CommunityException(CommunityErrorCode.ALREADY_DONE);
+        purchase.changeState(req.getStatus());
     }
 }

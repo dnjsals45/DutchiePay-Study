@@ -23,6 +23,7 @@ public enum CommunityErrorCode implements StatusCode {
     BLANK_WORD(HttpStatus.BAD_REQUEST, "검색어가 입력되지 않았습니다."),
     ILLEGAL_ARGUMENT(HttpStatus.BAD_REQUEST, "잘못된 요청입니다"),
     INVALID_POST_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글 타입입니다."),
+    ALREADY_DONE(HttpStatus.BAD_REQUEST, "이미 완료된 게시글입니다."),
     /**
      * 404 Not Found
      */

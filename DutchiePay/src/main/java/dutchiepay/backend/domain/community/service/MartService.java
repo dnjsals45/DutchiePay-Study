@@ -104,7 +104,7 @@ public class MartService {
     public void changeStatus(ChangeStatusRequestDto req) {
         Share share = shareRepository.findById(req.getPostId())
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
-
+        if (share.getState().equals("모집완료")) throw new CommunityException(CommunityErrorCode.ALREADY_DONE);
         share.changeStatus(req.getStatus());
     }
 }
