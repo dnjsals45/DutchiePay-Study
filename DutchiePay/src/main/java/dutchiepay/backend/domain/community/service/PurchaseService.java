@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -31,7 +32,8 @@ public class PurchaseService {
      * @return 게시글 리스트가 담긴 dto
      */
     public PurchaseListResponseDto getPurchaseList(User user, String category, String word, int limit, Long cursor) {
-
+        if (category != null && !(category.equals("share") || category.equals("trade")))
+            throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
         return qPurchaseRepositoryImpl.getPurchaseList(user,category, word, limit, cursor);
     }
 
@@ -54,6 +56,9 @@ public class PurchaseService {
     @Transactional
     public Map<String, Long> createPurchase(User user, CreatePurchaseRequestDto requestDto) {
         if (requestDto.getTitle().length() > 60) throw new CommunityException(CommunityErrorCode.OVER_TITLE_LENGTH);
+        if (!(requestDto.getCategory().equals("share") || requestDto.getCategory().equals("trade")))
+            throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
+        List<String> images = requestDto.getImages();
 
         return Map.of("purchaseId",
                 purchaseRepository.save(Purchase.builder().user(user)
@@ -65,7 +70,7 @@ public class PurchaseService {
                         .longitude(requestDto.getLongitude())
                         .goods(requestDto.getGoods())
                         .thumbnail(requestDto.getThumbnail())
-                        .images(String.join(",", requestDto.getImages()))
+                        .images(images.isEmpty() ? null : String.join(",", images))
                         .category(requestDto.getCategory())
                         .location(user.getLocation())
                         .state(requestDto.getCategory().equals("share")? "나눔중" : "거래중").build()).getPurchaseId());
@@ -78,7 +83,7 @@ public class PurchaseService {
      */
     public PurchaseForUpdateDto getPurchaseForUpdate(User user,Long purchaseId) {
 
-        findPurchaseAndValidateWriter(user, purchaseId);
+        validatePostState(findPurchaseAndValidateWriter(user, purchaseId));
         return qPurchaseRepositoryImpl.getPurchaseForUpdate(purchaseId);
     }
 
@@ -89,7 +94,9 @@ public class PurchaseService {
      */
     @Transactional
     public void updatePurchase(User user, UpdatePurchaseRequestDto updateDto) {
-        findPurchaseAndValidateWriter(user, updateDto.getPurchaseId()).updatePurchase(updateDto);
+        Purchase purchase = findPurchaseAndValidateWriter(user, updateDto.getPurchaseId());
+        List<String> images = updateDto.getImages();
+        purchase.updatePurchase(updateDto, images == null ? null : String.join(",", images));
     }
 
     /**
@@ -126,7 +133,17 @@ public class PurchaseService {
     public void changeStatus(ChangeStatusRequestDto req) {
         Purchase purchase = purchaseRepository.findById(req.getPostId())
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
-        if (purchase.getState().contains("완료")) throw new CommunityException(CommunityErrorCode.ALREADY_DONE);
+        validatePostState(purchase);
         purchase.changeState(req.getStatus());
     }
+
+    /**
+     * 게시글의 상태를 확인하는 메서드
+     * "완료" 상태이면 예외 발생
+     * @param purchase 검증할 게시글
+     */
+    private static void validatePostState(Purchase purchase) {
+        if (purchase.getState().contains("완료")) throw new CommunityException(CommunityErrorCode.ALREADY_DONE);
+    }
+
 }

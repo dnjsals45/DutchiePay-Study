@@ -27,7 +27,7 @@ public enum CommunityErrorCode implements StatusCode {
     /**
      * 404 Not Found
      */
-    CANNOT_FOUND_POST(HttpStatus.NOT_FOUND, "자유 게시글을 찾을 수 없습니다."),
+    CANNOT_FOUND_POST(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
     CANNOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "원 댓글을 찾을 수 없습니다.");
 
 
