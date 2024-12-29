@@ -135,8 +135,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
         return jpaQueryFactory
                 .select(free.freeId,
-                        free.user.profileImg.as("writerProfileImg"),
-                        free.user.nickname.as("writer"),
+                        free.user.profileImg,
+                        free.user.nickname,
                         free.title)
                 .from(free)
                 .leftJoin(free.user, user)
@@ -155,8 +155,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
 
         return jpaQueryFactory
                 .select(free.freeId,
-                        free.user.profileImg.as("writerProfileImg"),
-                        free.user.nickname.as("writer"),
+                        free.user.profileImg,
+                        free.user.nickname,
                         free.title)
                 .from(free)
                 .leftJoin(free.user, user)

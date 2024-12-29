@@ -13,7 +13,7 @@ public class PurchaseResponseDto {
     private String writerProfileImage;
     private String title;
     private String category;
-    private String contents;
+    private String content;
     private String goods;
     private Integer price;
     private String meetingPlace;
