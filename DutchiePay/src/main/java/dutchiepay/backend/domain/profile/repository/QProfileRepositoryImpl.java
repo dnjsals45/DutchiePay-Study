@@ -352,14 +352,17 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         free.createdAt,
                         free.description,
                         free.category,
+                        free.thumbnail,
+                        free.user.nickname,
+                        free.user.profileImg,
                         ExpressionUtils.as(
                                 JPAExpressions
                                         .select(comment.count())
                                         .from(comment)
                                         .where(comment.free.eq(free))
-                                        .where(comment.deletedAt.isNull()), "commentCount"),
-                        Expressions.nullExpression(String.class))
+                                        .where(comment.deletedAt.isNull()), "commentCount"))
                 .from(free)
+                .leftJoin(free.user)
                 .leftJoin(comment).on(comment.free.eq(free).and(comment.deletedAt.isNull()))
                 .where(comment.user.eq(user))
                 .groupBy(free.freeId)
@@ -377,6 +380,9 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
         List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
+            System.out.println("===========================================");
+            System.out.println("tuple = " + tuple);
+            System.out.println("===========================================");
             LocalDateTime dbTime = tuple.get(free.createdAt);
 
             long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
@@ -388,10 +394,10 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                     .writeTime(writeTime)
                     .description(tuple.get(free.description))
                     .category(tuple.get(free.category))
-                    .commentCount(tuple.get(5, Long.class))
-                    .thumbnail(String.valueOf(free.thumbnail))
-                    .writerNickname(String.valueOf(free.user.nickname))
-                    .writerProfileImage(String.valueOf(free.user.profileImg))
+                    .commentCount(tuple.get(8, Long.class))
+                    .thumbnail(tuple.get(free.thumbnail))
+                    .writerNickname(tuple.get(free.user.nickname))
+                    .writerProfileImage(tuple.get(free.user.profileImg))
                     .build();
 
             result.add(data);
