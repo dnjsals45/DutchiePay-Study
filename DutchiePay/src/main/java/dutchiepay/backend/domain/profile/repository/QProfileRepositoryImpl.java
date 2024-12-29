@@ -271,7 +271,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "share.share_id as postId, " +
                 "share.title, " +
                 "share.created_at as writeTime, " +
-                "share.contents as content, " +
+                "share.description as content, " +
                 "'마트/배달' as category, " +
                 "NULL as commentCount, " +
                 "share.thumbnail, " +
@@ -350,7 +350,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         free.freeId,
                         free.title,
                         free.createdAt,
-                        free.contents,
+                        free.description,
                         free.category,
                         ExpressionUtils.as(
                                 JPAExpressions
@@ -386,12 +386,12 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                     .postId(tuple.get(free.freeId))
                     .title(tuple.get(free.title))
                     .writeTime(writeTime)
-                    .description(tuple.get(free.contents))
+                    .description(tuple.get(free.description))
                     .category(tuple.get(free.category))
                     .commentCount(tuple.get(5, Long.class))
-                    .thumbnail(null)
-                    .writerNickname(null)
-                    .writerProfileImage(null)
+                    .thumbnail(String.valueOf(free.thumbnail))
+                    .writerNickname(String.valueOf(free.user.nickname))
+                    .writerProfileImage(String.valueOf(free.user.profileImg))
                     .build();
 
             result.add(data);
@@ -401,10 +401,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .totalPost(totalPostCount.intValue())
                 .posts(result)
                 .build();
-    }
-
-    private BooleanExpression categoryEq(String categoryName) {
-        return category != null ? category.name.eq(categoryName) : null;
     }
 
     private String convertRelativeTime(LocalDateTime createdAt) {
