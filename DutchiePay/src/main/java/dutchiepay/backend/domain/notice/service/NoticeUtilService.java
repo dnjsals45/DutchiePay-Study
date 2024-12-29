@@ -68,7 +68,7 @@ public class NoticeUtilService {
                 .type("reply")
                 .origin(c.getContents())
                 .content(comment.getContents())
-                .originId(c.getCommentId())
+                .originId(c.getFree().getFreeId())
                 .commentId(comment.getParentId())
                 .writer(writer)
                 .isRead(false)

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class MartService {
+    private final CommunityUtilService communityUtilService;
     private final PostHitService postHitService;
     private final ShareRepository shareRepository;
 
@@ -20,7 +21,8 @@ public class MartService {
     public CreateShareResponseDto createMart(User user, CreateMartRequestDto req) {
         validateTitle(req.getTitle());
         validateCategory(req.getCategory());
-        return CreateShareResponseDto.from(createShareEntity(req, user));
+        String description = communityUtilService.validatePostLength(req.getContent());
+        return CreateShareResponseDto.from(createShareEntity(req, user, description));
     }
 
     @Transactional
@@ -64,7 +66,7 @@ public class MartService {
         }
     }
 
-    private Share createShareEntity(CreateMartRequestDto req, User user) {
+    private Share createShareEntity(CreateMartRequestDto req, User user, String description) {
         Share newShare = Share.builder()
                 .user(user)
                 .title(req.getTitle())
@@ -76,6 +78,7 @@ public class MartService {
                 .latitude(req.getLatitude())
                 .longitude(req.getLongitude())
                 .contents(req.getContent())
+                .description(description)
                 .thumbnail(req.getThumbnail())
                 .category(req.getCategory())
                 .images(String.join(",", req.getImages()))

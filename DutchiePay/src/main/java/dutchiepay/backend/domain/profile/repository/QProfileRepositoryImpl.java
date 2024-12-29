@@ -271,7 +271,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "share.share_id as postId, " +
                 "share.title, " +
                 "share.created_at as writeTime, " +
-                "share.contents as content, " +
+                "share.description as content, " +
                 "'마트/배달' as category, " +
                 "NULL as commentCount, " +
                 "share.thumbnail, " +
@@ -350,16 +350,19 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                         free.freeId,
                         free.title,
                         free.createdAt,
-                        free.contents,
+                        free.description,
                         free.category,
+                        free.thumbnail,
+                        free.user.nickname,
+                        free.user.profileImg,
                         ExpressionUtils.as(
                                 JPAExpressions
                                         .select(comment.count())
                                         .from(comment)
                                         .where(comment.free.eq(free))
-                                        .where(comment.deletedAt.isNull()), "commentCount"),
-                        Expressions.nullExpression(String.class))
+                                        .where(comment.deletedAt.isNull()), "commentCount"))
                 .from(free)
+                .leftJoin(free.user)
                 .leftJoin(comment).on(comment.free.eq(free).and(comment.deletedAt.isNull()))
                 .where(comment.user.eq(user))
                 .groupBy(free.freeId)
@@ -377,6 +380,9 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
         List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
+            System.out.println("===========================================");
+            System.out.println("tuple = " + tuple);
+            System.out.println("===========================================");
             LocalDateTime dbTime = tuple.get(free.createdAt);
 
             long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
@@ -386,12 +392,12 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                     .postId(tuple.get(free.freeId))
                     .title(tuple.get(free.title))
                     .writeTime(writeTime)
-                    .description(tuple.get(free.contents))
+                    .description(tuple.get(free.description))
                     .category(tuple.get(free.category))
-                    .commentCount(tuple.get(5, Long.class))
-                    .thumbnail(null)
-                    .writerNickname(null)
-                    .writerProfileImage(null)
+                    .commentCount(tuple.get(8, Long.class))
+                    .thumbnail(tuple.get(free.thumbnail))
+                    .writerNickname(tuple.get(free.user.nickname))
+                    .writerProfileImage(tuple.get(free.user.profileImg))
                     .build();
 
             result.add(data);
@@ -401,10 +407,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .totalPost(totalPostCount.intValue())
                 .posts(result)
                 .build();
-    }
-
-    private BooleanExpression categoryEq(String categoryName) {
-        return category != null ? category.name.eq(categoryName) : null;
     }
 
     private String convertRelativeTime(LocalDateTime createdAt) {
