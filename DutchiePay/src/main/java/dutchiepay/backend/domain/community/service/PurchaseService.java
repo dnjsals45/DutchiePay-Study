@@ -56,7 +56,8 @@ public class PurchaseService {
     @Transactional
     public Map<String, Long> createPurchase(User user, CreatePurchaseRequestDto requestDto) {
         if (requestDto.getTitle().length() > 60) throw new CommunityException(CommunityErrorCode.OVER_TITLE_LENGTH);
-        if (!(requestDto.getCategory().equals("share") || requestDto.getCategory().equals("trade")))
+        String category = requestDto.getCategory();
+        if (!(category.equals("share") || category.equals("trade")))
             throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
         List<String> images = requestDto.getImages();
 
@@ -64,7 +65,7 @@ public class PurchaseService {
                 purchaseRepository.save(Purchase.builder().user(user)
                         .title(requestDto.getTitle())
                         .contents(requestDto.getContent())
-                        .price(requestDto.getPrice())
+                        .price(category.equals("share")? -1 : requestDto.getPrice())
                         .meetingPlace(requestDto.getMeetingPlace())
                         .latitude(requestDto.getLatitude())
                         .longitude(requestDto.getLongitude())
@@ -73,7 +74,7 @@ public class PurchaseService {
                         .images(images.isEmpty() ? null : String.join(",", images))
                         .category(requestDto.getCategory())
                         .location(user.getLocation())
-                        .state(requestDto.getCategory().equals("share")? "나눔중" : "거래중").build()).getPurchaseId());
+                        .state(category.equals("share")? "나눔중" : "거래중").build()).getPurchaseId());
     }
 
     /**
