@@ -68,7 +68,7 @@ public class PurchaseService {
                         .images(String.join(",", requestDto.getImages()))
                         .category(requestDto.getCategory())
                         .location(user.getLocation())
-                        .state("모집중").build()).getPurchaseId());
+                        .state(requestDto.getCategory().equals("share")? "나눔중" : "거래중").build()).getPurchaseId());
     }
 
     /**
@@ -115,5 +115,15 @@ public class PurchaseService {
         if (!user.getUserId().equals(purchase.getUser().getUserId()))
             throw new CommunityException(CommunityErrorCode.UNMATCHED_WRITER);
         return purchase;
+    }
+
+    /**
+     * 게시글 상태 변경
+     * @param req 게시글 Id와 변경할 상태가 담겨있는 dto
+     */
+    public void changeStatus(ChangeStatusRequestDto req) {
+        purchaseRepository.findById(req.getPostId())
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST))
+                .changeState(req.getStatus());
     }
 }
