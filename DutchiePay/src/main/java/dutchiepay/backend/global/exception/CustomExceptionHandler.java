@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.exception;
 
+import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.domain.community.exception.CommunityException;
 import dutchiepay.backend.domain.delivery.exception.DeliveryErrorException;
@@ -96,6 +97,13 @@ public class CustomExceptionHandler {
         log.warn("handleNoticeException : {}", e.getMessage());
         final ErrorMessage message = ErrorMessage.of(e.getMessage());
         return ResponseEntity.status(e.getNoticeErrorCode().getHttpStatus()).body(message);
+    }
+
+    @ExceptionHandler(ChatException.class)
+    protected ResponseEntity<?> handleChatException(ChatException e) {
+        log.warn("handleChatException : {}", e.getMessage());
+        final ErrorMessage message = ErrorMessage.of(e.getMessage());
+        return ResponseEntity.status(e.getChatErrorCode().getHttpStatus()).body(message);
     }
 
     /**
