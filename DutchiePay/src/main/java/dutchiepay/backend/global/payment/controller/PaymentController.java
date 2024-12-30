@@ -8,6 +8,7 @@ import dutchiepay.backend.global.payment.service.KakaoPayService;
 import dutchiepay.backend.global.payment.service.TossPaymentsService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -33,7 +34,7 @@ public class PaymentController {
     @PostMapping("/ready")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> ready(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                   @RequestBody ReadyRequestDto req,
+                                   @Valid @RequestBody ReadyRequestDto req,
                                    @RequestParam String type) {
         if (type.equals("kakao")) {
             return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(userDetails.getUser(), req));
@@ -58,7 +59,7 @@ public class PaymentController {
     @PreAuthorize("permitAll()")
     public void cancel(HttpServletResponse response,
                          @RequestParam("orderNum") String orderNum) throws IOException {
-        if (kakaoPayService.cancelExchange(orderNum, "취소완료")) {
+        if (kakaoPayService.kakaoPayCancel(orderNum, "취소완료")) {
             response.setContentType(POST_MESSAGE_CONTENT_TYPE);
             response.getWriter().write(kakaoPayService.makePostMessage(orderNum, PAYMENT_CANCEL_STATUS));
             response.getWriter().flush();
@@ -69,7 +70,7 @@ public class PaymentController {
     @PreAuthorize("permitAll()")
     public void fail(HttpServletResponse response,
                        @RequestParam("orderNum") String orderNum) throws IOException {
-        String status = kakaoPayService.kakaPayCheckStatus(orderNum);
+        String status = kakaoPayService.kakaoPayCheckStatus(orderNum);
 
         if (status.equals("FAIL_PAYMENT")) {
             kakaoPayService.kakaoPayFail(orderNum);

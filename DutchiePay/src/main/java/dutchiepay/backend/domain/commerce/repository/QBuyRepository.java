@@ -11,7 +11,7 @@ import java.util.List;
 public interface QBuyRepository {
     GetBuyResponseDto getBuyPageByBuyId(User user, Long buyId);
 
-    GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit);
+    GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, String word, int end, Long cursor, int limit);
 
     List<GetProductReviewResponseDto> getProductReview(Long buyId, Long photo, PageRequest pageable);
 }

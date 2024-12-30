@@ -82,7 +82,7 @@ public class CommerceService {
     }
 
     public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
-        return buyRepository.getBuyList(user, filter, category, end, cursor, limit);
+        return buyRepository.getBuyList(user, filter, category, null, end, cursor, limit);
     }
 
     public List<GetProductReviewResponseDto> getProductReview(Long buyId, Long photo, Long page, Long limit) {
@@ -129,6 +129,7 @@ public class CommerceService {
                 .deadline(addEntityDto.getDeadline())
                 .skeleton(addEntityDto.getSkeleton())
                 .nowCount(0)
+                .tags(addEntityDto.getTag())
                 .build());
 
         for (String c : addEntityDto.getCategory()) {

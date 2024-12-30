@@ -38,11 +38,14 @@ public class Buy extends Auditing {
     @Column(nullable = false)
     private int nowCount;
 
+    @Column
+    private String tags;
+
     public void upCount(int count) {
         this.nowCount += count;
     }
 
     public void disCount(int count) {
-        this.nowCount -= count;
+        this.nowCount = this.nowCount < count ? 0 : this.nowCount - count;
     }
 }

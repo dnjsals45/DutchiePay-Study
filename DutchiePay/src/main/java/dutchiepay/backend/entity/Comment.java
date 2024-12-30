@@ -33,4 +33,8 @@ public class Comment extends Auditing {
     // 댓글 내용
     @Column(nullable = false, length = 800)
     private String contents;
+
+    public void updateComment(String contents){
+        this.contents = contents;
+    }
 }

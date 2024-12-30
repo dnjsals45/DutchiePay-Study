@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.*;
 public class DeliveryController {
     private final DeliveryService deliveryService;
 
-    @Operation(summary = "배송지 조회(구현 완료)")
+    @Operation(summary = "배송지 조회")
     @GetMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getMyDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok().body(deliveryService.getDelivery(userDetails.getUser()));
     }
 
-    @Operation(summary = "배송지 추가(구현 완료)")
+    @Operation(summary = "배송지 추가")
     @PostMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> addDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -35,7 +35,7 @@ public class DeliveryController {
         return ResponseEntity.ok().body(deliveryService.addDelivery(userDetails.getUser(), req));
     }
 
-    @Operation(summary = "배송지 수정(구현 완료)")
+    @Operation(summary = "배송지 수정")
     @PatchMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -44,7 +44,7 @@ public class DeliveryController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "배송지 삭제(구현 완료)")
+    @Operation(summary = "배송지 삭제")
     @DeleteMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteDelivery(@AuthenticationPrincipal UserDetailsImpl userDetails,

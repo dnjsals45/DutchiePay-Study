@@ -14,14 +14,14 @@ public class GetMyReviewResponseDto {
     private Long reviewId;
     private Long buyId;
     private String productName;
+    private String orderNum;
     private Integer rating;
     private String content;
     private LocalDate createdAt;
     private Boolean isPossible;
     private String[] reviewImg;
 
-
-    public static GetMyReviewResponseDto from(Review review) {
+    public static GetMyReviewResponseDto from(Review review, String orderNum) {
         LocalDate createdAt = review.getCreatedAt().toLocalDate();
         long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
 
@@ -29,6 +29,7 @@ public class GetMyReviewResponseDto {
                 .reviewId(review.getReviewId())
                 .buyId(review.getOrder().getBuy().getBuyId())
                 .productName(review.getOrder().getProduct().getProductName())
+                .orderNum(orderNum)
                 .rating(review.getRating())
                 .content(review.getContents())
                 .createdAt(createdAt)

@@ -3,9 +3,7 @@ package dutchiepay.backend.domain.commerce.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -24,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -164,7 +161,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
 
     @Override
-    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, int end, Long cursor, int limit) {
+    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, String word, int end, Long cursor, int limit) {
         if (cursor == null) {
             cursor = Long.MAX_VALUE;
         }
@@ -182,6 +179,11 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         if (end == 0) {
             BooleanExpression dateCondition = buy.deadline.after(LocalDate.now().minusDays(1));
             conditions = conditions == null ? dateCondition : conditions.and(dateCondition);
+        }
+
+        if (word != null && !word.isEmpty()) {
+            BooleanExpression searchCondition = buy.title.contains(word).or(buy.tags.contains(word));
+            conditions =  conditions == null ? searchCondition : conditions.and(searchCondition);
         }
 
         OrderSpecifier[] orderBy;
@@ -209,7 +211,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                     Tuple cursorInfo = jpaQueryFactory
                             .select(buy.deadline,
                                     Expressions.cases()
-                                            .when(buy.deadline.after(LocalDate.now()))
+                                            .when(buy.deadline.goe(LocalDate.now()))
                                             .then(0)
                                             .otherwise(1))
                             .from(buy)
@@ -221,7 +223,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         Integer cursorGroup = cursorInfo.get(1, Integer.class);
 
                         BooleanExpression sameGroupCondition = Expressions.cases()
-                                .when(buy.deadline.after(LocalDate.now()))
+                                .when(buy.deadline.goe(LocalDate.now()))
                                 .then(0)
                                 .otherwise(1)
                                 .eq(cursorGroup)
@@ -230,7 +232,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                                     .and(buy.buyId.loe(cursor))));
 
                         BooleanExpression nextGroupCondition = Expressions.cases()
-                                .when(buy.deadline.after(LocalDate.now()))
+                                .when(buy.deadline.goe(LocalDate.now()))
                                 .then(0)
                                 .otherwise(1)
                                 .gt(cursorGroup);
@@ -241,7 +243,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
                 orderBy = new OrderSpecifier[]{
                         Expressions.cases()
-                                .when(buy.deadline.after(LocalDate.now()))
+                                .when(buy.deadline.goe(LocalDate.now()))
                                 .then(0)
                                 .otherwise(1)
                                 .asc(),
@@ -283,7 +285,13 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.skeleton,
                         buy.nowCount,
                         buy.deadline,
-                        user != null ? like.count().gt(0L) : Expressions.constant(false),
+                        user != null ? JPAExpressions
+                                .selectOne()
+                                .from(like)
+                                .where(like.buy.eq(buy)
+                                        .and(like.user.eq(user)))
+                                .exists()
+                                : Expressions.constant(false),
                         JPAExpressions
                                 .select(review.count())
                                 .from(review)
@@ -440,5 +448,13 @@ public class QBuyRepositoryImpl implements QBuyRepository{
             return null;
         }
         return photo == 1 ? review.reviewImg.isNotNull() : null;
+    }
+
+    public List<String> findAllTags() {
+        return jpaQueryFactory
+                .select(buy.tags)
+                .from(buy)
+                .where(buy.tags.isNotNull())
+                .fetch();
     }
 }

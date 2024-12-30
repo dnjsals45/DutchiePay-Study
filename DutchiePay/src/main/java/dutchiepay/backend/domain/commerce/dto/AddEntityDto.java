@@ -22,4 +22,5 @@ public class AddEntityDto {
     private String contactNumber;
     private String representative;
     private String storeAddress;
+    private String tag;
 }

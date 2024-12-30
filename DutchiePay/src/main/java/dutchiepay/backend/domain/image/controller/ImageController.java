@@ -1,7 +1,7 @@
 package dutchiepay.backend.domain.image.controller;
 
 import dutchiepay.backend.domain.image.dto.GetPreSignedUrlRequestDto;
-import dutchiepay.backend.domain.image.service.ImageService;
+import dutchiepay.backend.domain.image.service.S3ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/image")
 @RequiredArgsConstructor
 public class ImageController {
-    private final ImageService imageService;
+    private final S3ImageService s3ImageService;
 
-    @Operation(summary = "이미지 업로드(구현 완료)", description = "파일 명을 바탕으로 한 presigned url을 반환.(유효기간 15분)")
+    @Operation(summary = "이미지 업로드", description = "파일 명을 바탕으로 한 presigned url을 반환.(유효기간 15분)")
     @PostMapping
     public ResponseEntity<?> getPreSignedUrl(@Valid @RequestBody GetPreSignedUrlRequestDto request) {
-        return ResponseEntity.ok().body(imageService.getPreSignedUrl(request.getFileName()));
+        return ResponseEntity.ok().body(s3ImageService.getPreSignedUrl(request.getFileName()));
     }
 }

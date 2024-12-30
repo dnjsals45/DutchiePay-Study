@@ -1,10 +1,9 @@
 package dutchiepay.backend.entity;
 
+import dutchiepay.backend.domain.community.dto.UpdateMartRequestDto;
 import dutchiepay.backend.global.config.Auditing;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -29,6 +28,9 @@ public class Share extends Auditing {
     @Column(nullable = false, length = 1000)
     private String contents;
 
+    @Column(nullable = false)
+    private String description;
+
     // 카테고리
     @Column(nullable = false, length = 10)
     private String category;
@@ -45,12 +47,19 @@ public class Share extends Auditing {
     @Column(length = 500)
     private String thumbnail;
 
+    @Column(length = 1500)
+    private String images;
+
     // 일시
-    private LocalDateTime date;
+    private String date;
 
     // 최대 인원
     @Column(nullable = false)
     private int maximum;
+
+    // 현재 인원
+    @Column(nullable = false)
+    private int now;
 
     // 조회수
     @Column(nullable = false)
@@ -67,4 +76,24 @@ public class Share extends Auditing {
     // 약속 장소
     @Column(nullable = false)
     private String meetingPlace;
+
+    public void update(UpdateMartRequestDto req) {
+        this.title = req.getTitle();
+        this.date = req.getDate();
+        this.meetingPlace = req.getMeetingPlace();
+        this.latitude = req.getLatitude();
+        this.longitude = req.getLongitude();
+        this.contents = req.getContent();
+        this.thumbnail = req.getThumbnail();
+        this.category = req.getCategory();
+        this.images = String.join(",", req.getImages());
+    }
+
+    public void changeStatus(String status) {
+        this.state = status;
+    }
+
+    public void increaseHitCount() {
+        this.hits++;
+    }
 }

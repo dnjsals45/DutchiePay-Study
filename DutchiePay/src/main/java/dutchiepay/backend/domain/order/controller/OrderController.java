@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     private final OrderService orderService;
 
-    @Operation(summary = "환불/교환 신청 (구현 완료)")
+    @Operation(summary = "환불/교환 신청")
     @PostMapping("/exchange")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> applyExchange(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -28,7 +28,7 @@ public class OrderController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "상품 구매 확정 (구현 완료)")
+    @Operation(summary = "상품 구매 확정")
     @PatchMapping("/purchase")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> confirmPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -37,7 +37,7 @@ public class OrderController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "구매 취소 (구현 완료)")
+    @Operation(summary = "구매 취소")
     @PatchMapping("/exchange")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> cancelPurchase(@AuthenticationPrincipal UserDetailsImpl userDetails,

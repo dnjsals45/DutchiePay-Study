@@ -131,10 +131,7 @@ public class TossPaymentsService {
                 .build());
 
         // 공동구매 기한 확인
-        if (buy.getDeadline().isAfter(LocalDate.now())) {
-            buy.upCount(newOrder.getQuantity());
-        }
-        else if (buy.getDeadline().isBefore(LocalDate.now())) {
+        if (buy.getDeadline().isBefore(LocalDate.now())) {
             // 최소 인원 충족
             if (buy.getNowCount() >= buy.getSkeleton()) newOrder.changeStatus("배송진행중");
             // 최소 인원 미충족
@@ -144,6 +141,7 @@ public class TossPaymentsService {
                 this.cancelPayment(newOrder);
             }
         }
+        else buy.upCount(newOrder.getQuantity());
         return newOrder;
     }
 
