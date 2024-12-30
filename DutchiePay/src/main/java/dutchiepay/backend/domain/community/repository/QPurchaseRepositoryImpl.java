@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.community.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -38,13 +40,13 @@ public class QPurchaseRepositoryImpl {
         if (StringUtils.hasText(word)) {
             condition = condition.and(purchase.title.contains(word));
         }
-        condition = condition.and(purchase.location.eq(user != null? u.getLocation() : "서울시 중구"));
+        condition = condition.and(purchase.location.eq(u != null? u.getLocation() : "서울시 중구"));
 
-        List<PurchaseListResponseDto.PurchaseDetail> result =
-                jpaQueryFactory.select(Projections.constructor(PurchaseListResponseDto.PurchaseDetail.class,
+        List<Tuple> result =
+                jpaQueryFactory.select(
                         purchase.purchaseId,
-                        user.nickname.as("writer"),
-                        user.profileImg.as("writerProfileImg"),
+                        purchase.user.nickname,
+                        purchase.user.profileImg,
                         purchase.title,
                         purchase.goods,
                         purchase.price,
@@ -53,7 +55,7 @@ public class QPurchaseRepositoryImpl {
                         purchase.state,
                         purchase.createdAt,
                         purchase.category
-                ))
+                )
                 .from(purchase)
                 .leftJoin(purchase.user, user)
                 .where(condition)
@@ -61,10 +63,11 @@ public class QPurchaseRepositoryImpl {
                 .limit(limit + 1)
                 .fetch();
 
-        Long nextCursor = result.size() > limit ? result.get(limit).getPurchaseId() : null;
+        Long nextCursor = result.size() > limit ? result.get(limit).get(purchase.purchaseId) : null;
         return PurchaseListResponseDto.builder()
-                .posts(result.subList(0, Math.min(result.size(), limit)))
-                .cursor(nextCursor).build();
+                .posts(result.stream().map(PurchaseListResponseDto.PurchaseDetail::toDto).collect(Collectors.toList()))
+                .cursor(nextCursor)
+                .build();
 
     }
 
@@ -86,14 +89,15 @@ public class QPurchaseRepositoryImpl {
                         purchase.createdAt,
                         purchase.hits))
                 .from(purchase)
-                .where(purchase.purchaseId.eq(purchaseId))
+                .where(purchase.purchaseId.eq(purchaseId),
+                        purchase.deletedAt.isNull())
                 .fetchFirst();
         if (result == null) throw new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST);
         return result;
     }
 
     public PurchaseForUpdateDto getPurchaseForUpdate(Long purchaseId) {
-        return jpaQueryFactory.select(Projections.fields(PurchaseForUpdateDto.class,
+        Tuple result = jpaQueryFactory.select(
                         purchase.title,
                         purchase.category,
                         purchase.contents,
@@ -101,9 +105,14 @@ public class QPurchaseRepositoryImpl {
                         purchase.price,
                         purchase.meetingPlace,
                         purchase.latitude,
-                        purchase.longitude))
+                        purchase.longitude,
+                        purchase.thumbnail,
+                        purchase.images)
                 .from(purchase)
-                .where(purchase.purchaseId.eq(purchaseId))
+                .where(purchase.purchaseId.eq(purchaseId),
+                        purchase.deletedAt.isNull())
                 .fetchFirst();
+        if (result == null) throw new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST);
+        return PurchaseForUpdateDto.toDto(result);
     }
 }

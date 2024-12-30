@@ -72,12 +72,12 @@ public class Purchase extends Auditing {
     @Column(length = 1500)
     private String images;
 
-    public void updatePurchase(UpdatePurchaseRequestDto updateDto) {
+    public void updatePurchase(UpdatePurchaseRequestDto updateDto, String images) {
         this.title = updateDto.getTitle();
         this.contents = updateDto.getContent();
         this.price = updateDto.getPrice();
         this.category = updateDto.getCategory();
-        this.images = String.join(",", updateDto.getImages());
+        this.images = images;
         this.thumbnail = updateDto.getThumbnail();
         this.goods = updateDto.getGoods();
         this.latitude = updateDto.getLatitude();
