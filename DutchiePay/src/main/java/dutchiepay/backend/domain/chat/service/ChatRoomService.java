@@ -119,10 +119,12 @@ public class ChatRoomService {
 
         // 채팅방을 생성한다.
         ChatRoom chatRoom = ChatRoom.builder()
+                .chatRoomName(post instanceof Share ? ((Share) post).getTitle() : ((Purchase) post).getTitle())
+                .chatRoomImg("기본 이미지")
                 .postId(postId)
                 .type(type.equals("share") ? "group" : "direct")
                 .maxPartInc(maxPartInc)
-                .nowPartInc(1)
+                .nowPartInc(0)
                 .build();
 
         return chatRoomRepository.save(chatRoom);
