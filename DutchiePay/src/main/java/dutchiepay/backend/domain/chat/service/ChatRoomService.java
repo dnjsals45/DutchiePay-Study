@@ -1,17 +1,13 @@
 package dutchiepay.backend.domain.chat.service;
 
-import dutchiepay.backend.domain.chat.dto.ChatMessage;
-import dutchiepay.backend.domain.chat.dto.CursorResponse;
-import dutchiepay.backend.domain.chat.dto.GetChatRoomListResponseDto;
-import dutchiepay.backend.domain.chat.dto.MessageResponse;
+import dutchiepay.backend.domain.chat.dto.*;
+import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
+import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
-import dutchiepay.backend.domain.chat.repository.UserChatroomRepository;
-import dutchiepay.backend.entity.ChatRoom;
-import dutchiepay.backend.entity.Message;
-import dutchiepay.backend.entity.User;
-import dutchiepay.backend.entity.UserChatRoom;
-import dutchiepay.backend.domain.chat.dto.ChatRoomUnreadMessageDto;
+import dutchiepay.backend.domain.community.service.MartService;
+import dutchiepay.backend.domain.community.service.PurchaseService;
+import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -33,139 +29,234 @@ public class ChatRoomService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
-    private final UserChatroomRepository userChatroomRepository;
+    private final UserChatroomService userChatroomService;
+    private final MartService martService;
+    private final PurchaseService purchaseService;
 
+    /**
+     * 게시글에 연결된 채팅방에 참여한다.
+     * @param user 유저
+     * @param postId 게시글 ID
+     * @param type 게시글 타입
+     * @throws ChatException 채팅방이 가득 찼을 경우
+     * @throws ChatException 유효하지 않은 타입일 경우
+     * @throws ChatException 사용자가 채팅방에서 차단된 경우
+     */
     @Transactional
-    public void createChatRoom() {
-        ChatRoom newChat = ChatRoom.builder()
-                .postId(4L)
-                .maxPartInc(100)
-                .nowPartInc(0)
-                .build();
+    public JoinChatRoomResponseDto joinChatRoomFromPost(User user, Long postId, String type) {
+        // postId 및 type 검증
+        Object post = validatePostIdAndType(postId, type);
 
-        chatRoomRepository.save(newChat);
-    }
+        // 채팅방이 존재하는지 여부 확인
+        ChatRoom chatRoom = chatRoomRepository.findByPostIdAndType(postId, type);
 
-    @Transactional
-    public void joinChatRoom(User user, String chatRoomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(Long.parseLong(chatRoomId))
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+        // 존재하지 않는다면 새로운 채팅방 생성
+        if (chatRoom == null) {
+            ChatRoom newChatRoom = createChatRoom(post, postId, type);
 
+            // 유저가 게시글 작성자라면 1명만 참여, 작성자가 아니라면 작성자도 포함해서 참여시킨다.
+            if (post instanceof Share s) {
+                if (s.getUser().getUserId().equals(user.getUserId())) {
+                    userChatroomService.joinChatRoom(user, newChatRoom, "owner");
+                } else {
+                    userChatroomService.joinChatRoom(user, newChatRoom, "member");
+                    userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "owner");
+                }
+            } else if (post instanceof Purchase p) {
+                if (p.getUser().getUserId().equals(user.getUserId())) {
+                    userChatroomService.joinChatRoom(user, newChatRoom, "owner");
+                } else {
+                    userChatroomService.joinChatRoom(user, newChatRoom, "member");
+                    userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "owner");
+                }
+            }
+
+            return JoinChatRoomResponseDto.of(newChatRoom.getChatroomId());
+        }
+
+        // 채팅방의 인원이 가득 찼을 경우 예외처리
         if (chatRoom.getNowPartInc() >= chatRoom.getMaxPartInc()) {
-            throw new IllegalArgumentException("채팅방이 꽉 찼습니다.");
+            throw new ChatException(ChatErrorCode.FULL_CHAT);
         }
 
-        chatRoom.joinUser();
+        // 블랙리스트 여부 확인
+        if (userChatroomService.isBanned(user, chatRoom)) {
+            throw new ChatException(ChatErrorCode.USER_BANNED);
+        }
 
-        UserChatRoom userChatRoom = UserChatRoom.builder()
-                .chatroom(chatRoom)
-                .user(user)
-                .build();
+        // 채팅방에 유저 참여
+        userChatroomService.joinChatRoom(user, chatRoom, "member");
 
-        userChatroomRepository.save(userChatRoom);
+        return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
     }
 
     @Transactional
-    public void sendToChatRoomUser(String chatRoomId, ChatMessage message) {
-        ChatRoom chatRoom = chatRoomRepository.findById(Long.parseLong(chatRoomId))
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+    public void leaveChatRoom(User user, Long chatRoomId) {
+        UserChatRoom ucr = userChatroomService.findByUserAndChatRoomId(user, chatRoomId);
 
-        Message newMessage = Message.builder()
-                .chatroom(chatRoom)
-                .senderId(message.getSender())
-                .content(message.getContent())
-                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
+        if (ucr.getRole().equals("owner")) {
+            throw new ChatException(ChatErrorCode.OWNER_CANNOT_LEAVE);
+        }
+
+        userChatroomService.leaveChatRoom(ucr);
+        ucr.getChatroom().leave();
+    }
+
+    /**
+     * 채팅방을 생성한다.
+     * @param post 게시글 object
+     * @param postId 게시글 postId
+     * @param type 게시글 타입
+     * @return ChatRoom 생성된 채팅방
+     */
+    private ChatRoom createChatRoom(Object post, Long postId, String type) {
+        int maxPartInc = 2;
+
+        // 마트/배달일 경우 최대 인원 데이터를 가져온다.
+        if (post instanceof Share s) {
+            maxPartInc = s.getMaximum();
+        }
+
+        // 채팅방을 생성한다.
+        ChatRoom chatRoom = ChatRoom.builder()
+                .postId(postId)
+                .type(type.equals("share") ? "group" : "direct")
+                .maxPartInc(maxPartInc)
+                .nowPartInc(1)
                 .build();
 
-        messageRepository.save(newMessage);
-
-        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
-
-        simpMessagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomId, MessageResponse.of(newMessage));
+        return chatRoomRepository.save(chatRoom);
     }
 
-    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
+    /**
+     * 게시글 ID 및 타입을 검증하고 검증된 게시글 Obejct를 반환한다.
+     * @param postId 게시글Id
+     * @param type 게시글타입
+     * @return 타입에 맞는 게시글 Object
+     */
+    private Object validatePostIdAndType(Long postId, String type) {
+        if (type.equals("share")) return martService.findById(postId);
+        else if (type.equals("purchase")) return purchaseService.findById(postId);
+        else throw new ChatException(ChatErrorCode.INVALID_TYPE);
+    }
+
+    /**
+     * 채팅방 구독을 시도한 유저에게 채팅방 정보를 전송한다.
+     * 메시지의 경우 채팅방에 속한 모든 유저에게 전달되며, 클라이언트 측에서 해당하는 유저에서만 데이터를 처리한다.
+     * @param userId 유저 Id
+     * @param chatRoomId 채팅방 Id
+     * @throws ChatException 채팅방이 존재하지 않을 경우
+     */
+    public void sendChatRoomInfo(String userId, Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+                .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
 
-        List<Message> messageList = messageRepository.findAllByChatroom(chatRoom);
-        List<MessageResponse> dto = new ArrayList<>();
+        ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
 
-        for (Message message : messageList) {
-            dto.add(MessageResponse.of(message));
-        }
-
-        return dto;
+        simpMessagingTemplate.convertAndSend("/sub/chatRoomId=" + chatRoomId, chatRoomInfo);
     }
 
-    public void checkCursorId(Long chatRoomId, Long userId) {
-        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
+//    @Transactional
+//    public void sendToChatRoomUser(String chatRoomId, ChatMessage message) {
+//        ChatRoom chatRoom = chatRoomRepository.findById(Long.parseLong(chatRoomId))
+//                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+//
+//        Message newMessage = Message.builder()
+//                .chatroom(chatRoom)
+//                .senderId(message.getSender())
+//                .content(message.getContent())
+//                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
+//                .build();
+//
+//        messageRepository.save(newMessage);
+//
+//        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
+//
+//        simpMessagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomId, MessageResponse.of(newMessage));
+//    }
+//
+//    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
+//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+//                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+//
+//        List<Message> messageList = messageRepository.findAllByChatroom(chatRoom);
+//        List<MessageResponse> dto = new ArrayList<>();
+//
+//        for (Message message : messageList) {
+//            dto.add(MessageResponse.of(message));
+//        }
+//
+//        return dto;
+//    }
 
-        if (cursor != null) {
-            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
-            userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
-        } else {
-            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(0L));
-            userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
-        }
-    }
-
-    private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
-        List<Long> userIds = new ArrayList<>();
-
-        for (SimpUser user : simpUserRegistry.getUsers()) {
-            for (SimpSession session : user.getSessions()) {
-                for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (subscription.getDestination().equals("/sub/chat/room/" + chatRoomId)) {
-                        userIds.add(Long.parseLong(user.getName()));
-                    }
-                }
-            }
-        }
-
-        userChatroomRepository.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
-    }
-
-    private int getSubscribedUserCount(String chatRoomId) {
-        String destination = "/sub/chat/room/" + chatRoomId;
-        int count = 0;
-
-        for (SimpUser user : simpUserRegistry.getUsers()) {
-            for (SimpSession session : user.getSessions()) {
-                for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (destination.equals(subscription.getDestination())) {
-                        count++;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return count;
-    }
-
-    public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
-        return GetChatRoomListResponseDto.from(userChatroomRepository.findAllByUser(user));
-    }
-
-    public void sendListUnreadMessage(String userId) {
-        List<UserChatRoom> userChatRoomList = userChatroomRepository.findAllByUserId(Long.valueOf(userId));
-
-        List<ChatRoomUnreadMessageDto> dto = new ArrayList<>();
-
-        for (UserChatRoom userChatRoom : userChatRoomList) {
-            ChatRoom chatRoom = userChatRoom.getChatroom();
-
-            dto.add(ChatRoomUnreadMessageDto.builder()
-                    .chatRoomId(chatRoom.getChatroomId())
-                    .unreadCount(0L)
-                    .message("test")
-                    .build());
-        }
-
-        simpMessagingTemplate.convertAndSendToUser(
-                userId,
-                "/chat/list/message",
-                dto);
-    }
+//    public void checkCursorId(Long chatRoomId, Long userId) {
+//        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
+//
+//        if (cursor != null) {
+//            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
+//            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+//        } else {
+//            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(0L));
+//            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+//        }
+//    }
+//
+//    private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
+//        List<Long> userIds = new ArrayList<>();
+//
+//        for (SimpUser user : simpUserRegistry.getUsers()) {
+//            for (SimpSession session : user.getSessions()) {
+//                for (SimpSubscription subscription : session.getSubscriptions()) {
+//                    if (subscription.getDestination().equals("/sub/chat/room/" + chatRoomId)) {
+//                        userIds.add(Long.parseLong(user.getName()));
+//                    }
+//                }
+//            }
+//        }
+//
+//        userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
+//    }
+//
+//    private int getSubscribedUserCount(String chatRoomId) {
+//        String destination = "/sub/chat/room/" + chatRoomId;
+//        int count = 0;
+//
+//        for (SimpUser user : simpUserRegistry.getUsers()) {
+//            for (SimpSession session : user.getSessions()) {
+//                for (SimpSubscription subscription : session.getSubscriptions()) {
+//                    if (destination.equals(subscription.getDestination())) {
+//                        count++;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return count;
+//    }
+//
+//    public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
+//        return GetChatRoomListResponseDto.from(userChatroomService.findAllByUser(user));
+//    }
+//
+//    public void sendListUnreadMessage(String userId) {
+//        List<UserChatRoom> userChatRoomList = userChatroomService.findAllByUserId(Long.valueOf(userId));
+//
+//        List<ChatRoomUnreadMessageDto> dto = new ArrayList<>();
+//
+//        for (UserChatRoom userChatRoom : userChatRoomList) {
+//            ChatRoom chatRoom = userChatRoom.getChatroom();
+//
+//            dto.add(ChatRoomUnreadMessageDto.builder()
+//                    .chatRoomId(chatRoom.getChatroomId())
+//                    .unreadCount(0L)
+//                    .message("test")
+//                    .build());
+//        }
+//
+//        simpMessagingTemplate.convertAndSendToUser(
+//                userId,
+//                "/chat/list/message",
+//                dto);
+//    }
 }

@@ -126,4 +126,9 @@ public class PurchaseService {
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST))
                 .changeState(req.getStatus());
     }
+
+    public Purchase findById(Long purchaseId) {
+        return purchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
+    }
 }

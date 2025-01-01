@@ -97,10 +97,15 @@ public class MartService {
         }
     }
 
-    private void validateShare(Long shareId) {
+    public void validateShare(Long shareId) {
         if (!shareRepository.existsById(shareId)) {
             throw new CommunityException(CommunityErrorCode.INVALID_POST);
         }
+    }
+
+    public Share findById(Long shareId) {
+        return shareRepository.findById(shareId)
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
     }
 
     @Transactional

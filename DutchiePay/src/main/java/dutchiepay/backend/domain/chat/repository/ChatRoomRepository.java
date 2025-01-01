@@ -3,5 +3,8 @@ package dutchiepay.backend.domain.chat.repository;
 import dutchiepay.backend.entity.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
+    ChatRoom findByPostIdAndType(Long postId, String type);
 }

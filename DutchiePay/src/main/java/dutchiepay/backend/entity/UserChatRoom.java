@@ -19,6 +19,12 @@ public class UserChatRoom extends Auditing {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(nullable = false)
+    private String role;
+
+    @Column(nullable = false)
+    private Boolean banned;
+
     @ManyToOne
     @JoinColumn(name = "chatroom_id")
     private ChatRoom chatroom;

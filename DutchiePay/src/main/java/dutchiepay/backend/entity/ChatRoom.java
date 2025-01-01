@@ -16,15 +16,28 @@ public class ChatRoom extends Auditing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatroomId;
 
+    @Column(nullable = false)
     private String chatRoomName;
 
+    @Column(nullable = false)
+    private String chatRoomImg;
+
+    @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
     private Long postId;
 
+    @Column(nullable = false)
     private Integer maxPartInc;
 
     private Integer nowPartInc;
 
     public void joinUser() {
         this.nowPartInc++;
+    }
+
+    public void leave() {
+        this.nowPartInc--;
     }
 }
