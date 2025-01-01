@@ -20,9 +20,20 @@ public class Message extends Auditing {
     @JoinColumn(name = "chatroom_id")
     private ChatRoom chatroom;
 
+    @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
     private Long senderId;
 
+    @Column(nullable = false)
     private String content;
+
+    @Column(nullable = false)
+    private String date;
+
+    @Column(nullable = false)
+    private String time;
 
     private int unreadCount;
 }
