@@ -151,29 +151,62 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
 
+        // 우선적으로 isSendActivated를 true로 설정하여 채팅방 정보를 전송한다.
+        // 추후 상황에 맞게 isSendActivated를 변경한다.
         ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
 
         simpMessagingTemplate.convertAndSend("/sub/chatRoomId=" + chatRoomId, chatRoomInfo);
     }
 
-//    @Transactional
-//    public void sendToChatRoomUser(String chatRoomId, ChatMessage message) {
-//        ChatRoom chatRoom = chatRoomRepository.findById(Long.parseLong(chatRoomId))
-//                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
-//
-//        Message newMessage = Message.builder()
-//                .chatroom(chatRoom)
-//                .senderId(message.getSender())
-//                .content(message.getContent())
-//                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
-//                .build();
-//
-//        messageRepository.save(newMessage);
-//
+    /**
+     * 채팅방에 메시지를 전송한다.
+     * @param chatRoomId 채팅방 Id
+     * @param message 메시지 객체
+     * @throws ChatException 채팅방이 존재하지 않을 경우
+     */
+    @Transactional
+    public void sendToChatRoomUser(String chatRoomId, ChatMessage message) {
+        ChatRoom chatRoom = chatRoomRepository.findById(Long.parseLong(chatRoomId))
+                .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
+
+        Message newMessage = Message.builder()
+                .chatroom(chatRoom)
+                .type(message.getType())
+                .senderId(message.getSenderId())
+                .content(message.getContent())
+                .date(message.getDate())
+                .time(message.getTime())
+                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
+                .build();
+
+        messageRepository.save(newMessage);
+
 //        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
-//
-//        simpMessagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomId, MessageResponse.of(newMessage));
-//    }
+
+        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + chatRoomId, MessageResponse.of(newMessage));
+    }
+
+    public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
+        return userChatroomService.getChatRoomList(user);
+    }
+
+    private int getSubscribedUserCount(String chatRoomId) {
+        String destination = "/sub/chat/room/" + chatRoomId;
+        int count = 0;
+
+        for (SimpUser user : simpUserRegistry.getUsers()) {
+            for (SimpSession session : user.getSessions()) {
+                for (SimpSubscription subscription : session.getSubscriptions()) {
+                    if (destination.equals(subscription.getDestination())) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return count;
+    }
 //
 //    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
 //        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
@@ -215,28 +248,6 @@ public class ChatRoomService {
 //        }
 //
 //        userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
-//    }
-//
-//    private int getSubscribedUserCount(String chatRoomId) {
-//        String destination = "/sub/chat/room/" + chatRoomId;
-//        int count = 0;
-//
-//        for (SimpUser user : simpUserRegistry.getUsers()) {
-//            for (SimpSession session : user.getSessions()) {
-//                for (SimpSubscription subscription : session.getSubscriptions()) {
-//                    if (destination.equals(subscription.getDestination())) {
-//                        count++;
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return count;
-//    }
-//
-//    public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
-//        return GetChatRoomListResponseDto.from(userChatroomService.findAllByUser(user));
 //    }
 //
 //    public void sendListUnreadMessage(String userId) {

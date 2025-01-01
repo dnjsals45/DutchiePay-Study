@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.chat.service;
 
+import dutchiepay.backend.domain.chat.dto.GetChatRoomListResponseDto;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.domain.chat.repository.UserChatroomRepository;
@@ -9,6 +10,8 @@ import dutchiepay.backend.entity.UserChatRoom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,5 +45,13 @@ public class UserChatroomService {
 
     public void leaveChatRoom(UserChatRoom ucr) {
         userChatroomRepository.delete(ucr);
+    }
+
+    public List<UserChatRoom> findAllByUser(User user) {
+        return userChatroomRepository.findAllByUser(user);
+    }
+
+    public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
+        return userChatroomRepository.getChatRoomList(user);
     }
 }

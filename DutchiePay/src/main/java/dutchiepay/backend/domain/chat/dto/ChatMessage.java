@@ -4,6 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class ChatMessage {
-    private Long sender;
+    private String type;
+    private Long senderId;
     private String content;
+    private String date;
+    private String time;
 }

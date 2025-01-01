@@ -1,6 +1,10 @@
 package dutchiepay.backend.domain.chat.repository;
 
+import dutchiepay.backend.domain.chat.dto.GetChatRoomListResponseDto;
+import dutchiepay.backend.entity.User;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public interface QUserChatRoomRepository {
     @Transactional
@@ -8,4 +12,6 @@ public interface QUserChatRoomRepository {
 
     @Transactional
     void updateLastMessageToUser(Long userId, Long chatRoomId);
+
+    List<GetChatRoomListResponseDto> getChatRoomList(User user);
 }

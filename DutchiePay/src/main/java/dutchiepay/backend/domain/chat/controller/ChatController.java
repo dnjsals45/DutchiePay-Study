@@ -7,9 +7,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
     private final ChatRoomService chatroomService;
 
-    @MessageMapping("{chatRoomId}/message")
-    public ChatMessage chat(@DestinationVariable String chatRoomId, ChatMessage message) {
+    @MessageMapping("/pub")
+    public ChatMessage chat(@Header("chatRoomId") String chatRoomId, ChatMessage message) {
         chatroomService.sendToChatRoomUser(chatRoomId, message);
         return message;
     }
@@ -45,14 +44,14 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/api/chat/message")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getChatRoomMessageList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                    @RequestParam String chatRoomId) {
-        return ResponseEntity.ok(chatroomService.getChatRoomMessageList(userDetails.getUser(), Long.valueOf(chatRoomId)));
-    }
+//    @GetMapping("/api/chat/message")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<?> getChatRoomMessageList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+//                                                    @RequestParam String chatRoomId) {
+//        return ResponseEntity.ok(chatroomService.getChatRoomMessageList(userDetails.getUser(), Long.valueOf(chatRoomId)));
+//    }
 
-    @GetMapping("/api/chat/list")
+    @GetMapping("/chatRoomList")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getChatRoomList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(chatroomService.getChatRoomList(userDetails.getUser()));
