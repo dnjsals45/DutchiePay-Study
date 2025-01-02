@@ -22,7 +22,8 @@ public enum ChatErrorCode implements StatusCode {
     /**
      * 403 Forbidden
      */
-    USER_BANNED(HttpStatus.FORBIDDEN, "사용자가 채팅방에서 차단되었습니다."),;
+    USER_BANNED(HttpStatus.FORBIDDEN, "사용자가 채팅방에서 차단되었습니다."),
+    NOT_OWNER(HttpStatus.FORBIDDEN, "방장 권한이 없습니다."),;
 
     private final HttpStatus httpStatus;
     private final String message;

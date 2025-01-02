@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.chat.controller;
 
 import dutchiepay.backend.domain.chat.dto.ChatMessage;
+import dutchiepay.backend.domain.chat.dto.KickUserRequestDto;
 import dutchiepay.backend.domain.chat.service.ChatRoomService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,9 +52,19 @@ public class ChatController {
 //        return ResponseEntity.ok(chatroomService.getChatRoomMessageList(userDetails.getUser(), Long.valueOf(chatRoomId)));
 //    }
 
+    @Operation(summary = "채팅방 목록 조회")
     @GetMapping("/chatRoomList")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getChatRoomList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(chatroomService.getChatRoomList(userDetails.getUser()));
+    }
+
+    @Operation(summary = "사용자 내보내기")
+    @PostMapping("/kick")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> kickUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                      @RequestBody KickUserRequestDto dto) {
+        chatroomService.kickUser(userDetails.getUser(), dto);
+        return ResponseEntity.ok().build();
     }
 }

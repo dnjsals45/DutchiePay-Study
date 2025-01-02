@@ -50,6 +50,12 @@ public class UserChatroomService {
         messageService.leaveChatRoom(ucr);
     }
 
+    public void kickedChatRoom(UserChatRoom target) {
+        target.kick();
+        userChatroomRepository.save(target);
+        messageService.kickedChatRoom(target);
+    }
+
     public List<UserChatRoom> findAllByUser(User user) {
         return userChatroomRepository.findAllByUser(user);
     }
@@ -60,5 +66,10 @@ public class UserChatroomService {
 
     public boolean alreadyJoined(User user, ChatRoom chatRoom) {
         return userChatroomRepository.findByUserAndChatroom(user, chatRoom) != null;
+    }
+
+    public UserChatRoom findByUserUserIdAndChatRoomId(Long userId, Long chatRoomId) {
+        return userChatroomRepository.findByUserUserIdAndChatroomChatroomId(userId, chatRoomId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
     }
 }

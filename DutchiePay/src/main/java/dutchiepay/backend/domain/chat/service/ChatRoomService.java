@@ -225,6 +225,17 @@ public class ChatRoomService {
 
         return count;
     }
+
+    public void kickUser(User user, KickUserRequestDto dto) {
+        UserChatRoom ucr = userChatroomService.findByUserAndChatRoomId(user, dto.getChatRoomId());
+
+        if (!ucr.getRole().equals("owner")) {
+            throw new ChatException(ChatErrorCode.NOT_OWNER);
+        }
+
+        UserChatRoom target = userChatroomService.findByUserUserIdAndChatRoomId(dto.getUserId(), dto.getChatRoomId());
+        userChatroomService.kickedChatRoom(target);
+    }
 //
 //    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
 //        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)

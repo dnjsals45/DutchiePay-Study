@@ -48,4 +48,19 @@ public class MessageService {
 
         simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + ucr.getChatroom().getChatroomId(), MessageResponse.of(leaveMessage));
     }
+
+    public void kickedChatRoom(UserChatRoom target) {
+        Message kickedMessage = Message.builder()
+                .chatroom(target.getChatroom())
+                .type("kicked")
+                .senderId(target.getUser().getUserId())
+                .content(target.getUser().getNickname() + "님이 강퇴당하셨습니다.")
+                .date(LocalDate.now().toString())
+                .time(LocalTime.now().toString())
+                .build();
+
+        messageRepository.save(kickedMessage);
+
+        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + target.getChatroom().getChatroomId(), MessageResponse.of(kickedMessage));
+    }
 }

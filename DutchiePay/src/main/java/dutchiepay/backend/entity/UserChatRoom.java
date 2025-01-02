@@ -30,4 +30,8 @@ public class UserChatRoom extends Auditing {
     private ChatRoom chatroom;
 
     private Long lastMessageId;
+
+    public void kick() {
+        this.banned = true;
+    }
 }
