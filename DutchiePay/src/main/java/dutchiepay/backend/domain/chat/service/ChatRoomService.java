@@ -57,17 +57,17 @@ public class ChatRoomService {
             // 유저가 게시글 작성자라면 1명만 참여, 작성자가 아니라면 작성자도 포함해서 참여시킨다.
             if (post instanceof Share s) {
                 if (s.getUser().getUserId().equals(user.getUserId())) {
-                    userChatroomService.joinChatRoom(user, newChatRoom, "owner");
+                    userChatroomService.joinChatRoom(user, newChatRoom, "manager");
                 } else {
                     userChatroomService.joinChatRoom(user, newChatRoom, "member");
-                    userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "owner");
+                    userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "manager");
                 }
             } else if (post instanceof Purchase p) {
                 if (p.getUser().getUserId().equals(user.getUserId())) {
-                    userChatroomService.joinChatRoom(user, newChatRoom, "owner");
+                    userChatroomService.joinChatRoom(user, newChatRoom, "manager");
                 } else {
                     userChatroomService.joinChatRoom(user, newChatRoom, "member");
-                    userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "owner");
+                    userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "manager");
                 }
             }
 
@@ -105,8 +105,8 @@ public class ChatRoomService {
     public void leaveChatRoom(User user, Long chatRoomId) {
         UserChatRoom ucr = userChatroomService.findByUserAndChatRoomId(user, chatRoomId);
 
-        if (ucr.getRole().equals("owner")) {
-            throw new ChatException(ChatErrorCode.OWNER_CANNOT_LEAVE);
+        if (ucr.getRole().equals("manager")) {
+            throw new ChatException(ChatErrorCode.MANAGER_CANNOT_LEAVE);
         }
 
         userChatroomService.leaveChatRoom(ucr);
@@ -229,12 +229,16 @@ public class ChatRoomService {
     public void kickUser(User user, KickUserRequestDto dto) {
         UserChatRoom ucr = userChatroomService.findByUserAndChatRoomId(user, dto.getChatRoomId());
 
-        if (!ucr.getRole().equals("owner")) {
-            throw new ChatException(ChatErrorCode.NOT_OWNER);
+        if (!ucr.getRole().equals("manager")) {
+            throw new ChatException(ChatErrorCode.NOT_MANAGER);
         }
 
         UserChatRoom target = userChatroomService.findByUserUserIdAndChatRoomId(dto.getUserId(), dto.getChatRoomId());
         userChatroomService.kickedChatRoom(target);
+    }
+
+    public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
+        return userChatroomService.getChatRoomUsers(chatRoomId);
     }
 //
 //    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {

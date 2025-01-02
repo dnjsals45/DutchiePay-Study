@@ -5,6 +5,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.ChronoUtil;
 import dutchiepay.backend.domain.chat.dto.GetChatRoomListResponseDto;
+import dutchiepay.backend.domain.chat.dto.GetChatRoomUsersResponseDto;
 import dutchiepay.backend.entity.QChatRoom;
 import dutchiepay.backend.entity.QMessage;
 import dutchiepay.backend.entity.QUserChatRoom;
@@ -75,6 +76,34 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                     .unreadCount(tuple.get(4, Long.class).intValue())
                     .lastMsg(tuple.get(message.type).equals("text") ? tuple.get(message.content) : "이미지를 전송했습니다.")
                     .lastChatTime(ChronoUtil.formatChatTime(tuple.get(message.date), tuple.get(message.time)))
+                    .build();
+
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
+        List<Tuple> tuple = jpaQueryFactory
+                .select(userChatRoom.user.userId,
+                        userChatRoom.user.nickname,
+                        userChatRoom.user.profileImg,
+                        userChatRoom.role,
+                        userChatRoom.banned)
+                .from(userChatRoom)
+                .where(userChatRoom.chatroom.chatroomId.eq(chatRoomId))
+                .fetch();
+
+        List<GetChatRoomUsersResponseDto> result = new ArrayList<>();
+
+        for (Tuple t : tuple) {
+            GetChatRoomUsersResponseDto dto = GetChatRoomUsersResponseDto.builder()
+                    .userId(t.get(userChatRoom.user.userId))
+                    .nickname(t.get(userChatRoom.user.nickname))
+                    .profileImg(t.get(userChatRoom.user.profileImg))
+                    .isManager(t.get(userChatRoom.role).equals("manager") ? true : false)
                     .build();
 
             result.add(dto);

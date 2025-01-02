@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.GetChatRoomListResponseDto;
+import dutchiepay.backend.domain.chat.dto.GetChatRoomUsersResponseDto;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.domain.chat.repository.UserChatroomRepository;
@@ -71,5 +72,9 @@ public class UserChatroomService {
     public UserChatRoom findByUserUserIdAndChatRoomId(Long userId, Long chatRoomId) {
         return userChatroomRepository.findByUserUserIdAndChatroomChatroomId(userId, chatRoomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
+    }
+
+    public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
+        return userChatroomRepository.getChatRoomUsers(chatRoomId);
     }
 }

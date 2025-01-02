@@ -67,4 +67,11 @@ public class ChatController {
         chatroomService.kickUser(userDetails.getUser(), dto);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "채팅 사용자 목록 조회")
+    @GetMapping("/users")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getChatRoomUsers(@RequestParam Long chatRoomId) {
+        return ResponseEntity.ok(chatroomService.getChatRoomUsers(chatRoomId));
+    }
 }
