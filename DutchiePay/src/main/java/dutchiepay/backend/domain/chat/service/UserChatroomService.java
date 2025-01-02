@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserChatroomService {
     private final UserChatroomRepository userChatroomRepository;
+    private final MessageService messageService;
 
     @Transactional
     public void joinChatRoom(User user, ChatRoom chatRoom, String role) {
@@ -28,6 +29,7 @@ public class UserChatroomService {
                 .build();
 
         userChatroomRepository.save(userChatRoom);
+        messageService.enterChatRoom(user, chatRoom);
 
         chatRoom.joinUser();
     }

@@ -90,6 +90,13 @@ public class ChatRoomService {
         return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
     }
 
+    /**
+     * 채팅방을 나간다.
+     * @param user 유저
+     * @param chatRoomId 채팅방 Id
+     * @throws ChatException 채팅방이 존재하지 않을 경우
+     * @throws ChatException 채팅방 방장이 나가려고 할 경우
+     */
     @Transactional
     public void leaveChatRoom(User user, Long chatRoomId) {
         UserChatRoom ucr = userChatroomService.findByUserAndChatRoomId(user, chatRoomId);
@@ -188,6 +195,11 @@ public class ChatRoomService {
         simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + chatRoomId, MessageResponse.of(newMessage));
     }
 
+    /**
+     * 채팅방 목록을 가져온다.
+     * @param user 유저
+     * @return 채팅방 목록 Dto
+     */
     public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
         return userChatroomService.getChatRoomList(user);
     }
