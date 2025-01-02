@@ -5,6 +5,7 @@ import dutchiepay.backend.domain.chat.repository.MessageRepository;
 import dutchiepay.backend.entity.ChatRoom;
 import dutchiepay.backend.entity.Message;
 import dutchiepay.backend.entity.User;
+import dutchiepay.backend.entity.UserChatRoom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -31,5 +32,20 @@ public class MessageService {
         messageRepository.save(enterMessage);
 
         simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + chatRoom.getChatroomId(), MessageResponse.of(enterMessage));
+    }
+
+    public void leaveChatRoom(UserChatRoom ucr) {
+        Message leaveMessage = Message.builder()
+                .chatroom(ucr.getChatroom())
+                .type("leave")
+                .senderId(ucr.getUser().getUserId())
+                .content(ucr.getUser().getNickname() + "님이 퇴장하셨습니다.")
+                .date(LocalDate.now().toString())
+                .time(LocalTime.now().toString())
+                .build();
+
+        messageRepository.save(leaveMessage);
+
+        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + ucr.getChatroom().getChatroomId(), MessageResponse.of(leaveMessage));
     }
 }
