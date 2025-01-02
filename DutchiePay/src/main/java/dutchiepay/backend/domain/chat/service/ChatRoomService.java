@@ -48,7 +48,7 @@ public class ChatRoomService {
         Object post = validatePostIdAndType(postId, type);
 
         // 채팅방이 존재하는지 여부 확인
-        ChatRoom chatRoom = chatRoomRepository.findByPostIdAndType(postId, type);
+        ChatRoom chatRoom = chatRoomRepository.findByPostIdAndType(postId, type.equals("share") ? "group" : "direct");
 
         // 존재하지 않는다면 새로운 채팅방 생성
         if (chatRoom == null) {
@@ -72,6 +72,10 @@ public class ChatRoomService {
             }
 
             return JoinChatRoomResponseDto.of(newChatRoom.getChatroomId());
+        }
+        // 유저가 이미 채팅방에 속해있는 지 검증
+        if (userChatroomService.alreadyJoined(user, chatRoom)) {
+            throw new ChatException(ChatErrorCode.ALREADY_JOINED);
         }
 
         // 채팅방의 인원이 가득 찼을 경우 예외처리

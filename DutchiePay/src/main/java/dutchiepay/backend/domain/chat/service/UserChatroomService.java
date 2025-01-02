@@ -47,6 +47,7 @@ public class UserChatroomService {
 
     public void leaveChatRoom(UserChatRoom ucr) {
         userChatroomRepository.delete(ucr);
+        messageService.leaveChatRoom(ucr);
     }
 
     public List<UserChatRoom> findAllByUser(User user) {
@@ -55,5 +56,9 @@ public class UserChatroomService {
 
     public List<GetChatRoomListResponseDto> getChatRoomList(User user) {
         return userChatroomRepository.getChatRoomList(user);
+    }
+
+    public boolean alreadyJoined(User user, ChatRoom chatRoom) {
+        return userChatroomRepository.findByUserAndChatroom(user, chatRoom) != null;
     }
 }

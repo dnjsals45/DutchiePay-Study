@@ -17,6 +17,7 @@ public enum ChatErrorCode implements StatusCode {
     FULL_CHAT(HttpStatus.BAD_REQUEST, "채팅방이 가득 찼습니다."),
     INVALID_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 타입입니다."),
     OWNER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "방장은 채팅방을 나갈 수 없습니다."),
+    ALREADY_JOINED(HttpStatus.BAD_REQUEST, "이미 채팅방에 참여되어있습니다."),
 
     /**
      * 403 Forbidden
