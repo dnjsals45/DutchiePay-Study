@@ -37,7 +37,7 @@ public class MessageService {
     public void leaveChatRoom(UserChatRoom ucr) {
         Message leaveMessage = Message.builder()
                 .chatroom(ucr.getChatroom())
-                .type("leave")
+                .type("out")
                 .senderId(ucr.getUser().getUserId())
                 .content(ucr.getUser().getNickname() + "님이 퇴장하셨습니다.")
                 .date(LocalDate.now().toString())
