@@ -52,7 +52,7 @@ public class MessageService {
     public void kickedChatRoom(UserChatRoom target) {
         Message kickedMessage = Message.builder()
                 .chatroom(target.getChatroom())
-                .type("kicked")
+                .type("ban")
                 .senderId(target.getUser().getUserId())
                 .content(target.getUser().getNickname() + "님이 강퇴당하셨습니다.")
                 .date(LocalDate.now().toString())
