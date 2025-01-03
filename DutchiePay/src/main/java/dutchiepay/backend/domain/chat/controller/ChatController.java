@@ -24,8 +24,6 @@ public class ChatController {
 
     @MessageMapping("/chat/{chatRoomId}")
     public ChatMessage chat(@DestinationVariable String chatRoomId, ChatMessage message) {
-        log.info("chatRoomId: {}", chatRoomId);
-        log.info("message: {}", message);
         chatroomService.sendToChatRoomUser(chatRoomId, message);
         return message;
     }
