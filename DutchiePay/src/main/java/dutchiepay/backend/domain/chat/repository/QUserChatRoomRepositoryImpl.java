@@ -34,7 +34,6 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                 .select(chatRoom.chatroomId,
                         chatRoom.chatRoomName,
                         chatRoom.chatRoomImg,
-                        chatRoom.type,
                         JPAExpressions
                                 .select(userChatRoom.user.count())
                                 .from(userChatRoom)
@@ -53,7 +52,8 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                         message.content,
                         message.date,
                         message.time,
-                        message.type)
+                        message.type,
+                        chatRoom.type)
                 .from(chatRoom)
                 .join(userChatRoom).on(userChatRoom.chatroom.eq(chatRoom)
                         .and(userChatRoom.user.eq(user)))
