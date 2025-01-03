@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,9 +22,10 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
     private final ChatRoomService chatroomService;
 
-    @MessageMapping("?chatRoomId={chatRoomId}")
+    @MessageMapping("/chat/{chatRoomId}")
     public ChatMessage chat(@DestinationVariable String chatRoomId, ChatMessage message) {
         log.info("chatRoomId: {}", chatRoomId);
+        log.info("message: {}", message);
         chatroomService.sendToChatRoomUser(chatRoomId, message);
         return message;
     }

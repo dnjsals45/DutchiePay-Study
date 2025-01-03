@@ -190,14 +190,15 @@ public class ChatRoomService {
                 .content(message.getContent())
                 .date(message.getDate())
                 .time(message.getTime())
-                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
+//                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
+                .unreadCount(0)
                 .build();
 
         messageRepository.save(newMessage);
 
 //        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
-        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + chatRoomId, MessageResponse.of(newMessage));
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, MessageResponse.of(newMessage));
     }
 
     /**

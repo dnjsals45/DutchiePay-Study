@@ -32,7 +32,7 @@ public class StompEventListener extends DefaultHandshakeHandler {
         String destination = accessor.getDestination();
 
         String userId = accessor.getSessionAttributes().get("userId").toString();
-        Long chatRoomId = extractChatRoomId(destination);
+        Long chatRoomId = Long.parseLong(destination.substring(destination.lastIndexOf("/") + 1));
 
         chatRoomService.sendChatRoomInfo(userId, chatRoomId);
     }
@@ -43,16 +43,5 @@ public class StompEventListener extends DefaultHandshakeHandler {
 
     @EventListener
     public void sessionDisconnectEvent(SessionDisconnectEvent event) {
-    }
-
-    private Long extractChatRoomId(String destination) {
-        String[] parts = destination.split("\\?");
-        if (parts.length > 1) {
-            String[] params = parts[1].split("=");
-            if (params.length > 1 && "chatRoomId".equals(params[0])) {
-                return Long.parseLong(params[1]);
-            }
-        }
-        throw new IllegalArgumentException("Invalid subscription URL format");
     }
 }
