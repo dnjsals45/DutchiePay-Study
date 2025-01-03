@@ -74,7 +74,7 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                     .chatImg(tuple.get(chatRoom.chatRoomImg))
                     .chatUser(tuple.get(3, Long.class).intValue())
                     .unreadCount(tuple.get(4, Long.class).intValue())
-                    .lastMsg(tuple.get(message.type).equals("text") ? tuple.get(message.content) : "이미지를 전송했습니다.")
+                    .lastMsg(tuple.get(message.type).equals("image") ? "이미지를 전송했습니다." : tuple.get(message.content))
                     .lastChatTime(ChronoUtil.formatChatTime(tuple.get(message.date), tuple.get(message.time)))
                     .build();
 
