@@ -11,6 +11,8 @@ import dutchiepay.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CommunityUtilService {
@@ -34,13 +36,14 @@ public class CommunityUtilService {
     // 게시글 작성 시 Free 객체 생성 후 저장
     public Free saveFree(User user, CreateFreeRequestDto createFreeRequestDto, String description) {
 
+        List<String> images = createFreeRequestDto.getImages();
         return freeRepository.save(Free.builder()
                 .user(user)
                 .title(createFreeRequestDto.getTitle())
                 .contents(createFreeRequestDto.getContent())
                 .category(createFreeRequestDto.getCategory())
                 .thumbnail(createFreeRequestDto.getThumbnail())
-                .images(String.join(",", createFreeRequestDto.getImages()))
+                .images(images.isEmpty() ? null : String.join(",", images))
                 .description(description.substring(0, Math.min(description.length(), 100)))
                 .build());
     }
@@ -60,7 +63,8 @@ public class CommunityUtilService {
     // 게시글 수정
     public void updatePost(User user, UpdateFreeRequestDto updateFreeRequestDto, String description) {
         Free free = validatePostAndWriter(user, updateFreeRequestDto.getFreeId());
-        free.updateFree(updateFreeRequestDto, description, String.join(",", updateFreeRequestDto.getImages()));
+        List<String> images = updateFreeRequestDto.getImages();
+        free.updateFree(updateFreeRequestDto, description, images == null? null : String.join(",", images));
     }
 
     // 댓글 길이 검증

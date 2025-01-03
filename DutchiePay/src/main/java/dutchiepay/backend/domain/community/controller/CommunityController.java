@@ -38,7 +38,7 @@ public class CommunityController {
             purchaseService.changeStatus(req);
             return ResponseEntity.ok().build();
         }
-        throw new CommunityException(CommunityErrorCode.INVALID_CATEGORY);
+        throw new CommunityException(CommunityErrorCode.INVALID_POST_TYPE);
     }
 
 }
