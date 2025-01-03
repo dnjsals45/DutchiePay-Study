@@ -147,4 +147,8 @@ public class PurchaseService {
         if (purchase.getState().contains("완료")) throw new CommunityException(CommunityErrorCode.ALREADY_DONE);
     }
 
+    public Purchase findById(Long purchaseId) {
+        return purchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CommunityException(CommunityErrorCode.INVALID_POST));
+    }
 }

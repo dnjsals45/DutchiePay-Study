@@ -38,7 +38,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
             try {
 
                 //tokenType 확인
-                Claims claims = jwtUtil.getUserInfoFromToken(token);
+                Claims claims = jwtUtil.getUserInfoFromAccessToken(token);
                 String tokenType = claims.get("tokenType", String.class);
 
                 if ("access".equals(tokenType)) {
@@ -76,7 +76,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
     }
 
     private UserDetailsImpl getUserDetails(String accessToken) {
-        Long userId = jwtUtil.getUserInfoFromToken(accessToken).get("userId", Long.class);
+        Long userId = jwtUtil.getUserInfoFromAccessToken(accessToken).get("userId", Long.class);
         return (UserDetailsImpl) userDetailsService.loadUserById(userId);
     }
 

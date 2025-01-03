@@ -19,7 +19,7 @@ import java.util.Map;
 @Component
 @Aspect
 public class LoggingAspect {
-    @Pointcut(value = "execution(* dutchiepay.backend.domain.*.controller.*Controller.*(..)) ")
+    @Pointcut("execution(* dutchiepay.backend.domain.*.controller.*Controller.*(..)) && !execution(* dutchiepay.backend.domain.chat.controller.*Controller.*(..))")
     private void logCut() {
     }
 

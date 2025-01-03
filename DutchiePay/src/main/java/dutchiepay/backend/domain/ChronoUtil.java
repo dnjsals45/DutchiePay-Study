@@ -1,6 +1,8 @@
 package dutchiepay.backend.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
@@ -41,5 +43,19 @@ public class ChronoUtil {
             word = dateTime.format(DateTimeFormatter.ofPattern("MM월 dd일"));
         }
         return word;
+    }
+
+    public static String formatChatTime(String date, String time) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+
+        LocalDate messageDate = LocalDate.parse(date, dateFormatter);
+
+        LocalDate today = LocalDate.now();
+
+        if (messageDate.isEqual(today)) {
+            return time;
+        } else {
+            return messageDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        }
     }
 }
