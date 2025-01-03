@@ -45,13 +45,6 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/api/chat/message")
-//    @PreAuthorize("isAuthenticated()")
-//    public ResponseEntity<?> getChatRoomMessageList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-//                                                    @RequestParam String chatRoomId) {
-//        return ResponseEntity.ok(chatroomService.getChatRoomMessageList(userDetails.getUser(), Long.valueOf(chatRoomId)));
-//    }
-
     @Operation(summary = "채팅방 목록 조회")
     @GetMapping("/chatRoomList")
     @PreAuthorize("isAuthenticated()")
