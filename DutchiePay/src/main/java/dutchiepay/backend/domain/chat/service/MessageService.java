@@ -18,6 +18,7 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+    private static final String CHAT_ROOM_PREFIX = "/sub/chat/";
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageRepository messageRepository;
 
@@ -33,7 +34,7 @@ public class MessageService {
 
         messageRepository.save(enterMessage);
 
-        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + chatRoom.getChatroomId(), MessageResponse.of(enterMessage));
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoom.getChatroomId(), MessageResponse.of(enterMessage));
     }
 
     public void leaveChatRoom(UserChatRoom ucr) {
@@ -48,7 +49,7 @@ public class MessageService {
 
         messageRepository.save(leaveMessage);
 
-        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + ucr.getChatroom().getChatroomId(), MessageResponse.of(leaveMessage));
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + ucr.getChatroom().getChatroomId(), MessageResponse.of(leaveMessage));
     }
 
     public void kickedChatRoom(UserChatRoom target) {
@@ -63,6 +64,6 @@ public class MessageService {
 
         messageRepository.save(kickedMessage);
 
-        simpMessagingTemplate.convertAndSend("/sub?chatRoomId=" + target.getChatroom().getChatroomId(), MessageResponse.of(kickedMessage));
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + target.getChatroom().getChatroomId(), MessageResponse.of(kickedMessage));
     }
 }
