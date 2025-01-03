@@ -129,10 +129,18 @@ public class ChatRoomService {
             maxPartInc = s.getMaximum();
         }
 
+        String chatRoomImg = null;
+
+        if (post instanceof Share s) {
+            chatRoomImg = s.getThumbnail();
+        } else if (post instanceof Purchase p) {
+            chatRoomImg = p.getThumbnail();
+        }
+
         // 채팅방을 생성한다.
         ChatRoom chatRoom = ChatRoom.builder()
                 .chatRoomName(post instanceof Share ? ((Share) post).getTitle() : ((Purchase) post).getTitle())
-                .chatRoomImg("기본 이미지")
+                .chatRoomImg(chatRoomImg)
                 .postId(postId)
                 .type(type.equals("share") ? "group" : "direct")
                 .maxPartInc(maxPartInc)
