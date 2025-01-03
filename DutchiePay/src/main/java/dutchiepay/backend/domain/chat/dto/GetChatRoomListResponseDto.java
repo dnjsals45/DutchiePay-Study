@@ -14,4 +14,5 @@ public class GetChatRoomListResponseDto {
     private Integer unreadCount;
     private String lastMsg;
     private String lastChatTime;
+    private String type;
 }

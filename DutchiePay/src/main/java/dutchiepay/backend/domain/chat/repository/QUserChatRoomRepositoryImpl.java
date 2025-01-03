@@ -34,6 +34,7 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                 .select(chatRoom.chatroomId,
                         chatRoom.chatRoomName,
                         chatRoom.chatRoomImg,
+                        chatRoom.type,
                         JPAExpressions
                                 .select(userChatRoom.user.count())
                                 .from(userChatRoom)
@@ -76,6 +77,7 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                     .unreadCount(tuple.get(4, Long.class).intValue())
                     .lastMsg(tuple.get(message.type).equals("image") ? "이미지를 전송했습니다." : tuple.get(message.content))
                     .lastChatTime(ChronoUtil.formatChatTime(tuple.get(message.date), tuple.get(message.time)))
+                    .type(tuple.get(chatRoom.type))
                     .build();
 
             result.add(dto);
