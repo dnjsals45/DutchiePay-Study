@@ -36,14 +36,15 @@ public class ChatRoomService {
     /**
      * 게시글에 연결된 채팅방에 참여한다.
      * @param user 유저
-     * @param postId 게시글 ID
-     * @param type 게시글 타입
+     * @param dto 게시글 Id 및 타입
      * @throws ChatException 채팅방이 가득 찼을 경우
      * @throws ChatException 유효하지 않은 타입일 경우
      * @throws ChatException 사용자가 채팅방에서 차단된 경우
      */
     @Transactional
-    public JoinChatRoomResponseDto joinChatRoomFromPost(User user, Long postId, String type) {
+    public JoinChatRoomResponseDto joinChatRoomFromPost(User user, JoinChatRoomRequestDto dto) {
+        Long postId = dto.getPostId();
+        String type = dto.getType();
         // postId 및 type 검증
         Object post = validatePostIdAndType(postId, type);
 

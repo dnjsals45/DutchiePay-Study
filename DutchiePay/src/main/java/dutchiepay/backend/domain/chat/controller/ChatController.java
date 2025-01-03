@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.chat.controller;
 
 import dutchiepay.backend.domain.chat.dto.ChatMessage;
+import dutchiepay.backend.domain.chat.dto.JoinChatRoomRequestDto;
 import dutchiepay.backend.domain.chat.dto.KickUserRequestDto;
 import dutchiepay.backend.domain.chat.service.ChatRoomService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,19 +23,19 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
     private final ChatRoomService chatroomService;
 
-    @MessageMapping("/pub")
-    public ChatMessage chat(@Header("chatRoomId") String chatRoomId, ChatMessage message) {
+    @MessageMapping("?chatRoomId={chatRoomId}")
+    public ChatMessage chat(@DestinationVariable String chatRoomId, ChatMessage message) {
+        log.info("chatRoomId: {}", chatRoomId);
         chatroomService.sendToChatRoomUser(chatRoomId, message);
         return message;
     }
 
-    @Operation(summary = "채팅방 참여", description = "postId에 연결된 채팅방 참여")
-    @GetMapping("")
+    @Operation(summary = "채팅방 입장", description = "postId에 연결된 채팅방 입장")
+    @PostMapping("/join")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> joinChatRoomFromPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                          @RequestParam Long postId,
-                                          @RequestParam String type) {
-        return ResponseEntity.ok().body(chatroomService.joinChatRoomFromPost(userDetails.getUser(), postId, type));
+                                                  @RequestBody JoinChatRoomRequestDto dto) {
+        return ResponseEntity.ok().body(chatroomService.joinChatRoomFromPost(userDetails.getUser(), dto));
     }
 
     @Operation(summary = "채팅방 나가기")
