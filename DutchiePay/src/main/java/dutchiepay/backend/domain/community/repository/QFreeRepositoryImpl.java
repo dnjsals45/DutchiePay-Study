@@ -34,7 +34,6 @@ public class QFreeRepositoryImpl implements QFreeRepository {
     public FreeListResponseDto getFreeLists(String category, String filter, String word, int limit, Long cursor) {
         // 커서 초기화
         if (cursor == null) cursor = Long.MAX_VALUE;
-        Long nowCommentsCount = null;
 
         // 기본 select, from 문에 조건 추가
         JPAQuery<Free> query = jpaQueryFactory
@@ -63,7 +62,7 @@ public class QFreeRepositoryImpl implements QFreeRepository {
             case "comment":
                 orderSpecifier = new OrderSpecifier[]{comment.count().desc(), free.freeId.desc()};
                 if (cursor < Long.MAX_VALUE) {
-                    nowCommentsCount = jpaQueryFactory.
+                    Long nowCommentsCount = jpaQueryFactory.
                             select(comment.count())
                             .from(comment)
                             .join(comment.free, free)
@@ -100,9 +99,9 @@ public class QFreeRepositoryImpl implements QFreeRepository {
         List<Free> posts = query.fetch();
         Long nextCursor = posts.size() > limit ? posts.get(limit).getFreeId() : null;
 
-        Long finalNowCommentsCount = nowCommentsCount;
         return FreeListResponseDto.toDto(posts.stream().map(free ->
-                        FreeListResponseDto.FreeList.toDto(free, ChronoUtil.timesAgo(free.getCreatedAt()), finalNowCommentsCount))
+                        FreeListResponseDto.FreeList.toDto(free, ChronoUtil.timesAgo(free.getCreatedAt()),
+                                countComments(free.getFreeId()).fetchFirst()))
                 .collect(Collectors.toList()), nextCursor);
     }
 
