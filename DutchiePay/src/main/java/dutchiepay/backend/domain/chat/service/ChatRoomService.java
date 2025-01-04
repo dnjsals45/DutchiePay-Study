@@ -250,6 +250,10 @@ public class ChatRoomService {
     public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
         return userChatroomService.getChatRoomUsers(chatRoomId);
     }
+
+    public List<GetMessageListResponseDto> getChatRoomMessages(Long chatRoomId) {
+        return chatRoomRepository.findChatRoomMessages(chatRoomId);
+    }
 //
 //    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
 //        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
