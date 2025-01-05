@@ -33,7 +33,7 @@ public class PurchaseForUpdateDto {
                 .latitude(tuple.get(purchase.latitude))
                 .longitude(tuple.get(purchase.longitude))
                 .thumbnail(tuple.get(purchase.thumbnail))
-                .images(images != null? images.split(", ") : null)
+                .images(images != null? images.split(",") : null)
                 .build();
     }
 
