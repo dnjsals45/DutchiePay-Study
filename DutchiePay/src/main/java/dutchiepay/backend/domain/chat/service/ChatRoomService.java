@@ -177,7 +177,7 @@ public class ChatRoomService {
         // 추후 상황에 맞게 isSendActivated를 변경한다.
         ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
 
-        simpMessagingTemplate.convertAndSend("/sub/chatRoomId=" + chatRoomId, chatRoomInfo);
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, chatRoomInfo);
     }
 
     /**
@@ -249,6 +249,10 @@ public class ChatRoomService {
 
     public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
         return userChatroomService.getChatRoomUsers(chatRoomId);
+    }
+
+    public List<GetMessageListResponseDto> getChatRoomMessages(Long chatRoomId) {
+        return chatRoomRepository.findChatRoomMessages(chatRoomId);
     }
 //
 //    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
