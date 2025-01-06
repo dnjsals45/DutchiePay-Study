@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+
 @Service
 @RequiredArgsConstructor
 public class MartService {
@@ -81,7 +83,7 @@ public class MartService {
                 .description(description)
                 .thumbnail(req.getThumbnail())
                 .category(req.getCategory())
-                .images(String.join(",", req.getImages()))
+                .images(req.getImages().length == 0 ? null : String.join(",", req.getImages()))
                 .now(1)
                 .hits(0)
                 .build();
