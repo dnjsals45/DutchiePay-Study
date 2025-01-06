@@ -274,7 +274,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "share.description as content, " +
                 "'마트/배달' as category, " +
                 "NULL as commentCount, " +
-                "share.thumbnail, " +
+                "share.thumbnail as thumbnail, " +
                 "users.nickname as writerNickname, " +
                 "users.profile_img as writerProfileImage " +
                 "FROM share " +
@@ -288,7 +288,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "free.description as content, " +
                 "'자유' as category, " +
                 "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, " +
-                "NULL as thumbnail, " +
+                "free.thumbnail as thumbnail, " +
                 "users.nickname as writerNickname, " +
                 "users.profile_img as writerProfileImage " +
                 "FROM free " +
