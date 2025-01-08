@@ -380,9 +380,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
         List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
-            System.out.println("===========================================");
-            System.out.println("tuple = " + tuple);
-            System.out.println("===========================================");
             LocalDateTime dbTime = tuple.get(free.createdAt);
 
             long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());
