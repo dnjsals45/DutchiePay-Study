@@ -364,7 +364,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .from(free)
                 .leftJoin(free.user)
                 .leftJoin(comment).on(comment.free.eq(free).and(comment.deletedAt.isNull()))
-                .where(comment.user.eq(user))
+                .where(comment.user.eq(user).and(free.deletedAt.isNull()))
                 .groupBy(free.freeId)
                 .orderBy(free.createdAt.desc())
                 .offset(pageable.getOffset())
