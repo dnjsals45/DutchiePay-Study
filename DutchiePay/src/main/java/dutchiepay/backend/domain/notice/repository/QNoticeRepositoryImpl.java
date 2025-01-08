@@ -41,7 +41,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                                         subNotice.user.eq(user),
                                         subNotice.origin.eq(notice.origin),
                                         subNotice.type.eq(notice.type),
-                                        subNotice.isRead.eq(false),
+//                                        subNotice.isRead.eq(false),
                                         subNotice.createdAt.goe(LocalDateTime.now().minusDays(7)),
                                         subNotice.deletedAt.isNull()
                                 )
@@ -60,7 +60,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                             notice.user.eq(user),
                             notice.origin.eq(n.getOrigin()),
                             notice.type.eq(n.getType()),
-                            notice.isRead.eq(false),
+//                            notice.isRead.eq(false),
                             notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
                             notice.deletedAt.isNull()
                     )
@@ -96,9 +96,11 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
         List<Notice> notices = jpaQueryFactory
                 .selectFrom(notice)
                 .where(
-                        notice.origin.eq(origin)
-                                .and(notice.isRead.eq(false))
-                                .and(notice.user.eq(user))
+                        notice.origin.eq(origin),
+//                                .and(notice.isRead.eq(false))
+                        notice.user.eq(user),
+                        notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
+                        notice.deletedAt.isNull()
                 )
                 .orderBy(notice.noticeId.desc())
                 .fetch();
