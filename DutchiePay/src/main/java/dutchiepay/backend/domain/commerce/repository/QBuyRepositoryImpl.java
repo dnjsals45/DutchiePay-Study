@@ -1,7 +1,10 @@
 package dutchiepay.backend.domain.commerce.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -10,6 +13,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
 import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
+import dutchiepay.backend.domain.commerce.dto.OrderAndCursorCondition;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.entity.*;
@@ -17,11 +21,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,6 +46,7 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     QScore score = QScore.score;
     QBuyCategory buyCategory = QBuyCategory.buyCategory;
     QCategory category = QCategory.category;
+    QOrder order = QOrder.order;
 
     @Override
     public GetBuyResponseDto getBuyPageByBuyId(User user, Long buyId) {
@@ -162,121 +169,167 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
     @Override
     public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, String word, int end, Long cursor, int limit) {
-        if (cursor == null) {
-            cursor = Long.MAX_VALUE;
-        }
+        cursor = (cursor == null) ? Long.MAX_VALUE : cursor;
 
-        BooleanExpression conditions = null;
+        BooleanBuilder conditions = buildBaseConditions(categoryName, end, word);
+        OrderAndCursorCondition orderAndCursor = buildOrderAndCursorCondition(filter, cursor);
 
-        if (categoryName != null && !categoryName.isEmpty()) {
-            conditions = JPAExpressions
-                    .select(buyCategory.buy)
-                    .from(buyCategory)
-                    .where(buyCategory.category.name.eq(categoryName))
-                    .contains(buy);
+        List<GetBuyListResponseDto.ProductDto> results = executeMainQuery(user, conditions,
+                orderAndCursor.getOrderBy(), orderAndCursor.getCursorCondition(), limit, filter);
+
+        Long nextCursor = results.size() > limit ? results.get(limit).getBuyId() : null;
+
+        List<GetBuyListResponseDto.ProductDto> limitedResults =
+                results.size() > limit ? results.subList(0, limit) : results;
+
+        Map<Long, Long> reviewCounts = fetchReviewCounts(limitedResults.stream()
+                .map(GetBuyListResponseDto.ProductDto::getBuyId)
+                .collect(Collectors.toList()));
+
+        results.forEach(product ->
+                product.setReviewCount(reviewCounts.getOrDefault(product.getBuyId(), 0L))
+        );
+
+        return GetBuyListResponseDto.builder()
+                .products(limitedResults)
+                .cursor(nextCursor)
+                .build();
+    }
+
+    private BooleanBuilder buildBaseConditions(String categoryName, int end, String word) {
+        BooleanBuilder conditions = new BooleanBuilder();
+
+        if (StringUtils.hasText(categoryName)) {
+            conditions.and(buy.buyCategories.any().category.name.eq(categoryName));
         }
 
         if (end == 0) {
-            BooleanExpression dateCondition = buy.deadline.after(LocalDate.now().minusDays(1));
-            conditions = conditions == null ? dateCondition : conditions.and(dateCondition);
+            conditions.and(buy.deadline.after(LocalDate.now().minusDays(1)));
         }
 
-        if (word != null && !word.isEmpty()) {
-            BooleanExpression searchCondition = buy.title.contains(word).or(buy.tags.contains(word));
-            conditions =  conditions == null ? searchCondition : conditions.and(searchCondition);
+        if (StringUtils.hasText(word)) {
+            conditions.and(buy.title.contains(word).or(buy.tags.contains(word)));
         }
 
-        OrderSpecifier[] orderBy;
-        BooleanExpression cursorCondition = null;
+        return conditions;
+    }
+
+    private BooleanBuilder getEndDateCursorCondition(Long cursor) {
+        BooleanBuilder condition = new BooleanBuilder();
+
+        Buy cursorBuy = jpaQueryFactory
+                .selectFrom(buy)
+                .where(buy.buyId.eq(cursor))
+                .fetchOne();
+
+        if (cursorBuy != null) {
+            condition.and(
+                    buy.deadline.gt(cursorBuy.getDeadline())
+                            .or(buy.deadline.eq(cursorBuy.getDeadline())
+                                    .and(buy.buyId.loe(cursor)))
+            );
+        }
+
+        return condition;
+    }
+
+    private Expression<Boolean> getUserLikeExpression(User user) {
+        return user != null ?
+                JPAExpressions
+                        .selectOne()
+                        .from(like)
+                        .where(like.buy.eq(buy)
+                                .and(like.user.eq(user)))
+                        .exists() :
+                Expressions.constant(false);
+    }
+
+    private OrderSpecifier[] getEndDateOrderSpecifiers() {
+        return new OrderSpecifier[]{
+                Expressions.cases()
+                        .when(buy.deadline.goe(LocalDate.now()))
+                        .then(0)
+                        .otherwise(1)
+                        .asc(),
+                buy.deadline.asc(),
+                buy.buyId.desc()
+        };
+    }
+
+    private Integer getCursorDiscountPercent(Long cursor) {
+        return jpaQueryFactory
+                .select(product.discountPercent)
+                .from(buy)
+                .join(buy.product, product)
+                .where(buy.buyId.eq(cursor))
+                .fetchOne();
+    }
+
+    private Long getCursorLikeCount(Long cursor) {
+        return jpaQueryFactory
+                .select(like.count())
+                .from(like)
+                .join(like.buy, buy)
+                .where(buy.buyId.eq(cursor))
+                .fetchOne();
+    }
+
+    private OrderAndCursorCondition buildOrderAndCursorCondition(String filter, Long cursor) {
         switch (filter) {
-            case "like":
-                orderBy = new OrderSpecifier[]{like.count().desc(), buy.buyId.desc()};
-                if (cursor < Long.MAX_VALUE) {
-                    Long cursorLike = jpaQueryFactory
-                            .select(like.count())
-                            .from(like)
-                            .join(like.buy, buy)
-                            .where(buy.buyId.eq(cursor))
-                            .fetchOne();
+            case "like" -> {
+                OrderSpecifier[] orderBy = {like.count().desc(), buy.buyId.desc()};
+                BooleanBuilder cursorCondition = new BooleanBuilder();
 
+                if (cursor < Long.MAX_VALUE) {
+                    Long cursorLike = getCursorLikeCount(cursor);
                     if (cursorLike != null) {
-                        cursorCondition = like.count().lt(cursorLike)
-                                .or(like.count().eq(cursorLike))
-                                .and(buy.buyId.loe(cursor));
+                        cursorCondition.and(
+                                like.count().lt(cursorLike)
+                                        .or(like.count().eq(cursorLike)
+                                                .and(buy.buyId.loe(cursor)))
+                        );
                     }
                 }
-                break;
-            case "endDate":
+                return new OrderAndCursorCondition(orderBy, cursorCondition);
+            }
+            case "discount" -> {
+                OrderSpecifier[] orderBy = {product.discountPercent.desc(), buy.buyId.desc()};
+                BooleanBuilder cursorCondition = new BooleanBuilder();
+
                 if (cursor < Long.MAX_VALUE) {
-                    Tuple cursorInfo = jpaQueryFactory
-                            .select(buy.deadline,
-                                    Expressions.cases()
-                                            .when(buy.deadline.goe(LocalDate.now()))
-                                            .then(0)
-                                            .otherwise(1))
-                            .from(buy)
-                            .where(buy.buyId.eq(cursor))
-                            .fetchOne();
-
-                    if (cursorInfo != null) {
-                        LocalDate cursorEndDate = cursorInfo.get(0, LocalDate.class);
-                        Integer cursorGroup = cursorInfo.get(1, Integer.class);
-
-                        BooleanExpression sameGroupCondition = Expressions.cases()
-                                .when(buy.deadline.goe(LocalDate.now()))
-                                .then(0)
-                                .otherwise(1)
-                                .eq(cursorGroup)
-                                .and(buy.deadline.gt(cursorEndDate)
-                                    .or(buy.deadline.eq(cursorEndDate)
-                                    .and(buy.buyId.loe(cursor))));
-
-                        BooleanExpression nextGroupCondition = Expressions.cases()
-                                .when(buy.deadline.goe(LocalDate.now()))
-                                .then(0)
-                                .otherwise(1)
-                                .gt(cursorGroup);
-
-                        cursorCondition = sameGroupCondition.or(nextGroupCondition);
-                    }
-                }
-
-                orderBy = new OrderSpecifier[]{
-                        Expressions.cases()
-                                .when(buy.deadline.goe(LocalDate.now()))
-                                .then(0)
-                                .otherwise(1)
-                                .asc(),
-                        buy.deadline.asc(),
-                        buy.buyId.desc()
-                };
-                break;
-            case "discount":
-                if (cursor < Long.MAX_VALUE) {
-                    Integer cursorDiscount = jpaQueryFactory
-                            .select(product.discountPercent)
-                            .from(buy)
-                            .join(buy.product, product)
-                            .where(buy.buyId.eq(cursor))
-                            .fetchOne();
-
+                    Integer cursorDiscount = getCursorDiscountPercent(cursor);
                     if (cursorDiscount != null) {
-                        cursorCondition = product.discountPercent.lt(cursorDiscount)
-                                .or(product.discountPercent.eq(cursorDiscount));
+                        cursorCondition.and(
+                                product.discountPercent.lt(cursorDiscount)
+                                        .or(product.discountPercent.eq(cursorDiscount)
+                                                .and(buy.buyId.loe(cursor)))
+                        );
                     }
                 }
-                orderBy = new OrderSpecifier[]{product.discountPercent.desc(), buy.buyId.desc()};
-                break;
-            case "newest":
-                orderBy = new OrderSpecifier[]{buy.buyId.desc()};
-                conditions = conditions != null ? conditions.and(buy.buyId.loe(cursor)) : buy.buyId.loe(cursor);
-                break;
-            default:
-                throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
+                return new OrderAndCursorCondition(orderBy, cursorCondition);
+            }
+            case "endDate" -> {
+                return new OrderAndCursorCondition(
+                        getEndDateOrderSpecifiers(),
+                        cursor < Long.MAX_VALUE ? getEndDateCursorCondition(cursor) : new BooleanBuilder()
+                );
+            }
+            case "newest" -> {
+                return new OrderAndCursorCondition(
+                        new OrderSpecifier[]{buy.buyId.desc()},
+                        new BooleanBuilder().and(buy.buyId.loe(cursor))
+                );
+            }
+            default -> throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
         }
+    }
 
-        JPAQuery<Tuple> query = jpaQueryFactory
-                .select(buy.buyId,
+    private List<GetBuyListResponseDto.ProductDto> executeMainQuery(User u, BooleanBuilder conditions,
+                                                                    OrderSpecifier[] orderBy, BooleanBuilder cursorCondition, int limit, String filter) {
+
+        JPAQuery<GetBuyListResponseDto.ProductDto> query = jpaQueryFactory
+                .select(Projections.constructor(GetBuyListResponseDto.ProductDto.class,
+                        buy.buyId,
                         product.productName,
                         product.productImg,
                         product.originalPrice,
@@ -285,114 +338,37 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                         buy.skeleton,
                         buy.nowCount,
                         buy.deadline,
-                        user != null ? JPAExpressions
-                                .selectOne()
-                                .from(like)
-                                .where(like.buy.eq(buy)
-                                        .and(like.user.eq(user)))
-                                .exists()
-                                : Expressions.constant(false),
-                        JPAExpressions
-                                .select(review.count())
-                                .from(review)
-                                .where(review.order.buy.eq(buy))
-                                .where(review.deletedAt.isNull()))
+                        getUserLikeExpression(u)
+                ))
                 .from(buy)
-                .join(buy.product, product)
-                .leftJoin(buyCategory).on(buyCategory.buy.eq(buy))
-                .leftJoin(category).on(buyCategory.category.eq(category))
-                .leftJoin(review).on(review.order.buy.eq(buy))
-                .leftJoin(like).on(like.buy.eq(buy));
+                .innerJoin(buy.product, product);
 
-        query.where(conditions)
-                .groupBy(buy.buyId, product.productName, product.productImg, product.originalPrice,
-                        product.salePrice, product.discountPercent, buy.skeleton, buy.nowCount, buy.deadline)
-                .limit(limit + 1);
-
-        if (filter.equals("like")) {
-            query.having(cursorCondition);
-            query.orderBy(orderBy);
-        } else {
-            query.where(cursorCondition);
-            query.orderBy(orderBy);
+        if ("like".equals(filter)) {
+            query.leftJoin(buy.likes, like);
         }
 
-        List<Tuple> results = query.fetch();
+        return query
+                .where(conditions.and(cursorCondition))
+                .orderBy(orderBy)
+                .limit(limit + 1L)
+                .fetch();
+    }
 
-        List<Long> buyIds = results.stream()
-                .map(result -> result.get(0, Long.class))
-                .toList();
-
-        List<Tuple> ratingCountsList = jpaQueryFactory
-                .select(
-                        score.buy.buyId,
-                        score.one,
-                        score.two,
-                        score.three,
-                        score.four,
-                        score.five,
-                        score.count
-                )
-                .from(score)
-                .where(score.buy.buyId.in(buyIds))
-                .groupBy(score.buy.buyId)
+    private Map<Long, Long> fetchReviewCounts(List<Long> buyIds) {
+        List<Tuple> reviewCounts = jpaQueryFactory
+                .select(order.buy.buyId, review.count())
+                .from(review)
+                .innerJoin(review.order, order)
+                .where(order.buy.buyId.in(buyIds)
+                        .and(review.deletedAt.isNull()))
+                .groupBy(order.buy.buyId)
                 .fetch();
 
-        Map<Long, Tuple> ratingMap = new HashMap<>();
-        for (Tuple tuple : ratingCountsList) {
-            Long buyId = tuple.get(score.buy.buyId);
-            ratingMap.put(buyId, tuple);
-        }
-
-        List<GetBuyListResponseDto.ProductDto> products = new ArrayList<>();
-        int count = 0;
-        for (Tuple result : results) {
-            if (count >= limit) {
-                break;
-            }
-
-            Long buyId = result.get(0, Long.class);
-            Tuple ratingCounts = ratingMap.getOrDefault(buyId, null);
-
-            double average = 0.0;
-
-            if (ratingCounts != null) {
-                Integer one = Optional.ofNullable(ratingCounts.get(1, Integer.class)).orElse(0);
-                Integer two = Optional.ofNullable(ratingCounts.get(2, Integer.class)).orElse(0);
-                Integer three = Optional.ofNullable(ratingCounts.get(3, Integer.class)).orElse(0);
-                Integer four = Optional.ofNullable(ratingCounts.get(4, Integer.class)).orElse(0);
-                Integer five = Optional.ofNullable(ratingCounts.get(5, Integer.class)).orElse(0);
-                Integer total = Optional.ofNullable(ratingCounts.get(6, Integer.class)).orElse(0);
-
-                if (total != 0) {
-                    average = (one + two * 2 + three * 3 + four * 4 + five * 5) / (double) total;
-                }
-            }
-
-            GetBuyListResponseDto.ProductDto.ProductDtoBuilder dtoBuilder = GetBuyListResponseDto.ProductDto.builder()
-                    .buyId(buyId)
-                    .productName(result.get(1, String.class))
-                    .productImg(result.get(2, String.class))
-                    .productPrice(result.get(3, Integer.class))
-                    .discountPrice(result.get(4, Integer.class))
-                    .discountPercent(result.get(5, Integer.class))
-                    .skeleton(result.get(6, Integer.class))
-                    .nowCount(result.get(7, Integer.class))
-                    .expireDate(calculateExpireDate(result.get(8, LocalDate.class)))
-                    .isLiked(result.get(9, Boolean.class))
-                    .rating(average)
-                    .reviewCount(result.get(10, Long.class));
-
-            products.add(dtoBuilder.build());
-            count++;
-        }
-
-        Long nextCursor = results.size() > limit ? results.get(limit).get(buy.buyId) : null;
-
-        return GetBuyListResponseDto.builder()
-                .products(products)
-                .cursor(nextCursor)
-                .build();
+        return reviewCounts.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(0, Long.class),
+                        tuple -> tuple.get(1, Long.class)
+                ));
     }
 
     @Override
@@ -431,16 +407,6 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         }
 
         return reviews;
-    }
-
-    private int calculateExpireDate(LocalDate deadline) {
-        if (deadline.isBefore(LocalDate.now())) {
-            return -1;
-        } else if (deadline.isEqual(LocalDate.now())) {
-            return 0;
-        } else {
-            return (int) ChronoUnit.DAYS.between(LocalDate.now(), deadline);
-        }
     }
 
     private BooleanExpression photoCondition(Long photo) {
