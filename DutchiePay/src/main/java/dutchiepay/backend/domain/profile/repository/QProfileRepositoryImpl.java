@@ -272,9 +272,9 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "share.title, " +
                 "share.created_at as writeTime, " +
                 "share.description as content, " +
-                "'마트/배달' as category, " +
+                "share.category as category, " +
                 "NULL as commentCount, " +
-                "share.thumbnail, " +
+                "share.thumbnail as thumbnail, " +
                 "users.nickname as writerNickname, " +
                 "users.profile_img as writerProfileImage " +
                 "FROM share " +
@@ -286,9 +286,9 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 "free.title, " +
                 "free.created_at as writeTime, " +
                 "free.description as content, " +
-                "'자유' as category, " +
+                "free.category as category, " +
                 "(SELECT COUNT(*) FROM comment WHERE free_id = free.free_id AND deleted_at IS NULL) as commentCount, " +
-                "NULL as thumbnail, " +
+                "free.thumbnail as thumbnail, " +
                 "users.nickname as writerNickname, " +
                 "users.profile_img as writerProfileImage " +
                 "FROM free " +
@@ -364,7 +364,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                 .from(free)
                 .leftJoin(free.user)
                 .leftJoin(comment).on(comment.free.eq(free).and(comment.deletedAt.isNull()))
-                .where(comment.user.eq(user))
+                .where(comment.user.eq(user).and(free.deletedAt.isNull()))
                 .groupBy(free.freeId)
                 .orderBy(free.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -380,9 +380,6 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
         List<MyPostsResponseDto.Post> result = new ArrayList<>();
         for (Tuple tuple : queryResult) {
-            System.out.println("===========================================");
-            System.out.println("tuple = " + tuple);
-            System.out.println("===========================================");
             LocalDateTime dbTime = tuple.get(free.createdAt);
 
             long daysBetween = ChronoUnit.DAYS.between(dbTime, LocalDateTime.now());

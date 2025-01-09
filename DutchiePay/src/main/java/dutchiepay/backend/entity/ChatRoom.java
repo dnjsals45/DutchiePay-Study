@@ -19,7 +19,6 @@ public class ChatRoom extends Auditing {
     @Column(nullable = false)
     private String chatRoomName;
 
-    @Column(nullable = false)
     private String chatRoomImg;
 
     @Column(nullable = false)
