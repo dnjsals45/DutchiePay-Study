@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -21,6 +23,14 @@ public class Buy extends Auditing {
     @OneToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    @OneToMany(mappedBy = "buy")
+    @Builder.Default
+    private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "buy")
+    @Builder.Default
+    private List<BuyCategory> buyCategories = new ArrayList<>();
 
     // 제목
     @Column(nullable = false, length = 50)
