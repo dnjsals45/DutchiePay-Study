@@ -10,6 +10,7 @@ import dutchiepay.backend.domain.community.service.PurchaseService;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,11 @@ public class ChatRoomService {
     private final UserChatroomService userChatroomService;
     private final MartService martService;
     private final PurchaseService purchaseService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    // Redis key 형식: chat:{chatRoomId}:messages:yyMMdd
+    private static final String CHAT_KEY_PREFIX = "chat:";
+    private static final String MESSAGES_SUFFIX = ":messages";
 
     /**
      * 게시글에 연결된 채팅방에 참여한다.
@@ -204,6 +211,8 @@ public class ChatRoomService {
 
         messageRepository.save(newMessage);
 
+        String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + ":" + newMessage.getDate().replaceAll("[^0-9]", "");
+        redisTemplate.opsForList().rightPush(redisKey, newMessage);
 //        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
         simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, MessageResponse.of(newMessage));
