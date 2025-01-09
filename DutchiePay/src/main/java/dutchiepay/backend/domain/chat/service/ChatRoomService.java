@@ -76,7 +76,7 @@ public class ChatRoomService {
         }
         // 유저가 이미 채팅방에 속해있는 지 검증
         if (userChatroomService.alreadyJoined(user, chatRoom)) {
-            throw new ChatException(ChatErrorCode.ALREADY_JOINED);
+            return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
         }
 
         // 채팅방의 인원이 가득 찼을 경우 예외처리
