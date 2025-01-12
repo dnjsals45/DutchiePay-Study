@@ -46,6 +46,10 @@ public class ChronoUtil {
     }
 
     public static String formatChatTime(String date, String time) {
+        if (date == null || time == null) {
+            return null;
+        }
+
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
 
         LocalDate messageDate = LocalDate.parse(date, dateFormatter);

@@ -77,4 +77,8 @@ public class UserChatroomService {
     public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
         return userChatroomRepository.getChatRoomUsers(chatRoomId);
     }
+
+    public void updateLastMessageToAllSubscribers(List<Long> userIds, long l, Long messageId) {
+        userChatroomRepository.updateLastMessageToAllSubscribers(userIds, l, messageId);
+    }
 }

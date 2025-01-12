@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.chat.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dutchiepay.backend.domain.chat.dto.*;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
@@ -10,6 +11,7 @@ import dutchiepay.backend.domain.community.service.PurchaseService;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class ChatRoomService {
     private final UserChatroomService userChatroomService;
     private final MartService martService;
     private final PurchaseService purchaseService;
+    private final RedisMessageService redisMessageService;
 
     /**
      * 게시글에 연결된 채팅방에 참여한다.
@@ -76,7 +80,7 @@ public class ChatRoomService {
         }
         // 유저가 이미 채팅방에 속해있는 지 검증
         if (userChatroomService.alreadyJoined(user, chatRoom)) {
-            throw new ChatException(ChatErrorCode.ALREADY_JOINED);
+            return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
         }
 
         // 채팅방의 인원이 가득 찼을 경우 예외처리
@@ -198,13 +202,13 @@ public class ChatRoomService {
                 .content(message.getContent())
                 .date(message.getDate())
                 .time(message.getTime())
-//                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
-                .unreadCount(0)
+                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
                 .build();
 
         messageRepository.save(newMessage);
 
-//        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
+        redisMessageService.saveMessage(chatRoomId, newMessage);
+        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
         simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, MessageResponse.of(newMessage));
     }
@@ -252,22 +256,9 @@ public class ChatRoomService {
     }
 
     public List<GetMessageListResponseDto> getChatRoomMessages(Long chatRoomId) {
+        redisMessageService.getMessageFromMemory(chatRoomId, 1);
         return chatRoomRepository.findChatRoomMessages(chatRoomId);
     }
-//
-//    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
-//
-//        List<Message> messageList = messageRepository.findAllByChatroom(chatRoom);
-//        List<MessageResponse> dto = new ArrayList<>();
-//
-//        for (Message message : messageList) {
-//            dto.add(MessageResponse.of(message));
-//        }
-//
-//        return dto;
-//    }
 
 //    public void checkCursorId(Long chatRoomId, Long userId) {
 //        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
@@ -281,21 +272,21 @@ public class ChatRoomService {
 //        }
 //    }
 //
-//    private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
-//        List<Long> userIds = new ArrayList<>();
-//
-//        for (SimpUser user : simpUserRegistry.getUsers()) {
-//            for (SimpSession session : user.getSessions()) {
-//                for (SimpSubscription subscription : session.getSubscriptions()) {
-//                    if (subscription.getDestination().equals("/sub/chat/room/" + chatRoomId)) {
-//                        userIds.add(Long.parseLong(user.getName()));
-//                    }
-//                }
-//            }
-//        }
-//
-//        userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
-//    }
+    private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
+        List<Long> userIds = new ArrayList<>();
+
+        for (SimpUser user : simpUserRegistry.getUsers()) {
+            for (SimpSession session : user.getSessions()) {
+                for (SimpSubscription subscription : session.getSubscriptions()) {
+                    if (subscription.getDestination().equals("/sub/chat/" + chatRoomId)) {
+                        userIds.add(Long.parseLong(user.getName()));
+                    }
+                }
+            }
+        }
+
+        userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
+    }
 //
 //    public void sendListUnreadMessage(String userId) {
 //        List<UserChatRoom> userChatRoomList = userChatroomService.findAllByUserId(Long.valueOf(userId));
