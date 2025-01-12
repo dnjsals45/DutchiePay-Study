@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.chat.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dutchiepay.backend.domain.chat.dto.*;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
@@ -34,11 +35,7 @@ public class ChatRoomService {
     private final UserChatroomService userChatroomService;
     private final MartService martService;
     private final PurchaseService purchaseService;
-    private final RedisTemplate<String, Object> redisTemplate;
-
-    // Redis key 형식: chat:{chatRoomId}:messages:yyMMdd
-    private static final String CHAT_KEY_PREFIX = "chat:";
-    private static final String MESSAGES_SUFFIX = ":messages";
+    private final RedisMessageService redisMessageService;
 
     /**
      * 게시글에 연결된 채팅방에 참여한다.
@@ -205,15 +202,14 @@ public class ChatRoomService {
                 .content(message.getContent())
                 .date(message.getDate())
                 .time(message.getTime())
-//                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
-                .unreadCount(0)
+                .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
+//                .unreadCount(0)
                 .build();
 
         messageRepository.save(newMessage);
 
-        String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + ":" + newMessage.getDate().replaceAll("[^0-9]", "");
-        redisTemplate.opsForList().rightPush(redisKey, newMessage);
-//        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
+        redisMessageService.saveMessage(chatRoomId, newMessage);
+        updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
         simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, MessageResponse.of(newMessage));
     }
@@ -261,6 +257,7 @@ public class ChatRoomService {
     }
 
     public List<GetMessageListResponseDto> getChatRoomMessages(Long chatRoomId) {
+        redisMessageService.getMessageFromMemory(chatRoomId, 1);
         return chatRoomRepository.findChatRoomMessages(chatRoomId);
     }
 //
@@ -290,21 +287,21 @@ public class ChatRoomService {
 //        }
 //    }
 //
-//    private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
-//        List<Long> userIds = new ArrayList<>();
-//
-//        for (SimpUser user : simpUserRegistry.getUsers()) {
-//            for (SimpSession session : user.getSessions()) {
-//                for (SimpSubscription subscription : session.getSubscriptions()) {
-//                    if (subscription.getDestination().equals("/sub/chat/room/" + chatRoomId)) {
-//                        userIds.add(Long.parseLong(user.getName()));
-//                    }
-//                }
-//            }
-//        }
-//
-//        userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
-//    }
+    private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
+        List<Long> userIds = new ArrayList<>();
+
+        for (SimpUser user : simpUserRegistry.getUsers()) {
+            for (SimpSession session : user.getSessions()) {
+                for (SimpSubscription subscription : session.getSubscriptions()) {
+                    if (subscription.getDestination().equals("/sub/chat/room/" + chatRoomId)) {
+                        userIds.add(Long.parseLong(user.getName()));
+                    }
+                }
+            }
+        }
+
+        userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
+    }
 //
 //    public void sendListUnreadMessage(String userId) {
 //        List<UserChatRoom> userChatRoomList = userChatroomService.findAllByUserId(Long.valueOf(userId));

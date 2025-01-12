@@ -1,5 +1,7 @@
 package dutchiepay.backend.domain.chat.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
 import dutchiepay.backend.entity.ChatRoom;
@@ -7,6 +9,8 @@ import dutchiepay.backend.entity.Message;
 import dutchiepay.backend.entity.User;
 import dutchiepay.backend.entity.UserChatRoom;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +18,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessageService {
     private static final String CHAT_ROOM_PREFIX = "/sub/chat/";
     private final SimpMessagingTemplate simpMessagingTemplate;
