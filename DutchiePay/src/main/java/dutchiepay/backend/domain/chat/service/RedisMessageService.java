@@ -36,7 +36,6 @@ public class RedisMessageService {
         Set<Object> objects = redisTemplate.opsForZSet().range(redisKey, start, end);
         for (Object obj : objects) {
             MessageResponse mr = (MessageResponse) obj;
-            log.info("mr: {}", mr.getContent());
         }
     }
 }
