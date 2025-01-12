@@ -203,7 +203,6 @@ public class ChatRoomService {
                 .date(message.getDate())
                 .time(message.getTime())
                 .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
-//                .unreadCount(0)
                 .build();
 
         messageRepository.save(newMessage);
@@ -260,20 +259,6 @@ public class ChatRoomService {
         redisMessageService.getMessageFromMemory(chatRoomId, 1);
         return chatRoomRepository.findChatRoomMessages(chatRoomId);
     }
-//
-//    public List<MessageResponse> getChatRoomMessageList(User user, Long chatRoomId) {
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
-//
-//        List<Message> messageList = messageRepository.findAllByChatroom(chatRoom);
-//        List<MessageResponse> dto = new ArrayList<>();
-//
-//        for (Message message : messageList) {
-//            dto.add(MessageResponse.of(message));
-//        }
-//
-//        return dto;
-//    }
 
 //    public void checkCursorId(Long chatRoomId, Long userId) {
 //        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
@@ -293,7 +278,7 @@ public class ChatRoomService {
         for (SimpUser user : simpUserRegistry.getUsers()) {
             for (SimpSession session : user.getSessions()) {
                 for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (subscription.getDestination().equals("/sub/chat/room/" + chatRoomId)) {
+                    if (subscription.getDestination().equals("/sub/chat/" + chatRoomId)) {
                         userIds.add(Long.parseLong(user.getName()));
                     }
                 }
