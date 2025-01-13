@@ -50,7 +50,7 @@ public class ChronoUtil {
             return null;
         }
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         LocalDate messageDate = LocalDate.parse(date, dateFormatter);
 
