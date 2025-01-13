@@ -36,7 +36,7 @@ public class MessageService {
                 .type("enter")
                 .senderId(user.getUserId())
                 .content(user.getNickname() + "님이 입장하셨습니다.")
-                .date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")))
+                .date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .time(LocalTime.now().format(DateTimeFormatter.ofPattern("a h:m").withLocale(Locale.KOREA)))
                 .build();
 
@@ -51,7 +51,7 @@ public class MessageService {
                 .type("out")
                 .senderId(ucr.getUser().getUserId())
                 .content(ucr.getUser().getNickname() + "님이 퇴장하셨습니다.")
-                .date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")))
+                .date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .time(LocalTime.now().format(DateTimeFormatter.ofPattern("a h:m").withLocale(Locale.KOREA)))
                 .build();
 
@@ -66,7 +66,7 @@ public class MessageService {
                 .type("ban")
                 .senderId(target.getUser().getUserId())
                 .content(target.getUser().getNickname() + "님이 강퇴당하셨습니다.")
-                .date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")))
+                .date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .time(LocalTime.now().format(DateTimeFormatter.ofPattern("a h:m").withLocale(Locale.KOREA)))
                 .build();
 

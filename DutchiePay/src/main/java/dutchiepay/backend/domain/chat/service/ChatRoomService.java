@@ -205,7 +205,7 @@ public class ChatRoomService {
                 .type(message.getType())
                 .senderId(message.getSenderId())
                 .content(message.getContent())
-                .date(message.getDate())
+                .date(LocalDate.parse(message.getDate(), DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .time(message.getTime())
                 .unreadCount(chatRoom.getNowPartInc() - getSubscribedUserCount(chatRoomId))
                 .build();

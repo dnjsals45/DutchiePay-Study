@@ -22,7 +22,7 @@ import java.util.Set;
 public class RedisMessageService {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // Redis key 형식: chat:{chatRoomId}:messages:yyMMdd
+    // Redis key 형식: chat:{chatRoomId}:messages:yyyyMMdd
     private static final String CHAT_KEY_PREFIX = "chat:";
     private static final String MESSAGES_SUFFIX = ":messages:";
 
@@ -31,7 +31,8 @@ public class RedisMessageService {
         redisTemplate.opsForZSet().add(redisKey, MessageResponse.of(message), message.getMessageId());
     }
 
-    public GetMessageListResponseDto getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
+    public GetMessageListResponseDto
+    getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
         List<MessageResponse> totalDataList = new ArrayList<>();
         String nextCursor;
         Long remainingLimit = limit;
