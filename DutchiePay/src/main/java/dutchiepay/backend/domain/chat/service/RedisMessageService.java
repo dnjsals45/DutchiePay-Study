@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,45 +32,74 @@ public class RedisMessageService {
     }
 
     public GetMessageListResponseDto getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
-        String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + cursorDate;
+        List<MessageResponse> totalDataList = new ArrayList<>();
+        String nextCursor;
+        Long remainingLimit = limit;
+        String currentDate = cursorDate;
 
-        Set<Object> messages;
-        if (cursorMessageId == null) {
-            messages = redisTemplate.opsForZSet()
-                    .reverseRange(redisKey, 0, limit);
-        } else {
-            messages = redisTemplate.opsForZSet()
-                    .reverseRangeByScore(redisKey,
-                            0,  // 최소값
-                            cursorMessageId,  // Long 타입 그대로 사용
-                            0,
-                            limit + 1L);
-        }
+        LocalDate currentLocalDate = LocalDate.now();
+        LocalDate sevenDaysAgo = currentLocalDate.minusDays(7);
 
-        if (messages == null || messages.isEmpty()) {
-            return null;
-        }
-
-        List<MessageResponse> dataList = new ArrayList<>();
-        String nextCursor = null;
-
-        int count = 0;
-
-        for (Object obj : messages) {
-            if (count < limit) {
-                MessageResponse mr = (MessageResponse) obj;
-                dataList.add(mr);
-            } else {
-                MessageResponse lastMessage = (MessageResponse) obj;
-                nextCursor = cursorDate + lastMessage.getMessageId();
+        while (remainingLimit > 0) {
+            LocalDate targetDate = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            if (targetDate.isBefore(sevenDaysAgo)) {
                 break;
             }
-            count++;
+
+            String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + currentDate;
+
+            Set<Object> messages;
+            if (cursorMessageId == null) {
+                messages = redisTemplate.opsForZSet()
+                        .reverseRange(redisKey, 0, remainingLimit);
+            } else {
+                messages = redisTemplate.opsForZSet()
+                        .reverseRangeByScore(redisKey,
+                                0,
+                                cursorMessageId,
+                                0,
+                                remainingLimit + 1L);
+            }
+
+            if (messages == null || messages.isEmpty()) {
+                LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+                LocalDate previousDate = date.minusDays(1);
+                currentDate = previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                cursorMessageId = null;
+                continue;
+            }
+
+            int count = 0;
+            for (Object obj : messages) {
+                if (count < remainingLimit) {
+                    MessageResponse mr = (MessageResponse) obj;
+                    totalDataList.add(mr);
+                } else {
+                    MessageResponse lastMessage = (MessageResponse) obj;
+                    nextCursor = currentDate + lastMessage.getMessageId();
+                    return GetMessageListResponseDto.builder()
+                            .messages(totalDataList)
+                            .cursor(nextCursor)
+                            .build();
+                }
+                count++;
+            }
+
+            remainingLimit -= messages.size();
+            if (remainingLimit > 0) {
+                LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+                LocalDate previousDate = date.minusDays(1);
+                currentDate = previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                cursorMessageId = null;
+            }
         }
 
+        LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+        LocalDate previousDate = date.minusDays(1);
+
         return GetMessageListResponseDto.builder()
-                .messages(dataList)
-                .cursor(nextCursor)
+                .messages(totalDataList)
+                .cursor(previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "00")
                 .build();
     }
 }

@@ -268,7 +268,7 @@ public class ChatRoomService {
             cursorDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         } else {
             cursorDate = cursor.substring(0, 8);
-            cursorMessageId = Long.valueOf(cursor.substring(8));
+            cursorMessageId = Long.parseLong(cursor.substring(8)) != 0 ? Long.parseLong(cursor.substring(8)) : null;
         }
 
         LocalDate currentDate = LocalDate.now();
@@ -278,17 +278,14 @@ public class ChatRoomService {
         long daysDifference = ChronoUnit.DAYS.between(requestDate, currentDate);
 
         if (daysDifference <= 7) {
-            // Redis에서 먼저 조회 시도
             GetMessageListResponseDto redisMessages =
                     redisMessageService.getMessageFromMemory(chatRoomId, cursorDate, cursorMessageId, limit);
 
-            // Redis에 데이터가 있으면 사용, 없으면 DB에서 조회
             if (redisMessages != null) {
                 return redisMessages;
             }
         }
 
-        // 7일 이전 데이터이거나 Redis에 데이터가 없는 경우 DB 조회
         return chatRoomRepository.findChatRoomMessages(chatRoomId, cursorDate, cursorMessageId, limit);
     }
 
