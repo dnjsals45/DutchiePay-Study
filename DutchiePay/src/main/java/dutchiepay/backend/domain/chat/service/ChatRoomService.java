@@ -37,7 +37,7 @@ public class ChatRoomService {
     private final PurchaseService purchaseService;
     private final RedisMessageService redisMessageService;
 
-    private final String CHAT_ROOM_PREFIX = "/sub/chat/";
+    private static final String CHAT_ROOM_PREFIX = "/sub/chat/";
 
     /**
      * 게시글에 연결된 채팅방에 참여한다.
