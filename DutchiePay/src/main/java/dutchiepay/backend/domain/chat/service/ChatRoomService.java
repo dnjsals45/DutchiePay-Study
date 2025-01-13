@@ -1,6 +1,5 @@
 package dutchiepay.backend.domain.chat.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dutchiepay.backend.domain.chat.dto.*;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
@@ -11,8 +10,6 @@ import dutchiepay.backend.domain.community.service.PurchaseService;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -26,8 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +37,7 @@ public class ChatRoomService {
     private final PurchaseService purchaseService;
     private final RedisMessageService redisMessageService;
 
-    private final String CHATROOM_PREFIX = "/sub/chat/";
+    private final String CHAT_ROOM_PREFIX = "/sub/chat/";
 
     /**
      * 게시글에 연결된 채팅방에 참여한다.
@@ -188,7 +183,7 @@ public class ChatRoomService {
         // 추후 상황에 맞게 isSendActivated를 변경한다.
         ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
 
-        simpMessagingTemplate.convertAndSend(CHATROOM_PREFIX + chatRoomId, chatRoomInfo);
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, chatRoomInfo);
     }
 
     /**
@@ -217,7 +212,7 @@ public class ChatRoomService {
         redisMessageService.saveMessage(chatRoomId, newMessage);
         updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
-        simpMessagingTemplate.convertAndSend(CHATROOM_PREFIX + chatRoomId, MessageResponse.of(newMessage));
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, MessageResponse.of(newMessage));
     }
 
     /**
@@ -230,7 +225,7 @@ public class ChatRoomService {
     }
 
     private int getSubscribedUserCount(String chatRoomId) {
-        String destination = CHATROOM_PREFIX + chatRoomId;
+        String destination = CHAT_ROOM_PREFIX + chatRoomId;
         int count = 0;
 
         for (SimpUser user : simpUserRegistry.getUsers()) {
@@ -309,7 +304,7 @@ public class ChatRoomService {
         for (SimpUser user : simpUserRegistry.getUsers()) {
             for (SimpSession session : user.getSessions()) {
                 for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (subscription.getDestination().equals(CHATROOM_PREFIX + chatRoomId)) {
+                    if (subscription.getDestination().equals(CHAT_ROOM_PREFIX + chatRoomId)) {
                         userIds.add(Long.parseLong(user.getName()));
                     }
                 }
