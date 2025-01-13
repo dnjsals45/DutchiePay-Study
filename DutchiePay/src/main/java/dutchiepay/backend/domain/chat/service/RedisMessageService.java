@@ -74,7 +74,17 @@ public class RedisMessageService {
             for (Object obj : messages) {
                 if (count < remainingLimit) {
                     MessageResponse mr = (MessageResponse) obj;
-                    totalDataList.add(mr);
+                    MessageResponse mr2 = MessageResponse.builder()
+                            .messageId(mr.getMessageId())
+                            .content(mr.getContent())
+                            .date(LocalDate.parse(mr.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd"))
+                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                            .time(mr.getTime())
+                            .senderId(mr.getSenderId())
+                            .type(mr.getType())
+                            .build();
+
+                    totalDataList.add(mr2);
                 } else {
                     MessageResponse lastMessage = (MessageResponse) obj;
                     nextCursor = currentDate + lastMessage.getMessageId();
