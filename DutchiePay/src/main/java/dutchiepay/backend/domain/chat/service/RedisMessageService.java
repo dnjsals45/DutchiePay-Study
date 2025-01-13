@@ -46,7 +46,7 @@ public class RedisMessageService {
         }
 
         if (messages == null || messages.isEmpty()) {
-            throw new ChatException(ChatErrorCode.EMPTY_MESSAGE);
+            return null;
         }
 
         List<MessageResponse> dataList = new ArrayList<>();
