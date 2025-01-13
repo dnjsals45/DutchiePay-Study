@@ -18,12 +18,13 @@ public enum ChatErrorCode implements StatusCode {
     INVALID_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 타입입니다."),
     MANAGER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "방장은 채팅방을 나갈 수 없습니다."),
     ALREADY_JOINED(HttpStatus.BAD_REQUEST, "이미 채팅방에 참여되어있습니다."),
+    EMPTY_MESSAGE(HttpStatus.BAD_REQUEST, "더 이상 불러올 메시지가 없습니다."),
 
     /**
      * 403 Forbidden
      */
     USER_BANNED(HttpStatus.FORBIDDEN, "사용자가 채팅방에서 차단되었습니다."),
-    NOT_MANAGER(HttpStatus.FORBIDDEN, "방장 권한이 없습니다."),;
+    NOT_MANAGER(HttpStatus.FORBIDDEN, "방장 권한이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

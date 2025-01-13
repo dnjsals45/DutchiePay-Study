@@ -5,5 +5,5 @@ import dutchiepay.backend.domain.chat.dto.GetMessageListResponseDto;
 import java.util.List;
 
 public interface QChatRoomRepository {
-    List<GetMessageListResponseDto> findChatRoomMessages(Long chatRoomId);
+    GetMessageListResponseDto findChatRoomMessages(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit);
 }

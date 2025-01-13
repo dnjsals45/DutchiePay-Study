@@ -9,16 +9,22 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MessageResponse {
     private Long messageId;
-    private Long sender;
+    private Long senderId;
+    private String type;
     private String content;
     private Integer unreadCount;
+    private String date;
+    private String time;
 
     public static MessageResponse of(Message message) {
         return MessageResponse.builder()
                 .messageId(message.getMessageId())
-                .sender(message.getSenderId())
+                .senderId(message.getSenderId())
+                .type(message.getType())
                 .content(message.getContent())
                 .unreadCount(message.getUnreadCount())
+                .date(message.getDate())
+                .time(message.getTime())
                 .build();
     }
 }

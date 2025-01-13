@@ -71,7 +71,9 @@ public class ChatController {
     @Operation(summary = "채팅방 메시지 목록 조회")
     @GetMapping("/message")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getChatRoomMessages(@RequestParam Long chatRoomId) {
-        return ResponseEntity.ok(chatroomService.getChatRoomMessages(chatRoomId));
+    public ResponseEntity<?> getChatRoomMessages(@RequestParam(value = "chatRoomId") Long chatRoomId,
+                                                 @RequestParam(value = "cursor", required = false) String cursor,
+                                                 @RequestParam(value = "limit") Long limit) {
+        return ResponseEntity.ok(chatroomService.getChatRoomMessages(chatRoomId, cursor, limit));
     }
 }
