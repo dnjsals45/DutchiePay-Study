@@ -42,6 +42,8 @@ public class ChatRoomService {
     private final PurchaseService purchaseService;
     private final RedisMessageService redisMessageService;
 
+    private final String CHATROOM_PREFIX = "/sub/chat/";
+
     /**
      * 게시글에 연결된 채팅방에 참여한다.
      * @param user 유저
@@ -186,7 +188,7 @@ public class ChatRoomService {
         // 추후 상황에 맞게 isSendActivated를 변경한다.
         ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
 
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, chatRoomInfo);
+        simpMessagingTemplate.convertAndSend(CHATROOM_PREFIX + chatRoomId, chatRoomInfo);
     }
 
     /**
@@ -215,7 +217,7 @@ public class ChatRoomService {
         redisMessageService.saveMessage(chatRoomId, newMessage);
         updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, MessageResponse.of(newMessage));
+        simpMessagingTemplate.convertAndSend(CHATROOM_PREFIX + chatRoomId, MessageResponse.of(newMessage));
     }
 
     /**
@@ -228,7 +230,7 @@ public class ChatRoomService {
     }
 
     private int getSubscribedUserCount(String chatRoomId) {
-        String destination = "/sub/chat/room/" + chatRoomId;
+        String destination = CHATROOM_PREFIX + chatRoomId;
         int count = 0;
 
         for (SimpUser user : simpUserRegistry.getUsers()) {
@@ -307,7 +309,7 @@ public class ChatRoomService {
         for (SimpUser user : simpUserRegistry.getUsers()) {
             for (SimpSession session : user.getSessions()) {
                 for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (subscription.getDestination().equals("/sub/chat/" + chatRoomId)) {
+                    if (subscription.getDestination().equals(CHATROOM_PREFIX + chatRoomId)) {
                         userIds.add(Long.parseLong(user.getName()));
                     }
                 }
