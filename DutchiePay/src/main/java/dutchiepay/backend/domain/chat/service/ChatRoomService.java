@@ -12,6 +12,7 @@ import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -20,8 +21,12 @@ import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -255,9 +260,36 @@ public class ChatRoomService {
         return userChatroomService.getChatRoomUsers(chatRoomId);
     }
 
-    public List<GetMessageListResponseDto> getChatRoomMessages(Long chatRoomId) {
-        redisMessageService.getMessageFromMemory(chatRoomId, 1);
-        return chatRoomRepository.findChatRoomMessages(chatRoomId);
+    public GetMessageListResponseDto getChatRoomMessages(Long chatRoomId, String cursor, Long limit) {
+        String cursorDate;
+        Long cursorMessageId = null;
+
+        if (cursor == null) {
+            cursorDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        } else {
+            cursorDate = cursor.substring(0, 8);
+            cursorMessageId = Long.valueOf(cursor.substring(8));
+        }
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate requestDate = LocalDate.parse(cursorDate,
+                DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        long daysDifference = ChronoUnit.DAYS.between(requestDate, currentDate);
+
+        if (daysDifference <= 7) {
+            // Redis에서 먼저 조회 시도
+            GetMessageListResponseDto redisMessages =
+                    redisMessageService.getMessageFromMemory(chatRoomId, cursorDate, cursorMessageId, limit);
+
+            // Redis에 데이터가 있으면 사용, 없으면 DB에서 조회
+            if (redisMessages != null) {
+                return redisMessages;
+            }
+        }
+
+        // 7일 이전 데이터이거나 Redis에 데이터가 없는 경우 DB 조회
+        return chatRoomRepository.findChatRoomMessages(chatRoomId, cursorDate, cursorMessageId, limit);
     }
 
 //    public void checkCursorId(Long chatRoomId, Long userId) {

@@ -23,7 +23,7 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
 
 
     @Override
-    public List<GetMessageListResponseDto> findChatRoomMessages(Long chatRoomId) {
+    public GetMessageListResponseDto findChatRoomMessages(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
         List<Tuple> tuple = jpaQueryFactory
                 .select(message.messageId,
                         message.content,
@@ -47,20 +47,20 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
                     .replace("월 ", "-")
                     .replace("일", "");
 
-            GetMessageListResponseDto dto = GetMessageListResponseDto.builder()
-                    .messageId(t.get(message.messageId))
-                    .content(t.get(message.content))
-                    .date(formatDate)
-                    .sendAt(t.get(message.time))
-                    .senderId(t.get(message.senderId))
-                    .senderName(t.get(user.nickname))
-                    .senderProfileImg(t.get(user.profileImg))
-                    .type(t.get(message.type))
-                    .build();
+//            GetMessageListResponseDto dto = GetMessageListResponseDto.builder()
+//                    .messageId(t.get(message.messageId))
+//                    .content(t.get(message.content))
+//                    .date(formatDate)
+//                    .sendAt(t.get(message.time))
+//                    .senderId(t.get(message.senderId))
+//                    .senderName(t.get(user.nickname))
+//                    .senderProfileImg(t.get(user.profileImg))
+//                    .type(t.get(message.type))
+//                    .build();
 
-            result.add(dto);
+//            result.add(dto);
         }
 
-        return result;
+        return null;
     }
 }

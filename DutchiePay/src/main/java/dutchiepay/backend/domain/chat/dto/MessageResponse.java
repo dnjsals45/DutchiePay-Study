@@ -12,6 +12,7 @@ public class MessageResponse {
     private Long sender;
     private String content;
     private Integer unreadCount;
+    private String type;
 
     public static MessageResponse of(Message message) {
         return MessageResponse.builder()
@@ -19,6 +20,7 @@ public class MessageResponse {
                 .sender(message.getSenderId())
                 .content(message.getContent())
                 .unreadCount(message.getUnreadCount())
+                .type(message.getType())
                 .build();
     }
 }

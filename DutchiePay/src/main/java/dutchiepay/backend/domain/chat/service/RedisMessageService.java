@@ -1,14 +1,17 @@
 package dutchiepay.backend.domain.chat.service;
 
+import dutchiepay.backend.domain.chat.dto.GetMessageListResponseDto;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
+import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
+import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -26,16 +29,46 @@ public class RedisMessageService {
         redisTemplate.opsForZSet().add(redisKey, MessageResponse.of(message), message.getMessageId());
     }
 
-    public void getMessageFromMemory(Long chatRoomId, int page) {
-        String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    public GetMessageListResponseDto getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
+        String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + cursorDate;
 
-        int pageSize = 10;
-        int start = (page - 1) * pageSize;
-        int end = start + pageSize - 1;
-
-        Set<Object> objects = redisTemplate.opsForZSet().range(redisKey, start, end);
-        for (Object obj : objects) {
-            MessageResponse mr = (MessageResponse) obj;
+        Set<Object> messages;
+        if (cursorMessageId == null) {
+            messages = redisTemplate.opsForZSet()
+                    .reverseRange(redisKey, 0, limit);
+        } else {
+            messages = redisTemplate.opsForZSet()
+                    .reverseRangeByScore(redisKey,
+                            0,  // 최소값
+                            cursorMessageId,  // Long 타입 그대로 사용
+                            0,
+                            limit + 1L);
         }
+
+        if (messages == null || messages.isEmpty()) {
+            throw new ChatException(ChatErrorCode.EMPTY_MESSAGE);
+        }
+
+        List<MessageResponse> dataList = new ArrayList<>();
+        String nextCursor = null;
+
+        int count = 0;
+
+        for (Object obj : messages) {
+            if (count < limit) {
+                MessageResponse mr = (MessageResponse) obj;
+                dataList.add(mr);
+            } else {
+                MessageResponse lastMessage = (MessageResponse) obj;
+                nextCursor = cursorDate + lastMessage.getMessageId();
+                break;
+            }
+            count++;
+        }
+
+        return GetMessageListResponseDto.builder()
+                .messages(dataList)
+                .cursor(nextCursor)
+                .build();
     }
 }
