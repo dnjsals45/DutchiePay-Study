@@ -35,8 +35,8 @@ public class MessageService {
                 .time(LocalTime.now().format(DateTimeFormatter.ofPattern("a h:m").withLocale(Locale.KOREA)))
                 .build();
 
+        enterMessage = messageRepository.save(enterMessage);
         redisMessageService.saveMessage(String.valueOf(chatRoom.getChatroomId()), enterMessage);
-        messageRepository.save(enterMessage);
 
         simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoom.getChatroomId(), MessageResponse.of(enterMessage));
     }
@@ -51,8 +51,8 @@ public class MessageService {
                 .time(LocalTime.now().format(DateTimeFormatter.ofPattern("a h:m").withLocale(Locale.KOREA)))
                 .build();
 
+        leaveMessage = messageRepository.save(leaveMessage);
         redisMessageService.saveMessage(String.valueOf(ucr.getChatroom().getChatroomId()), leaveMessage);
-        messageRepository.save(leaveMessage);
 
         simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + ucr.getChatroom().getChatroomId(), MessageResponse.of(leaveMessage));
     }
@@ -67,8 +67,8 @@ public class MessageService {
                 .time(LocalTime.now().format(DateTimeFormatter.ofPattern("a h:m").withLocale(Locale.KOREA)))
                 .build();
 
+        kickedMessage = messageRepository.save(kickedMessage);
         redisMessageService.saveMessage(String.valueOf(target.getChatroom().getChatroomId()), kickedMessage);
-        messageRepository.save(kickedMessage);
 
         simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + target.getChatroom().getChatroomId(), MessageResponse.of(kickedMessage));
     }
