@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -72,6 +73,8 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
             result.add(dto);
             count++;
         }
+
+        Collections.reverse(result);
 
         String nextCursor = tuple.size() > limit ? tuple.get(limit.intValue()).get(message.date) + tuple.get(limit.intValue()).get(message.messageId) : null;
         return GetMessageListResponseDto.builder()

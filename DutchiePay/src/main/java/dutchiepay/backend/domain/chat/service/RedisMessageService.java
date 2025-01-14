@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -88,6 +89,9 @@ public class RedisMessageService {
                 } else {
                     MessageResponse lastMessage = (MessageResponse) obj;
                     nextCursor = currentDate + lastMessage.getMessageId();
+
+                    Collections.reverse(totalDataList);
+
                     return GetMessageListResponseDto.builder()
                             .messages(totalDataList)
                             .cursor(nextCursor)
@@ -107,6 +111,8 @@ public class RedisMessageService {
 
         LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
         LocalDate previousDate = date.minusDays(1);
+
+        Collections.reverse(totalDataList);
 
         return GetMessageListResponseDto.builder()
                 .messages(totalDataList)
