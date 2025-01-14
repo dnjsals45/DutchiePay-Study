@@ -34,6 +34,7 @@ public class StompEventListener extends DefaultHandshakeHandler {
         String userId = accessor.getSessionAttributes().get("userId").toString();
         Long chatRoomId = Long.parseLong(destination.substring(destination.lastIndexOf("/") + 1));
 
+        chatRoomService.checkCursorId(chatRoomId, Long.valueOf(userId));
         chatRoomService.sendChatRoomInfo(userId, chatRoomId);
     }
 

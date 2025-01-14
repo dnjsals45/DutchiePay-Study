@@ -286,18 +286,20 @@ public class ChatRoomService {
         return chatRoomRepository.findChatRoomMessages(chatRoomId, cursorDate, cursorMessageId, limit);
     }
 
-//    public void checkCursorId(Long chatRoomId, Long userId) {
-//        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
-//
-//        if (cursor != null) {
-//            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
-//            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
-//        } else {
-//            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(0L));
-//            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
-//        }
-//    }
-//
+    public void checkCursorId(Long chatRoomId, Long userId) {
+        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
+
+        if (cursor != null) {
+            simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(cursor));
+            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+        } else {
+            simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(0L));
+            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+        }
+
+        redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursor);
+    }
+
     private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
         List<Long> userIds = new ArrayList<>();
 

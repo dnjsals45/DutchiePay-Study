@@ -81,4 +81,8 @@ public class UserChatroomService {
     public void updateLastMessageToAllSubscribers(List<Long> userIds, long l, Long messageId) {
         userChatroomRepository.updateLastMessageToAllSubscribers(userIds, l, messageId);
     }
+
+    public void updateLastMessageToUser(Long userId, Long chatRoomId) {
+        userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
+    }
 }

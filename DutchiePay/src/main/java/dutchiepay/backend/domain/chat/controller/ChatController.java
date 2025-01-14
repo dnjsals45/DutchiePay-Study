@@ -4,6 +4,7 @@ import dutchiepay.backend.domain.chat.dto.ChatMessage;
 import dutchiepay.backend.domain.chat.dto.JoinChatRoomRequestDto;
 import dutchiepay.backend.domain.chat.dto.KickUserRequestDto;
 import dutchiepay.backend.domain.chat.service.ChatRoomService;
+import dutchiepay.backend.domain.chat.service.RedisMessageService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatRoomService chatroomService;
+    private final RedisMessageService redisMessageService;
 
     @MessageMapping("/chat/{chatRoomId}")
     public ChatMessage chat(@DestinationVariable String chatRoomId, ChatMessage message) {
@@ -75,5 +77,14 @@ public class ChatController {
                                                  @RequestParam(value = "cursor", required = false) String cursor,
                                                  @RequestParam(value = "limit") Long limit) {
         return ResponseEntity.ok(chatroomService.getChatRoomMessages(chatRoomId, cursor, limit));
+    }
+
+    @Operation(summary = "method 테스트")
+    @GetMapping("/test")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> test(@RequestParam(value = "chatRoomId") Long chatRoomId,
+                                  @RequestParam(value = "cursorId", required = false) Long cursorId) {
+        redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursorId - 1L);
+        return ResponseEntity.ok().build();
     }
 }

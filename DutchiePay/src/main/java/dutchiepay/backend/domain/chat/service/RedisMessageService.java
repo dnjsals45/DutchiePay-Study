@@ -30,8 +30,7 @@ public class RedisMessageService {
         redisTemplate.opsForZSet().add(redisKey, MessageResponse.of(message), message.getMessageId());
     }
 
-    public GetMessageListResponseDto
-    getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
+    public GetMessageListResponseDto getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
         List<MessageResponse> totalDataList = new ArrayList<>();
         String nextCursor;
         Long remainingLimit = limit;
