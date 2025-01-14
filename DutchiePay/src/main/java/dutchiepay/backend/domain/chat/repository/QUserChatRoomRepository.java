@@ -17,4 +17,6 @@ public interface QUserChatRoomRepository {
     List<GetChatRoomListResponseDto> getChatRoomList(User user);
 
     List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId);
+
+    Boolean findByUserBanned(Long userId, Long chatRoomId);
 }

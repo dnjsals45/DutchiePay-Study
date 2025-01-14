@@ -35,10 +35,8 @@ public class UserChatroomService {
         chatRoom.joinUser();
     }
 
-    public boolean isBanned(User user, ChatRoom chatRoom) {
-        UserChatRoom userChatRoom = userChatroomRepository.findByUserAndChatroom(user, chatRoom);
-
-        return userChatRoom != null && userChatRoom.getBanned();
+    public boolean isBanned(Long userId, Long chatRoomId) {
+        return userChatroomRepository.findByUserBanned(userId, chatRoomId);
     }
 
     public UserChatRoom findByUserAndChatRoomId(User user, Long chatRoomId) {
@@ -80,5 +78,9 @@ public class UserChatroomService {
 
     public void updateLastMessageToAllSubscribers(List<Long> userIds, long l, Long messageId) {
         userChatroomRepository.updateLastMessageToAllSubscribers(userIds, l, messageId);
+    }
+
+    public void updateLastMessageToUser(Long userId, Long chatRoomId) {
+        userChatroomRepository.updateLastMessageToUser(userId, chatRoomId);
     }
 }

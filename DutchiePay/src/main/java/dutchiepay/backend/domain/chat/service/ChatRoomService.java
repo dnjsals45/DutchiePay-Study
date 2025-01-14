@@ -1,6 +1,5 @@
 package dutchiepay.backend.domain.chat.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dutchiepay.backend.domain.chat.dto.*;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
@@ -11,8 +10,6 @@ import dutchiepay.backend.domain.community.service.PurchaseService;
 import dutchiepay.backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -26,8 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +36,8 @@ public class ChatRoomService {
     private final MartService martService;
     private final PurchaseService purchaseService;
     private final RedisMessageService redisMessageService;
+
+    private static final String CHAT_ROOM_PREFIX = "/sub/chat/";
 
     /**
      * 게시글에 연결된 채팅방에 참여한다.
@@ -94,7 +91,7 @@ public class ChatRoomService {
         }
 
         // 블랙리스트 여부 확인
-        if (userChatroomService.isBanned(user, chatRoom)) {
+        if (userChatroomService.isBanned(user.getUserId(), chatRoom.getChatroomId())) {
             throw new ChatException(ChatErrorCode.USER_BANNED);
         }
 
@@ -182,11 +179,10 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
 
-        // 우선적으로 isSendActivated를 true로 설정하여 채팅방 정보를 전송한다.
-        // 추후 상황에 맞게 isSendActivated를 변경한다.
-        ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
+        boolean isBanned = userChatroomService.isBanned(Long.valueOf(userId), chatRoomId);
+        ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, !isBanned);
 
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, chatRoomInfo);
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, chatRoomInfo);
     }
 
     /**
@@ -215,7 +211,7 @@ public class ChatRoomService {
         redisMessageService.saveMessage(chatRoomId, newMessage);
         updateLastMessageToAllSubscribers(chatRoomId, newMessage.getMessageId());
 
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + chatRoomId, MessageResponse.of(newMessage));
+        simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, MessageResponse.of(newMessage));
     }
 
     /**
@@ -228,7 +224,7 @@ public class ChatRoomService {
     }
 
     private int getSubscribedUserCount(String chatRoomId) {
-        String destination = "/sub/chat/room/" + chatRoomId;
+        String destination = CHAT_ROOM_PREFIX + chatRoomId;
         int count = 0;
 
         for (SimpUser user : simpUserRegistry.getUsers()) {
@@ -289,25 +285,26 @@ public class ChatRoomService {
         return chatRoomRepository.findChatRoomMessages(chatRoomId, cursorDate, cursorMessageId, limit);
     }
 
-//    public void checkCursorId(Long chatRoomId, Long userId) {
-//        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
-//
-//        if (cursor != null) {
-//            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(cursor));
-//            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
-//        } else {
-//            simpMessagingTemplate.convertAndSend("/sub/chat/room/read/" + chatRoomId, CursorResponse.of(0L));
-//            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
-//        }
-//    }
-//
+    public void checkCursorId(Long chatRoomId, Long userId) {
+        Long cursor = messageRepository.findCursorId(chatRoomId, userId);
+
+        if (cursor != null) {
+            simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(cursor));
+            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+            redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursor - 1L);
+        } else {
+            simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(0L));
+            userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+        }
+    }
+
     private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
         List<Long> userIds = new ArrayList<>();
 
         for (SimpUser user : simpUserRegistry.getUsers()) {
             for (SimpSession session : user.getSessions()) {
                 for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (subscription.getDestination().equals("/sub/chat/" + chatRoomId)) {
+                    if (subscription.getDestination().equals(CHAT_ROOM_PREFIX + chatRoomId)) {
                         userIds.add(Long.parseLong(user.getName()));
                     }
                 }
@@ -316,25 +313,4 @@ public class ChatRoomService {
 
         userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
     }
-//
-//    public void sendListUnreadMessage(String userId) {
-//        List<UserChatRoom> userChatRoomList = userChatroomService.findAllByUserId(Long.valueOf(userId));
-//
-//        List<ChatRoomUnreadMessageDto> dto = new ArrayList<>();
-//
-//        for (UserChatRoom userChatRoom : userChatRoomList) {
-//            ChatRoom chatRoom = userChatRoom.getChatroom();
-//
-//            dto.add(ChatRoomUnreadMessageDto.builder()
-//                    .chatRoomId(chatRoom.getChatroomId())
-//                    .unreadCount(0L)
-//                    .message("test")
-//                    .build());
-//        }
-//
-//        simpMessagingTemplate.convertAndSendToUser(
-//                userId,
-//                "/chat/list/message",
-//                dto);
-//    }
 }

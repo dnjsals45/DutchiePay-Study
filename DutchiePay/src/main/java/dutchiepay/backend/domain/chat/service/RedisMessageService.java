@@ -2,8 +2,6 @@ package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.GetMessageListResponseDto;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
-import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
-import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -31,8 +30,7 @@ public class RedisMessageService {
         redisTemplate.opsForZSet().add(redisKey, MessageResponse.of(message), message.getMessageId());
     }
 
-    public GetMessageListResponseDto
-    getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
+    public GetMessageListResponseDto getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
         List<MessageResponse> totalDataList = new ArrayList<>();
         String nextCursor;
         Long remainingLimit = limit;
@@ -88,6 +86,9 @@ public class RedisMessageService {
                 } else {
                     MessageResponse lastMessage = (MessageResponse) obj;
                     nextCursor = currentDate + lastMessage.getMessageId();
+
+                    Collections.reverse(totalDataList);
+
                     return GetMessageListResponseDto.builder()
                             .messages(totalDataList)
                             .cursor(nextCursor)
@@ -108,9 +109,37 @@ public class RedisMessageService {
         LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
         LocalDate previousDate = date.minusDays(1);
 
+        Collections.reverse(totalDataList);
+
         return GetMessageListResponseDto.builder()
                 .messages(totalDataList)
                 .cursor(previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "00")
                 .build();
+    }
+
+    public void decreaseUnreadCountWithCursor(Long chatRoomId, Long cursorId) {
+        String pattern = "chat:" + chatRoomId + ":messages:*";
+        Set<String> keys = redisTemplate.keys(pattern);
+
+        if (keys == null || keys.isEmpty()) {
+            return;
+        }
+
+        for (String key : keys) {
+            Set<Object> messages = redisTemplate.opsForZSet().rangeByScore(key, cursorId, Double.MAX_VALUE);
+
+            if (messages != null) {
+                for (Object obj : messages) {
+                    MessageResponse mr = (MessageResponse) obj;
+                    if (mr.getMessageId() > cursorId) {
+                        redisTemplate.opsForZSet().remove(key, mr);
+                        mr.setUnreadCount(mr.getUnreadCount() - 1);
+                        redisTemplate.opsForZSet().add(key, mr, mr.getMessageId());
+                    }
+                }
+            } else {
+                break;
+            }
+        }
     }
 }
