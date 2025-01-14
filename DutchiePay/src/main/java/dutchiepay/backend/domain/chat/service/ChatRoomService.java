@@ -91,7 +91,7 @@ public class ChatRoomService {
         }
 
         // 블랙리스트 여부 확인
-        if (userChatroomService.isBanned(user, chatRoom)) {
+        if (userChatroomService.isBanned(user.getUserId(), chatRoom.getChatroomId())) {
             throw new ChatException(ChatErrorCode.USER_BANNED);
         }
 
@@ -179,9 +179,8 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
 
-        // 우선적으로 isSendActivated를 true로 설정하여 채팅방 정보를 전송한다.
-        // 추후 상황에 맞게 isSendActivated를 변경한다.
-        ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, true);
+        boolean isBanned = userChatroomService.isBanned(Long.valueOf(userId), chatRoomId);
+        ChatRoomInfoResponse chatRoomInfo = ChatRoomInfoResponse.from(Long.valueOf(userId), chatRoom, !isBanned);
 
         simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, chatRoomInfo);
     }
@@ -292,12 +291,11 @@ public class ChatRoomService {
         if (cursor != null) {
             simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(cursor));
             userChatroomService.updateLastMessageToUser(userId, chatRoomId);
+            redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursor - 1L);
         } else {
             simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(0L));
             userChatroomService.updateLastMessageToUser(userId, chatRoomId);
         }
-
-        redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursor);
     }
 
     private void updateLastMessageToAllSubscribers(String chatRoomId, Long messageId) {
@@ -315,25 +313,4 @@ public class ChatRoomService {
 
         userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
     }
-//
-//    public void sendListUnreadMessage(String userId) {
-//        List<UserChatRoom> userChatRoomList = userChatroomService.findAllByUserId(Long.valueOf(userId));
-//
-//        List<ChatRoomUnreadMessageDto> dto = new ArrayList<>();
-//
-//        for (UserChatRoom userChatRoom : userChatRoomList) {
-//            ChatRoom chatRoom = userChatRoom.getChatroom();
-//
-//            dto.add(ChatRoomUnreadMessageDto.builder()
-//                    .chatRoomId(chatRoom.getChatroomId())
-//                    .unreadCount(0L)
-//                    .message("test")
-//                    .build());
-//        }
-//
-//        simpMessagingTemplate.convertAndSendToUser(
-//                userId,
-//                "/chat/list/message",
-//                dto);
-//    }
 }

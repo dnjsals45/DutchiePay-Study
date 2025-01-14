@@ -35,10 +35,8 @@ public class UserChatroomService {
         chatRoom.joinUser();
     }
 
-    public boolean isBanned(User user, ChatRoom chatRoom) {
-        UserChatRoom userChatRoom = userChatroomRepository.findByUserAndChatroom(user, chatRoom);
-
-        return userChatRoom != null && userChatRoom.getBanned();
+    public boolean isBanned(Long userId, Long chatRoomId) {
+        return userChatroomRepository.findByUserBanned(userId, chatRoomId);
     }
 
     public UserChatRoom findByUserAndChatRoomId(User user, Long chatRoomId) {

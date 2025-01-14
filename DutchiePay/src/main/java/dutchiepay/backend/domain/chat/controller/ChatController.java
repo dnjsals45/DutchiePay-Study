@@ -82,9 +82,8 @@ public class ChatController {
     @Operation(summary = "method 테스트")
     @GetMapping("/test")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> test(@RequestParam(value = "chatRoomId") Long chatRoomId,
-                                  @RequestParam(value = "cursorId", required = false) Long cursorId) {
-        redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursorId - 1L);
+    public ResponseEntity<?> test() {
+        chatroomService.sendChatRoomInfo("2", 14L);
         return ResponseEntity.ok().build();
     }
 }
