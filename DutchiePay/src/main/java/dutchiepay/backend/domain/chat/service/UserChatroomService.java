@@ -37,7 +37,7 @@ public class UserChatroomService {
         return chatRoom;
     }
 
-    public boolean isBanned(Long userId, Long chatRoomId) {
+    public Boolean isBanned(Long userId, Long chatRoomId) {
         return userChatroomRepository.findByUserBanned(userId, chatRoomId);
     }
 

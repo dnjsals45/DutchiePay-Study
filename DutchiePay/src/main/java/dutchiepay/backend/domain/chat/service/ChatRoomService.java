@@ -64,17 +64,17 @@ public class ChatRoomService {
             // 유저가 게시글 작성자라면 1명만 참여, 작성자가 아니라면 작성자도 포함해서 참여시킨다.
             if (post instanceof Share s) {
                 if (s.getUser().getUserId().equals(user.getUserId())) {
-                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "manager");
+                    userChatroomService.joinChatRoom(user, newChatRoom, "manager");
                 } else {
-                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "member");
-                    newChatRoom = userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "manager");
+                    userChatroomService.joinChatRoom(user, newChatRoom, "member");
+                    userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "manager");
                 }
             } else if (post instanceof Purchase p) {
                 if (p.getUser().getUserId().equals(user.getUserId())) {
-                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "manager");
+                    userChatroomService.joinChatRoom(user, newChatRoom, "manager");
                 } else {
-                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "member");
-                    newChatRoom = userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "manager");
+                    userChatroomService.joinChatRoom(user, newChatRoom, "member");
+                    userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "manager");
                 }
             }
 
@@ -90,8 +90,9 @@ public class ChatRoomService {
             throw new ChatException(ChatErrorCode.FULL_CHAT);
         }
 
+        Boolean isBanned = userChatroomService.isBanned(user.getUserId(), chatRoom.getChatroomId());
         // 블랙리스트 여부 확인
-        if (userChatroomService.isBanned(user.getUserId(), chatRoom.getChatroomId())) {
+        if (isBanned != null && isBanned) {
             throw new ChatException(ChatErrorCode.USER_BANNED);
         }
 
