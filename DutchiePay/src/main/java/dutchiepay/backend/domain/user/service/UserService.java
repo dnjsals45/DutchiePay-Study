@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.user.service;
 
+import dutchiepay.backend.domain.notice.service.NoticeUtilService;
 import dutchiepay.backend.domain.user.dto.FindEmailRequestDto;
 import dutchiepay.backend.domain.user.dto.FindEmailResponseDto;
 import dutchiepay.backend.domain.user.dto.FindPasswordRequestDto;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -43,6 +45,7 @@ public class UserService {
     private final OAuth2AuthorizedClientService oauthService;
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
+    private final NoticeUtilService noticeUtilService;
 
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
@@ -231,7 +234,8 @@ public class UserService {
         Long userId = redisService.findUserIdFromRefreshToken(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        return UserReLoginResponseDto.toDto(user, reissueAccessToken(userId), user.getPhone() != null);
+        Boolean hasNotice = noticeUtilService.existUnreadNotification(user, LocalDateTime.now().minusDays(7));
+        return UserReLoginResponseDto.toDto(user, reissueAccessToken(userId), user.getPhone() != null, hasNotice);
     }
 
     private String reissueAccessToken(Long userId) {
