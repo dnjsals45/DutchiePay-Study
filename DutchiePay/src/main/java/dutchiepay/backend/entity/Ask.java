@@ -34,7 +34,7 @@ public class Ask extends Auditing {
     private Product product;
 
     //문의내용
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false, length = 2500)
     private String contents;
 
     //비공개 여부 true = 비공개

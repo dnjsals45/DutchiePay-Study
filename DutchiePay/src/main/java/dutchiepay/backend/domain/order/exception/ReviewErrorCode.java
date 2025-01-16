@@ -17,11 +17,12 @@ public enum ReviewErrorCode implements StatusCode {
     CANNOT_UPDATE_CAUSE_30DAYS(HttpStatus.BAD_REQUEST, "리뷰 작성 후 30일이 지나 수정할 수 없습니다."),
     CANNOT_UPDATE_CAUSE_COUNT(HttpStatus.BAD_REQUEST, "리뷰 수정은 2회까지만 가능합니다."),
     INVALID_RATING(HttpStatus.BAD_REQUEST, "올바르지 않은 평점입니다."),
+    INVALID_CONTENT_LENGTH(HttpStatus.BAD_REQUEST, "리뷰 내용은 1000자 이하로 작성해주세요."),
 
     /**
      * 403 FORBIDDEN
      */
-    REVIEW_USER_MISS_MATCH(HttpStatus.FORBIDDEN, "본인이 작성한 후기가 아닙니다.");
+    REVIEW_USER_MISS_MATCH(HttpStatus.FORBIDDEN, "본인이 작성한 후기가 아닙니다."),;
 
     private final HttpStatus httpStatus;
     private final String message;

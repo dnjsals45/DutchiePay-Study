@@ -13,7 +13,8 @@ public enum AskErrorCode implements StatusCode {
      * 400 BAD_REQUEST
      */
     INVALID_BUY(HttpStatus.BAD_REQUEST, "공동구매 정보가 없습니다."),
-    INVALID_ASK(HttpStatus.BAD_REQUEST, "문의 정보가 없습니다."),;
+    INVALID_ASK(HttpStatus.BAD_REQUEST, "문의 정보가 없습니다."),
+    INVALID_ASK_CONTENT_LENGTH(HttpStatus.BAD_REQUEST, "문의 내용은 1000자 이하로 작성해주세요."),;
 
     private final HttpStatus httpStatus;
     private final String message;

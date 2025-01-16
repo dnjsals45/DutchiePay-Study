@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +49,7 @@ public class NoticeUtilService {
         return noticeRepository.save(Notice.builder()
                 .user(comment.getFree().getUser())
                 .type("comment")
-                .origin(comment.getFree().getTitle())
+                .origin(null)
                 .content(comment.getContents())
                 .originId(comment.getFree().getFreeId())
                 .commentId(comment.getCommentId())
@@ -66,7 +63,7 @@ public class NoticeUtilService {
         return noticeRepository.save(Notice.builder()
                 .user(c.getUser())
                 .type("reply")
-                .origin(c.getContents())
+                .origin(null)
                 .content(comment.getContents())
                 .originId(c.getFree().getFreeId())
                 .commentId(comment.getParentId())

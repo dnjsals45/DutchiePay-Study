@@ -20,9 +20,10 @@ public class UserReLoginResponseDto {
     String location;
     String access;
     Boolean isCertified;
+    Boolean hasNotice;
 
     public static UserReLoginResponseDto toDto(final User user, String access,
-        Boolean isCertified) {
+        Boolean isCertified, Boolean hasNotice) {
         return UserReLoginResponseDto.builder()
             .userId(user.getUserId())
             .type(user.getOauthProvider())
@@ -31,6 +32,7 @@ public class UserReLoginResponseDto {
             .location(user.getLocation())
             .access(access)
             .isCertified(isCertified)
+            .hasNotice(hasNotice)
             .build();
     }
 }

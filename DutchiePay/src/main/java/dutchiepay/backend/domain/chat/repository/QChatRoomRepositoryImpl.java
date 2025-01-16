@@ -44,11 +44,15 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
                 .limit(limit + 1)
                 .fetch();
 
+        List<MessageResponse> result = new ArrayList<>();
+
         if (tuple.isEmpty()) {
-            throw new ChatException(ChatErrorCode.EMPTY_MESSAGE);
+            return GetMessageListResponseDto.builder()
+                    .messages(result)
+                    .cursor(null)
+                    .build();
         }
 
-        List<MessageResponse> result = new ArrayList<>();
 
         int count = 0;
         for (Tuple t : tuple) {

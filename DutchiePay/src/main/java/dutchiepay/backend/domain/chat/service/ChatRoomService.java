@@ -78,11 +78,11 @@ public class ChatRoomService {
                 }
             }
 
-            return JoinChatRoomResponseDto.of(newChatRoom.getChatroomId());
+            return JoinChatRoomResponseDto.of(newChatRoom.getChatroomId(), newChatRoom.getChatRoomName(), newChatRoom.getNowPartInc());
         }
         // 유저가 이미 채팅방에 속해있는 지 검증
         if (userChatroomService.alreadyJoined(user, chatRoom)) {
-            return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
+            return JoinChatRoomResponseDto.of(chatRoom.getChatroomId(), chatRoom.getChatRoomName(), chatRoom.getNowPartInc());
         }
 
         // 채팅방의 인원이 가득 찼을 경우 예외처리
@@ -90,15 +90,16 @@ public class ChatRoomService {
             throw new ChatException(ChatErrorCode.FULL_CHAT);
         }
 
+        Boolean isBanned = userChatroomService.isBanned(user.getUserId(), chatRoom.getChatroomId());
         // 블랙리스트 여부 확인
-        if (userChatroomService.isBanned(user.getUserId(), chatRoom.getChatroomId())) {
+        if (isBanned != null && isBanned) {
             throw new ChatException(ChatErrorCode.USER_BANNED);
         }
 
         // 채팅방에 유저 참여
         userChatroomService.joinChatRoom(user, chatRoom, "member");
 
-        return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
+        return JoinChatRoomResponseDto.of(chatRoom.getChatroomId(), chatRoom.getChatRoomName(), chatRoom.getNowPartInc());
     }
 
     /**
@@ -248,8 +249,10 @@ public class ChatRoomService {
             throw new ChatException(ChatErrorCode.NOT_MANAGER);
         }
 
-        UserChatRoom target = userChatroomService.findByUserUserIdAndChatRoomId(dto.getUserId(), dto.getChatRoomId());
-        userChatroomService.kickedChatRoom(target);
+        for (Long userId : dto.getUserId()) {
+            UserChatRoom target = userChatroomService.findByUserUserIdAndChatRoomId(userId, dto.getChatRoomId());
+            userChatroomService.kickedChatRoom(target);
+        }
     }
 
     public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {

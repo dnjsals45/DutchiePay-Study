@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.chat.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.entity.QChatRoom;
 import dutchiepay.backend.entity.QMessage;
 import dutchiepay.backend.entity.QUser;
@@ -8,6 +9,8 @@ import dutchiepay.backend.entity.QUserChatRoom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor

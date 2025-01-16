@@ -58,6 +58,10 @@ public class ProfileService {
 
     @Transactional
     public void createAsk(User user, CreateAskRequestDto req) {
+        if (req.getContent().length() > 1000) {
+            throw new AskErrorException(AskErrorCode.INVALID_ASK_CONTENT_LENGTH);
+        }
+
         Buy buy = buyRepository.findById(req.getBuyId()).orElseThrow(() -> new AskErrorException(AskErrorCode.INVALID_BUY));
 
         Ask newAsk = Ask.builder()

@@ -344,12 +344,17 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .innerJoin(buy.product, product);
 
         if ("like".equals(filter)) {
-            query.leftJoin(buy.likes, like);
+            query.leftJoin(like).on(like.buy.eq(buy));
+            query.groupBy(buy.buyId, product.productName, product.productImg,
+                    product.originalPrice, product.salePrice, product.discountPercent,
+                    buy.skeleton, buy.nowCount, buy.deadline);
+
+            query.having(cursorCondition);
+        } else {
+            query.where(cursorCondition);
         }
 
-        return query
-                .where(conditions.and(cursorCondition))
-                .orderBy(orderBy)
+        return query.orderBy(orderBy)
                 .limit(limit + 1L)
                 .fetch();
     }
