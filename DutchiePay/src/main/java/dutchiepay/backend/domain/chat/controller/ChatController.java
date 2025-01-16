@@ -4,7 +4,6 @@ import dutchiepay.backend.domain.chat.dto.ChatMessage;
 import dutchiepay.backend.domain.chat.dto.JoinChatRoomRequestDto;
 import dutchiepay.backend.domain.chat.dto.KickUserRequestDto;
 import dutchiepay.backend.domain.chat.service.ChatRoomService;
-import dutchiepay.backend.domain.chat.service.RedisMessageService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatRoomService chatroomService;
-    private final RedisMessageService redisMessageService;
 
     @MessageMapping("/chat/{chatRoomId}")
     public ChatMessage chat(@DestinationVariable String chatRoomId, ChatMessage message) {
