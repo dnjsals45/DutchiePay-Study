@@ -31,6 +31,7 @@ public class ChatMessageScheduler {
         Set<String> keys = redisTemplate.keys(pattern);
 
         if (keys == null || keys.isEmpty()) {
+            log.info("동기화할 메시지가 없습니다.");
             return;
         }
 
