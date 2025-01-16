@@ -2,8 +2,6 @@ package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.GetMessageListResponseDto;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
-import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
-import dutchiepay.backend.domain.chat.repository.MessageRepository;
 import dutchiepay.backend.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
