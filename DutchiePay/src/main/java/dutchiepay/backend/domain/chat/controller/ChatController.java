@@ -76,12 +76,4 @@ public class ChatController {
                                                  @RequestParam(value = "limit") Long limit) {
         return ResponseEntity.ok(chatroomService.getChatRoomMessages(chatRoomId, cursor, limit));
     }
-
-    @Operation(summary = "method 테스트")
-    @GetMapping("/test")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> test() {
-        chatroomService.sendChatRoomInfo("2", 14L);
-        return ResponseEntity.ok().build();
-    }
 }
