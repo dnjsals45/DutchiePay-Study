@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.notice.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -39,7 +40,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                                 .from(subNotice)
                                 .where(
                                         subNotice.user.eq(user),
-                                        subNotice.origin.eq(notice.origin),
+                                        subNotice.writer.eq(notice.writer),
                                         subNotice.type.eq(notice.type),
 //                                        subNotice.isRead.eq(false),
                                         subNotice.createdAt.goe(LocalDateTime.now().minusDays(7)),
@@ -58,7 +59,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                     .from(notice)
                     .where(
                             notice.user.eq(user),
-                            notice.origin.eq(n.getOrigin()),
+                            notice.writer.eq(n.getWriter()),
                             notice.type.eq(n.getType()),
 //                            notice.isRead.eq(false),
                             notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
@@ -87,8 +88,9 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
 
     @Override
     public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
-        String origin = jpaQueryFactory
-                .select(notice.origin)
+        Tuple tuple = jpaQueryFactory
+                .select(notice.type,
+                        notice.writer)
                 .from(notice)
                 .where(notice.noticeId.eq(noticeId))
                 .fetchOne();
@@ -96,7 +98,8 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
         List<Notice> notices = jpaQueryFactory
                 .selectFrom(notice)
                 .where(
-                        notice.origin.eq(origin),
+                        notice.type.eq(tuple.get(notice.type)),
+                        notice.writer.eq(tuple.get(notice.writer)),
 //                                .and(notice.isRead.eq(false))
                         notice.user.eq(user),
                         notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
