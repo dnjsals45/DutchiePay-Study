@@ -2,6 +2,9 @@ package dutchiepay.backend.domain.chat.service;
 
 import dutchiepay.backend.domain.chat.dto.GetMessageListResponseDto;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
+import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
+import dutchiepay.backend.domain.chat.repository.MessageRepository;
+import dutchiepay.backend.entity.ChatRoom;
 import dutchiepay.backend.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,8 @@ public class RedisMessageService {
     // Redis key 형식: chat:{chatRoomId}:messages:yyyyMMdd
     private static final String CHAT_KEY_PREFIX = "chat:";
     private static final String MESSAGES_SUFFIX = ":messages:";
+    private final ChatRoomRepository chatRoomRepository;
+    private final MessageRepository messageRepository;
 
     public void saveMessage(String chatRoomId, Message message) {
         String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + message.getDate().replaceAll("[^0-9]", "");
@@ -140,6 +145,25 @@ public class RedisMessageService {
             } else {
                 break;
             }
+        }
+    }
+
+    public void createMessage() {
+        ChatRoom chatRoom = chatRoomRepository.findById(14L)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+        for (int i = 0; i < 100; i++) {
+            Message message = Message.builder()
+                    .chatroom(chatRoom)
+                    .type("text")
+                    .senderId(1L)
+                    .content("테스트 메시지" + i)
+                    .date("20250109")
+                    .time("오전 10시:40분")
+                    .unreadCount(0)
+                    .build();
+
+            message = messageRepository.save(message);
+            saveMessage(chatRoom.getChatroomId().toString(), message);
         }
     }
 }
