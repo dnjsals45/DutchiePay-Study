@@ -21,7 +21,7 @@ public class UserChatroomService {
     private final MessageService messageService;
 
     @Transactional
-    public void joinChatRoom(User user, ChatRoom chatRoom, String role) {
+    public ChatRoom joinChatRoom(User user, ChatRoom chatRoom, String role) {
         UserChatRoom userChatRoom = UserChatRoom.builder()
                 .user(user)
                 .chatroom(chatRoom)
@@ -33,6 +33,8 @@ public class UserChatroomService {
         messageService.enterChatRoom(user, chatRoom);
 
         chatRoom.joinUser();
+
+        return chatRoom;
     }
 
     public boolean isBanned(Long userId, Long chatRoomId) {

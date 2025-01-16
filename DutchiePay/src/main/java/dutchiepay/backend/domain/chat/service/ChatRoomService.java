@@ -64,25 +64,25 @@ public class ChatRoomService {
             // 유저가 게시글 작성자라면 1명만 참여, 작성자가 아니라면 작성자도 포함해서 참여시킨다.
             if (post instanceof Share s) {
                 if (s.getUser().getUserId().equals(user.getUserId())) {
-                    userChatroomService.joinChatRoom(user, newChatRoom, "manager");
+                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "manager");
                 } else {
-                    userChatroomService.joinChatRoom(user, newChatRoom, "member");
-                    userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "manager");
+                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "member");
+                    newChatRoom = userChatroomService.joinChatRoom(s.getUser(), newChatRoom, "manager");
                 }
             } else if (post instanceof Purchase p) {
                 if (p.getUser().getUserId().equals(user.getUserId())) {
-                    userChatroomService.joinChatRoom(user, newChatRoom, "manager");
+                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "manager");
                 } else {
-                    userChatroomService.joinChatRoom(user, newChatRoom, "member");
-                    userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "manager");
+                    newChatRoom = userChatroomService.joinChatRoom(user, newChatRoom, "member");
+                    newChatRoom = userChatroomService.joinChatRoom(p.getUser(), newChatRoom, "manager");
                 }
             }
 
-            return JoinChatRoomResponseDto.of(newChatRoom.getChatroomId());
+            return JoinChatRoomResponseDto.of(newChatRoom.getChatroomId(), newChatRoom.getChatRoomName(), newChatRoom.getNowPartInc());
         }
         // 유저가 이미 채팅방에 속해있는 지 검증
         if (userChatroomService.alreadyJoined(user, chatRoom)) {
-            return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
+            return JoinChatRoomResponseDto.of(chatRoom.getChatroomId(), chatRoom.getChatRoomName(), chatRoom.getNowPartInc());
         }
 
         // 채팅방의 인원이 가득 찼을 경우 예외처리
@@ -98,7 +98,7 @@ public class ChatRoomService {
         // 채팅방에 유저 참여
         userChatroomService.joinChatRoom(user, chatRoom, "member");
 
-        return JoinChatRoomResponseDto.of(chatRoom.getChatroomId());
+        return JoinChatRoomResponseDto.of(chatRoom.getChatroomId(), chatRoom.getChatRoomName(), chatRoom.getNowPartInc());
     }
 
     /**
