@@ -40,7 +40,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                                 .from(subNotice)
                                 .where(
                                         subNotice.user.eq(user),
-                                        subNotice.writer.eq(notice.writer),
+                                        subNotice.originId.eq(notice.originId),
                                         subNotice.type.eq(notice.type),
 //                                        subNotice.isRead.eq(false),
                                         subNotice.createdAt.goe(LocalDateTime.now().minusDays(7)),
@@ -59,7 +59,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                     .from(notice)
                     .where(
                             notice.user.eq(user),
-                            notice.writer.eq(n.getWriter()),
+                            notice.originId.eq(n.getOriginId()),
                             notice.type.eq(n.getType()),
 //                            notice.isRead.eq(false),
                             notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
@@ -90,7 +90,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
     public List<GetNoticeListResponseDto> getMoreNotices(User user, Long noticeId) {
         Tuple tuple = jpaQueryFactory
                 .select(notice.type,
-                        notice.writer)
+                        notice.originId)
                 .from(notice)
                 .where(notice.noticeId.eq(noticeId))
                 .fetchOne();
@@ -99,7 +99,7 @@ public class QNoticeRepositoryImpl implements QNoticeRepository{
                 .selectFrom(notice)
                 .where(
                         notice.type.eq(tuple.get(notice.type)),
-                        notice.writer.eq(tuple.get(notice.writer)),
+                        notice.originId.eq(tuple.get(notice.originId)),
 //                                .and(notice.isRead.eq(false))
                         notice.user.eq(user),
                         notice.createdAt.goe(LocalDateTime.now().minusDays(7)),
