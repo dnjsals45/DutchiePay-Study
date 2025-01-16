@@ -21,6 +21,7 @@ public class Notice extends Auditing {
 
     private String type;
 
+    @Column(length = 1000)
     private String origin;
 
     private String content;
