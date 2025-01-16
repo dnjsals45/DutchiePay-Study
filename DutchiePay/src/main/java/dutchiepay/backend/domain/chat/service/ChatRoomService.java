@@ -248,8 +248,10 @@ public class ChatRoomService {
             throw new ChatException(ChatErrorCode.NOT_MANAGER);
         }
 
-        UserChatRoom target = userChatroomService.findByUserUserIdAndChatRoomId(dto.getUserId(), dto.getChatRoomId());
-        userChatroomService.kickedChatRoom(target);
+        for (Long userId : dto.getUserId()) {
+            UserChatRoom target = userChatroomService.findByUserUserIdAndChatRoomId(userId, dto.getChatRoomId());
+            userChatroomService.kickedChatRoom(target);
+        }
     }
 
     public List<GetChatRoomUsersResponseDto> getChatRoomUsers(Long chatRoomId) {
