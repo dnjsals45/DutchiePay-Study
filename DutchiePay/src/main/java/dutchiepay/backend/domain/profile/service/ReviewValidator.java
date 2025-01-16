@@ -10,6 +10,7 @@ import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
 import dutchiepay.backend.entity.Order;
 import dutchiepay.backend.entity.Review;
 import dutchiepay.backend.entity.User;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +24,18 @@ public class ReviewValidator {
     private final OrderUtilService orderUtilService;
 
     public Order validateReviewCreation(User user, CreateReviewRequestDto req) {
+        validateReviewContentLength(req.getContent());
         validateRating(req.getRating());
         Order order = orderUtilService.findById(req.getOrderId());
         validateUserOrder(user, order);
         validateReviewDuplication(user, order);
         return order;
+    }
+
+    public void validateReviewContentLength(String content) {
+        if (content.length() > 1000) {
+            throw new ReviewErrorException(ReviewErrorCode.INVALID_CONTENT_LENGTH);
+        }
     }
 
     public Review validateReviewUpdate(User user, UpdateReviewRequestDto req) {
