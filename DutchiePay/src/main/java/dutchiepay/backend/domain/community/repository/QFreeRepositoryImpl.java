@@ -249,7 +249,8 @@ public class QFreeRepositoryImpl implements QFreeRepository {
                         comment.updatedAt,
                         comment.user.state)
                 .from(comment)
-                .where(comment.parentId.eq(commentId), comment.deletedAt.isNull());
+                .where(comment.parentId.eq(commentId), comment.deletedAt.isNull())
+                .orderBy(comment.createdAt.asc());
         if (type.equals("first")) query.limit(5);
         else if (type.equals("rest")) query.offset(6);
         else throw new CommunityException(CommunityErrorCode.ILLEGAL_TYPE);
