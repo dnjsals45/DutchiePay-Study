@@ -14,6 +14,7 @@ import dutchiepay.backend.domain.profile.dto.MyGoodsResponseDto;
 import dutchiepay.backend.domain.profile.dto.MyPostsResponseDto;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorCode;
 import dutchiepay.backend.domain.profile.exception.ProfileErrorException;
+import dutchiepay.backend.domain.profile.service.ReviewUtilService;
 import dutchiepay.backend.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -40,6 +41,7 @@ import java.util.Map;
 public class QProfileRepositoryImpl implements QProfileRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final ReviewUtilService reviewUtilService;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -205,7 +207,7 @@ public class QProfileRepositoryImpl implements QProfileRepository {
 
 
         for (Tuple t : content) {
-            MyGoodsResponseDto.Goods dto = MyGoodsResponseDto.Goods.builder()
+            MyGoodsResponseDto.Goods.GoodsBuilder dto = MyGoodsResponseDto.Goods.builder()
                     .orderId(t.get(orders.orderId))
                     .orderNum(t.get(orders.orderNum))
                     .buyId(t.get(buy.buyId))
@@ -223,10 +225,11 @@ public class QProfileRepositoryImpl implements QProfileRepository {
                     .deliveryState(t.get(orders.state))
                     .productImg(t.get(product.productImg))
                     .storeName(t.get(store.storeName))
-                    .message(t.get(orders.message))
-                    .build();
+                    .message(t.get(orders.message));
 
-            result.add(dto);
+            dto.hasReviewed(reviewUtilService.existsByOrderId(t.get(orders.orderId)));
+
+            result.add(dto.build());
         }
 
         return MyGoodsResponseDto.builder()
