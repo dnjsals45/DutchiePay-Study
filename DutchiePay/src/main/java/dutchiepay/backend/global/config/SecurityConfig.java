@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.config;
 
+import dutchiepay.backend.domain.notice.service.NoticeUtilService;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.jwt.redis.RedisService;
@@ -42,6 +43,7 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final RedisService redisService;
+    private final NoticeUtilService noticeUtilService;
 
     @Value("${spring.cors.allowed-origins}")
     private List<String> corsOrigins;
@@ -98,7 +100,7 @@ public class SecurityConfig {
                         oauth2.successHandler(customOAuth2SuccessHandler))
                 .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService),
+                        new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService, noticeUtilService),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception ->
                         exception

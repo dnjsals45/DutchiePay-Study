@@ -80,6 +80,7 @@ public class RedisMessageService {
                             .time(mr.getTime())
                             .senderId(mr.getSenderId())
                             .type(mr.getType())
+                            .unreadCount(mr.getUnreadCount())
                             .build();
 
                     totalDataList.add(mr2);
@@ -131,7 +132,7 @@ public class RedisMessageService {
             if (messages != null) {
                 for (Object obj : messages) {
                     MessageResponse mr = (MessageResponse) obj;
-                    if (mr.getMessageId() > cursorId) {
+                    if (mr.getMessageId() > cursorId && mr.getUnreadCount() > 0) {
                         redisTemplate.opsForZSet().remove(key, mr);
                         mr.setUnreadCount(mr.getUnreadCount() - 1);
                         redisTemplate.opsForZSet().add(key, mr, mr.getMessageId());

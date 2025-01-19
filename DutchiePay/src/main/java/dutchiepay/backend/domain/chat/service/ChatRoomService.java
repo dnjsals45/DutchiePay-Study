@@ -294,7 +294,7 @@ public class ChatRoomService {
         if (cursor != null) {
             simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(cursor));
             userChatroomService.updateLastMessageToUser(userId, chatRoomId);
-            redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursor - 1L);
+            redisMessageService.decreaseUnreadCountWithCursor(chatRoomId, cursor);
         } else {
             simpMessagingTemplate.convertAndSend(CHAT_ROOM_PREFIX + chatRoomId, CursorResponse.of(0L));
             userChatroomService.updateLastMessageToUser(userId, chatRoomId);

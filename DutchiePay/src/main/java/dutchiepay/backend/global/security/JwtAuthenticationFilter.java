@@ -2,6 +2,7 @@ package dutchiepay.backend.global.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dutchiepay.backend.domain.notice.service.NoticeUtilService;
 import dutchiepay.backend.domain.user.dto.UserLoginRequestDto;
 import dutchiepay.backend.domain.user.dto.UserLoginResponseDto;
 import dutchiepay.backend.domain.user.exception.UserErrorCode;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +38,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisService redisService;
+    private final NoticeUtilService noticeUtilService;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository,
-                                   PasswordEncoder passwordEncoder, RedisService redisService) {
+                                   PasswordEncoder passwordEncoder, RedisService redisService, NoticeUtilService noticeUtilService) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.redisService = redisService;
+        this.noticeUtilService = noticeUtilService;
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/users/login", "POST"));
     }
 
@@ -123,7 +127,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         redisService.saveToken(userDetails.getUserId(), refreshToken);
         userRepository.save(user);
 
-        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken, refreshToken));
+        Boolean hasNotice = noticeUtilService.existUnreadNotification(user, LocalDateTime.now().minusDays(7));
+        sendResponse(response, UserLoginResponseDto.toDto(user, accessToken, refreshToken, hasNotice));
 
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(

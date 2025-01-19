@@ -23,8 +23,9 @@ public class UserLoginResponseDto {
     private String refresh;
     @JsonProperty("isCertified")
     private boolean certified;
+    private Boolean hasNotice;
 
-    public static UserLoginResponseDto toDto(User user, String access, String refresh) {
+    public static UserLoginResponseDto toDto(User user, String access, String refresh, Boolean hasNotice) {
         return UserLoginResponseDto.builder()
             .userId(user.getUserId())
             .type(user.getOauthProvider())
@@ -33,6 +34,7 @@ public class UserLoginResponseDto {
             .location(user.getLocation())
             .access(access)
             .refresh(refresh)
+            .hasNotice(hasNotice)
             .certified(user.getPhone() != null).build();
     }
 }
