@@ -1,5 +1,6 @@
 package dutchiepay.backend.global.config;
 
+import dutchiepay.backend.domain.notice.service.NoticeUtilService;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.jwt.redis.RedisService;
@@ -18,10 +19,11 @@ public class JwtFilterConfig {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RedisService redisService;
+    private final NoticeUtilService noticeUtilService;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder, redisService);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder, redisService, noticeUtilService);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
