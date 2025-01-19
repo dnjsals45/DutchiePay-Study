@@ -92,10 +92,10 @@ public class QUserChatRoomRepositoryImpl implements QUserChatRoomRepository {
                 .select(userChatRoom.user.userId,
                         userChatRoom.user.nickname,
                         userChatRoom.user.profileImg,
-                        userChatRoom.role,
-                        userChatRoom.banned)
+                        userChatRoom.role)
                 .from(userChatRoom)
-                .where(userChatRoom.chatroom.chatroomId.eq(chatRoomId))
+                .where(userChatRoom.chatroom.chatroomId.eq(chatRoomId)
+                        .and(userChatRoom.banned.eq(false)))
                 .fetch();
 
         List<GetChatRoomUsersResponseDto> result = new ArrayList<>();
