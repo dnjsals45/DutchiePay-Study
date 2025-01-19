@@ -343,6 +343,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
                 .from(buy)
                 .innerJoin(buy.product, product);
 
+        query.where(conditions);
+
         if ("like".equals(filter)) {
             query.leftJoin(like).on(like.buy.eq(buy));
             query.groupBy(buy.buyId, product.productName, product.productImg,
