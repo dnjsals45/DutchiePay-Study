@@ -41,6 +41,7 @@ public class ReviewValidator {
     public Review validateReviewUpdate(User user, UpdateReviewRequestDto req) {
         Review review = reviewUtilService.findById(req.getReviewId());
 
+        validateReviewContentLength(req.getContent());
         validateUserReview(user, review);
         validateUpdateCondition(review);
 
