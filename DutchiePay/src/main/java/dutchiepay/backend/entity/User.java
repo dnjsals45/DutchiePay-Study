@@ -48,10 +48,6 @@ public class User extends Auditing {
     @Column(nullable = false, length = 15)
     private String location;
 
-    //리프레쉬 토큰
-    @Column(length = 512)
-    private String refreshToken;
-
     //프로필 이미지
     private String profileImg;
 
@@ -87,19 +83,10 @@ public class User extends Auditing {
         this.phone = phone;
     }
 
-    public void createRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
-    public void deleteRefreshToken() {
-        this.refreshToken = null;
-    }
-
     public void delete() {
         super.delete();
         this.phone = null;
         this.password = null;
-        this.refreshToken = null;
         this.profileImg = null;
         this.state = 2;
         this.oauthId = null;
