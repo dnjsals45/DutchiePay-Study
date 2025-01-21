@@ -97,7 +97,6 @@ public class User extends Auditing {
 
     public void delete() {
         super.delete();
-        // TODO 닉네임은? 지역은?
         this.phone = null;
         this.password = null;
         this.refreshToken = null;
