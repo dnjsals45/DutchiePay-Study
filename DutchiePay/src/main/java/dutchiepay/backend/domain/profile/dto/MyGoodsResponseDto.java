@@ -37,5 +37,6 @@ public class MyGoodsResponseDto {
         private String productImg;
         private String storeName;
         private String message;
+        private Boolean hasReviewed;
     }
 }

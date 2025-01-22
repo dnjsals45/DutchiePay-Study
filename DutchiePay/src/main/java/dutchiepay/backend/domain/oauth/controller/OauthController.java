@@ -1,6 +1,7 @@
 package dutchiepay.backend.domain.oauth.controller;
 
 import dutchiepay.backend.domain.user.service.UserService;
+import dutchiepay.backend.global.oauth.service.CustomOAuth2UserService;
 import dutchiepay.backend.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class OauthController {
 
-    private final UserService userService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+
 
     @Operation(summary = "소셜 로그인")
     @GetMapping("/signup")
@@ -32,11 +34,11 @@ public class OauthController {
     public ResponseEntity<Void> unlink(HttpServletRequest request,
                                  @AuthenticationPrincipal UserDetailsImpl userDetails, @RequestParam String type){
         if (type.equals("kakao")) {
-            userService.unlinkKakao(userDetails);
+            customOAuth2UserService.unlinkKakao(userDetails);
         } else {
-            userService.unlinkNaver(userDetails);
+            customOAuth2UserService.unlinkNaver(userDetails);
         }
-        userService.deleteOauthUser(request, userDetails);
+        customOAuth2UserService.deleteOauthUser(request, userDetails);
         return ResponseEntity.noContent().build();
     }
 }

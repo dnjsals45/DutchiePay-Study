@@ -18,4 +18,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, QReviewRe
     void softDelete(Review review);
 
     boolean existsByUserAndOrderAndDeletedAtIsNull(User user, Order order);
+
+    boolean existsByOrderOrderIdAndDeletedAtIsNull(Long orderId);
 }

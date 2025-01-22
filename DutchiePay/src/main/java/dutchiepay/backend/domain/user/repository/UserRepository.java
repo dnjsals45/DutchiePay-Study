@@ -8,8 +8,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPhone(String phone);
 
-    Optional<User> findByEmail(String email);
-
     Optional<User> findByOauthProviderAndEmail(String oauthProvider, String email);
 
     Optional<User> findByNickname(String username);
@@ -19,10 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByPhoneAndOauthProviderIsNull(String phone);
 
     Optional<User> findByEmailAndPhoneAndOauthProviderIsNull(String email, String phone);
-
-    User findByEmailAndOauthProviderIsNullAndState(String email, int state);
-
-    Optional<User> findByRefreshToken(String refreshToken);
 
     boolean existsByNickname(String nickname);
     

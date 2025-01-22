@@ -135,6 +135,9 @@ public class PurchaseService {
         Purchase purchase = purchaseRepository.findById(req.getPostId())
                 .orElseThrow(() -> new CommunityException(CommunityErrorCode.CANNOT_FOUND_POST));
         validatePostState(purchase);
+        if (!(req.getStatus().equals("대기중") || req.getStatus().equals("거래중") ||
+                req.getStatus().equals("나눔완료") || req.getStatus().equals("거래완료")))
+                throw new CommunityException(CommunityErrorCode.ILLEGAL_ARGUMENT);
         purchase.changeState(req.getStatus());
     }
 

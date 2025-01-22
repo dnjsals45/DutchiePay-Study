@@ -4,6 +4,7 @@ import dutchiepay.backend.domain.notice.service.NoticeUtilService;
 import dutchiepay.backend.domain.user.repository.UserRepository;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.jwt.redis.RedisService;
+import dutchiepay.backend.global.oauth.handler.CustomOAuth2FailureHandler;
 import dutchiepay.backend.global.oauth.handler.CustomOAuth2SuccessHandler;
 import dutchiepay.backend.global.security.JwtAuthenticationEntryPoint;
 import dutchiepay.backend.global.security.JwtAuthenticationFilter;
@@ -42,6 +43,7 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
     private final RedisService redisService;
     private final NoticeUtilService noticeUtilService;
 
@@ -97,7 +99,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, readOnlyUrl).permitAll()
                                 .anyRequest().permitAll())
                 .oauth2Login(oauth2 ->
-                        oauth2.successHandler(customOAuth2SuccessHandler))
+                        oauth2.successHandler(customOAuth2SuccessHandler).failureHandler(customOAuth2FailureHandler))
                 .addFilterBefore(jwtVerificationFilter(), JwtAuthenticationFilter.class)
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtUtil, userRepository, passwordEncoder(), redisService, noticeUtilService),

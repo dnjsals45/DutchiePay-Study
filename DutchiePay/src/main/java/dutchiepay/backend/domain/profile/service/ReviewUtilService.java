@@ -42,4 +42,8 @@ public class ReviewUtilService {
     public List<GetMyReviewResponseDto> getMyReviews(User user) {
         return reviewRepository.getMyReviews(user);
     }
+
+    public boolean existsByOrderId(Long orderId) {
+        return reviewRepository.existsByOrderOrderIdAndDeletedAtIsNull(orderId);
+    }
 }
