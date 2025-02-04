@@ -97,7 +97,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 "</head>\n" +
                 "<body>\n" +
                 "    <script>\n" +
-                "    window.opener.postMessage({type: \"OAUTH_LOGIN\", encrypted: \"" + encryptedData + "\"}, \"http://localhost:3000\");\n" +
+                "    window.opener.postMessage({type: \"OAUTH_LOGIN\", encrypted: \"" + encryptedData + "\"}, \"https://www.dutchie-pay.site\");\n" +
                 "    window.close();\n" +
                 "    </script>\n" +
                 "</body>\n" +
