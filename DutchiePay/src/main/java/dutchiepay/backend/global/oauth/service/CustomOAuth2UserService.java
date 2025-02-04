@@ -91,7 +91,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // HttpHeaders 생성
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + kakaoAccess); // Authorization 헤더 설정
-        System.out.println("Kakao access : " + kakaoAccess);
 
         // HttpEntity에 본문 없이 헤더만 담기
         HttpEntity<Void> entity = new HttpEntity<>(headers);
