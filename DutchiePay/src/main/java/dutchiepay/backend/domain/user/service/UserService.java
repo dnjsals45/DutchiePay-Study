@@ -17,6 +17,7 @@ import dutchiepay.backend.entity.User;
 import dutchiepay.backend.global.jwt.redis.RedisService;
 import dutchiepay.backend.global.jwt.JwtUtil;
 import dutchiepay.backend.global.security.UserDetailsImpl;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -187,8 +188,6 @@ public class UserService {
         String accessToken = requestDto.getAccess();
         if (!redisService.isTokenBlackListed(accessToken)) {
             redisService.addBlackList(userId, accessToken);
-        } else {
-            throw new UserErrorException(UserErrorCode.BANNED_ACCESS_TOKEN);
         }
 
         return UserReissueResponseDto.toDto(reissueAccessToken(userId));
