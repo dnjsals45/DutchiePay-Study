@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -186,6 +187,8 @@ public class UserService {
         String accessToken = requestDto.getAccess();
         if (!redisService.isTokenBlackListed(accessToken)) {
             redisService.addBlackList(userId, accessToken);
+        } else {
+            throw new UserErrorException(UserErrorCode.BANNED_ACCESS_TOKEN);
         }
 
         return UserReissueResponseDto.toDto(reissueAccessToken(userId));
