@@ -31,10 +31,6 @@ public class Order extends Auditing {
     @JoinColumn(name = "buy_id")
     private Buy buy;
 
-    @ManyToOne
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
-
     @Column(nullable = false)
     private String receiver;
 
