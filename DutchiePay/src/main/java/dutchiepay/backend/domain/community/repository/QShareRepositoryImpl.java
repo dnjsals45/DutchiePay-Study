@@ -54,6 +54,7 @@ public class QShareRepositoryImpl implements QShareRepository{
                 .select(share.shareId,
                         share.category,
                         user.nickname,
+                        user.profileImg,
                         share.thumbnail,
                         share.title,
                         share.meetingPlace,
@@ -76,6 +77,7 @@ public class QShareRepositoryImpl implements QShareRepository{
                     .shareId(result.get(share.shareId))
                     .category(result.get(share.category))
                     .writer(result.get(user.nickname))
+                    .writerProfileImg(result.get(user.profileImg))
                     .thumbnail(result.get(share.thumbnail))
                     .title(result.get(share.title))
                     .meetingPlace(result.get(share.meetingPlace))
