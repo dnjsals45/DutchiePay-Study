@@ -20,6 +20,7 @@ public class GetMartListResponseDto {
         private Long shareId;
         private String category;
         private String writer;
+        private String writerProfileImg;
         private String thumbnail;
         private String title;
         private String meetingPlace;
