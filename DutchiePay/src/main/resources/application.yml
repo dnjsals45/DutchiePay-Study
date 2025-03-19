@@ -46,7 +46,7 @@ spring:
     sender: ${SMS_SENDER}
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: ${DB_DRIVER}
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
@@ -119,3 +119,11 @@ payment:
   portone:
     secret: ${PORTONE_API_SECRET}
     store-id: ${PORTONE_STORE_ID}
+
+ssh:
+  host: ${SSH_HOST}
+  user: ${SSH_USER}
+  port: ${SSH_PORT}
+  password: ${SSH_PASSWORD}
+  database-port: ${SSH_DB_PORT}
+  database-host: ${SSH_DB_HOST}
