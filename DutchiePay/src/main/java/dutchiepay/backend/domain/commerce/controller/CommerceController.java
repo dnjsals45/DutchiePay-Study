@@ -96,8 +96,8 @@ public class CommerceController {
 
     @PostMapping("/addition")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<Void> addEntity(@RequestBody AddEntityDto addEntityDto) {
-        commerceService.addEntity(addEntityDto);
+    public ResponseEntity<Void> addEntity(int size) {
+        commerceService.addEntity(size);
         return ResponseEntity.ok().build();
     }
 }

@@ -3,12 +3,10 @@ package dutchiepay.backend.domain.commerce.service;
 import dutchiepay.backend.domain.commerce.dto.*;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
-import dutchiepay.backend.domain.commerce.repository.BuyCategoryRepository;
-import dutchiepay.backend.domain.commerce.repository.BuyRepository;
-import dutchiepay.backend.domain.commerce.repository.CategoryRepository;
-import dutchiepay.backend.domain.commerce.repository.StoreRepository;
+import dutchiepay.backend.domain.commerce.repository.*;
 import dutchiepay.backend.domain.order.repository.AskRepository;
 import dutchiepay.backend.domain.order.repository.LikeRepository;
+import dutchiepay.backend.domain.order.repository.ProductJdbcRepositoryImpl;
 import dutchiepay.backend.domain.order.repository.ProductRepository;
 import dutchiepay.backend.entity.*;
 import dutchiepay.backend.global.security.UserDetailsImpl;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,9 +33,9 @@ public class CommerceService {
     private final LikeRepository likeRepository;
     private final AskRepository askRepository;
     private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
-    private final CategoryRepository categoryRepository;
-    private final BuyCategoryRepository buyCategoryRepository;
+    private final StoreJdbcRepositoryImpl storeJdbcRepository;
+    private final ProductJdbcRepositoryImpl productJdbcRepository;
+    private final BuyJdbcRepositoryImpl buyJdbcRepositoryImpl;
 
     /**
      * 상품 좋아요
@@ -106,41 +105,46 @@ public class CommerceService {
     }
 
     @Transactional
-    public void addEntity(AddEntityDto addEntityDto) {
-        Store store = storeRepository.findByStoreName(addEntityDto.getStoreName());
-        if (store == null) store = storeRepository.save(Store.builder()
-                        .storeName(addEntityDto.getStoreName())
-                        .contactNumber(addEntityDto.getContactNumber())
-                        .representative(addEntityDto.getRepresentative())
-                        .storeAddress(addEntityDto.getStoreAddress()).build());
-
-        Product product = productRepository.save(Product.builder()
-                .store(store)
-                .productName(addEntityDto.getProductName())
-                .detailImg(addEntityDto.getDetailImg())
-                .originalPrice(addEntityDto.getOriginalPrice())
-                .salePrice(addEntityDto.getSalePrice())
-                .discountPercent(addEntityDto.getDiscountPercent())
-                .productImg(addEntityDto.getProductImg()).build());
-
-        Buy buy = buyRepository.save(Buy.builder()
-                .product(product)
-                .title(addEntityDto.getProductName())
-                .deadline(addEntityDto.getDeadline())
-                .skeleton(addEntityDto.getSkeleton())
-                .nowCount(0)
-                .tags(addEntityDto.getTag())
-                .build());
-
-        for (String c : addEntityDto.getCategory()) {
-            Category category = categoryRepository.findByName(c);
-            if (category == null)
-                category = categoryRepository.save(Category.builder().name(c).build());
-
-            buyCategoryRepository.save(BuyCategory.builder()
-                    .buy(buy)
-                    .category(category)
+    public void addEntity(int size) {
+        List<Store> stores = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            stores.add(Store.builder()
+                    .storeName("Store_" + i)
+                    .contactNumber("01000000000")
+                    .representative("CEO_" + i)
+                    .storeAddress("Address_" + i)
                     .build());
         }
+
+        List<Store> storeList = storeJdbcRepository.bulkInsert(stores);
+
+        List<Product> products = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            products.add(Product.builder()
+                    .store(storeList.get(i))
+                    .productName("Product " + i)
+                    .detailImg("detail" + i + ".jpg")
+                    .originalPrice(10000)
+                    .salePrice(9000)
+                    .discountPercent(10)
+                    .productImg("product" + i + ".jpg")
+                    .build());
+        }
+
+        List<Product> productList = productJdbcRepository.bulkInsert(products);
+
+        List<Buy> buys = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            buys.add(Buy.builder()
+                    .product(productList.get(i))
+                    .title("테스트 공구" + i)
+                    .deadline(LocalDate.now().plusDays(7))
+                    .skeleton(50)
+                    .nowCount(0)
+                    .tags("생활용품")
+                    .build());
+        }
+
+        buyJdbcRepositoryImpl.bulkInsert(buys);
     }
 }
