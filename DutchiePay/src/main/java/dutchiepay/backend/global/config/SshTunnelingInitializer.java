@@ -6,12 +6,14 @@ import com.jcraft.jsch.Session;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
 @Component
 @Slf4j
+@Profile("local")
 public class SshTunnelingInitializer {
     @Value("${ssh.host}")
     private String host;
