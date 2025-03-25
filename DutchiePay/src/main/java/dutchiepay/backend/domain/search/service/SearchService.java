@@ -42,7 +42,7 @@ public class SearchService {
      * @param limit 반환할 개수
      * @return 검색 결과가 담긴 dto
      */
-    public GetBuyListResponseDto commerceSearch(User user, String filter, String keyword, int end, Long cursor, int limit) {
+    public GetBuyListResponseDto commerceSearch(User user, String filter, String keyword, int end, String cursor, int limit) {
 
         if (!StringUtils.hasText(keyword)) throw new CommunityException(CommunityErrorCode.BLANK_WORD);
         return qBuyRepository.getBuyList(user, filter, null, keyword, end, cursor, limit);

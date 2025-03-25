@@ -33,7 +33,7 @@ public class CommerceController {
     public ResponseEntity<?> getBuyList(@RequestParam("filter") String filter,
                                         @RequestParam(value = "category", required = false) String category,
                                         @RequestParam("end") int end,
-                                        @RequestParam(value = "cursor", required = false) Long cursor,
+                                        @RequestParam(value = "cursor", required = false) String cursor,
                                         @RequestParam("limit") int limit) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -12,9 +12,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GetBuyListResponseDto {
     private List<ProductDto> products;
-    private Long cursor;
+    private String cursor;
 
-    public static GetBuyListResponseDto from(List<ProductDto> products, Long cursor) {
+    public static GetBuyListResponseDto from(List<ProductDto> products, String cursor) {
 
         return GetBuyListResponseDto.builder()
                 .products(products)

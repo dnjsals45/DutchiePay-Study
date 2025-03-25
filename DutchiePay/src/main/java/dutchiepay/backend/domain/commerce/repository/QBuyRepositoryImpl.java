@@ -10,10 +10,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dutchiepay.backend.domain.commerce.dto.GetBuyListResponseDto;
-import dutchiepay.backend.domain.commerce.dto.GetBuyResponseDto;
-import dutchiepay.backend.domain.commerce.dto.GetProductReviewResponseDto;
-import dutchiepay.backend.domain.commerce.dto.OrderAndCursorCondition;
+import dutchiepay.backend.domain.commerce.dto.*;
 import dutchiepay.backend.domain.commerce.exception.CommerceErrorCode;
 import dutchiepay.backend.domain.commerce.exception.CommerceException;
 import dutchiepay.backend.entity.*;
@@ -168,43 +165,89 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
 
     @Override
-    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, String word, int end, Long cursor, int limit) {
-        cursor = (cursor == null) ? Long.MAX_VALUE : cursor;
+    public GetBuyListResponseDto getBuyList(User user, String filter, String categoryName, String word, int end, String cursor, int limit) {
+        if (cursor != null && cursor.equals("-1")) {
+            return null;
+        }
 
-        BooleanBuilder conditions = buildBaseConditions(categoryName, end, word);
-        OrderAndCursorCondition orderAndCursor = buildOrderAndCursorCondition(filter, cursor);
+        boolean isExpired = cursor != null && cursor.endsWith("_1");
+        Long cursorId = (cursor == null) ? Long.MAX_VALUE : Long.parseLong(cursor.split("_")[0]);
 
-        List<GetBuyListResponseDto.ProductDto> results = executeMainQuery(user, conditions,
-                orderAndCursor.getOrderBy(), orderAndCursor.getCursorCondition(), limit, filter);
+        BooleanBuilder conditions = buildBaseConditions(categoryName, word);
+        OrderAndCursorCondition orderAndCursor = buildOrderAndCursorCondition(filter, cursorId);
 
-        Long nextCursor = results.size() > limit ? results.get(limit).getBuyId() : null;
+        List<GetBuyListResponseDto.ProductDto> results = new ArrayList<>();
 
-        List<GetBuyListResponseDto.ProductDto> limitedResults =
-                results.size() > limit ? results.subList(0, limit) : results;
+        if (!isExpired) {
+            results = executeMainQuery(user, conditions, filter, orderAndCursor.getOrderBy(),
+                    orderAndCursor.getCursorCondition(), limit, false);
 
-        Map<Long, Long> reviewCounts = fetchReviewCounts(limitedResults.stream()
-                .map(GetBuyListResponseDto.ProductDto::getBuyId)
-                .collect(Collectors.toList()));
+            if (results.size() < limit && end == 1) {
+                isExpired = true;
+                cursorId = Long.MAX_VALUE;
+                conditions = buildBaseConditions(categoryName, word);
+                orderAndCursor = buildOrderAndCursorCondition(filter, cursorId);
+            }
+        }
 
-        results.forEach(product ->
-                product.setReviewCount(reviewCounts.getOrDefault(product.getBuyId(), 0L))
-        );
+        if (isExpired) {
+            List<GetBuyListResponseDto.ProductDto> expiredResults = executeMainQuery(user, conditions, filter,
+                    orderAndCursor.getOrderBy(), orderAndCursor.getCursorCondition(), limit - results.size(), true);
+            results.addAll(expiredResults);
+        }
 
-        return GetBuyListResponseDto.builder()
-                .products(limitedResults)
-                .cursor(nextCursor)
-                .build();
+        String nextCursor = results.size() > limit ? results.get(limit).getBuyId() + (isExpired ? "_1" : "_0") : "-1";
+
+        return new GetBuyListResponseDto(results.size() > limit ? results.subList(0, limit) : results, nextCursor);
     }
 
-    private BooleanBuilder buildBaseConditions(String categoryName, int end, String word) {
+    @Override
+    public GetBuyListResponseDto getBuyListPage(User user, String filter, String categoryName, String word, int end, int page) {
+//        int limit = 16;
+//
+//        BooleanBuilder conditions = buildBaseConditions(categoryName, end, word);
+//        OrderAndSortCondition orderAndSort = buildOrderAndSortCondition(filter);
+//
+//        List<GetBuyListResponseDto.ProductDto> results = executeMainQuery(user, conditions,
+//                orderAndSort.getOrderBy(), page, limit, filter);
+//
+//        Map<Long, Long> reviewCounts = fetchReviewCounts(results.stream()
+//                .map(GetBuyListResponseDto.ProductDto::getBuyId)
+//                .collect(Collectors.toList()));
+//
+//        results.forEach(product ->
+//                product.setReviewCount(reviewCounts.getOrDefault(product.getBuyId(), 0L))
+//        );
+//
+//        return GetBuyListResponseDto.builder()
+//                .products(results)
+//                .cursor(null)
+//                .build();
+
+        return null;
+    }
+
+    private OrderAndSortCondition buildOrderAndSortCondition(String filter) {
+        return switch (filter) {
+            case "like" -> new OrderAndSortCondition(
+                    new OrderSpecifier[]{like.count().desc(), buy.buyId.desc()}
+            );
+            case "discount" -> new OrderAndSortCondition(
+                    new OrderSpecifier[]{product.discountPercent.desc(), buy.buyId.desc()}
+            );
+            case "endDate" -> new OrderAndSortCondition(getEndDateOrderSpecifiers());
+            case "newest" -> new OrderAndSortCondition(
+                    new OrderSpecifier[]{buy.buyId.desc()}
+            );
+            default -> throw new CommerceException(CommerceErrorCode.INVALID_FILTER);
+        };
+    }
+
+    private BooleanBuilder buildBaseConditions(String categoryName, String word) {
         BooleanBuilder conditions = new BooleanBuilder();
 
         if (StringUtils.hasText(categoryName)) {
             conditions.and(buy.buyCategories.any().category.name.eq(categoryName));
-        }
-
-        if (end == 0) {
-            conditions.and(buy.deadline.after(LocalDate.now().minusDays(1)));
         }
 
         if (StringUtils.hasText(word)) {
@@ -246,11 +289,6 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
     private OrderSpecifier[] getEndDateOrderSpecifiers() {
         return new OrderSpecifier[]{
-                Expressions.cases()
-                        .when(buy.deadline.goe(LocalDate.now()))
-                        .then(0)
-                        .otherwise(1)
-                        .asc(),
                 buy.deadline.asc(),
                 buy.buyId.desc()
         };
@@ -325,7 +363,8 @@ public class QBuyRepositoryImpl implements QBuyRepository{
     }
 
     private List<GetBuyListResponseDto.ProductDto> executeMainQuery(User u, BooleanBuilder conditions,
-                                                                    OrderSpecifier[] orderBy, BooleanBuilder cursorCondition, int limit, String filter) {
+                                                                    OrderSpecifier[] orderBy, BooleanBuilder cursorCondition, int limit, String filter,
+                                                                    boolean isExpired) {
 
         JPAQuery<GetBuyListResponseDto.ProductDto> query = jpaQueryFactory
                 .select(Projections.constructor(GetBuyListResponseDto.ProductDto.class,
@@ -345,6 +384,12 @@ public class QBuyRepositoryImpl implements QBuyRepository{
 
         query.where(conditions);
 
+        if (isExpired) {
+            query.where(buy.deadline.lt(LocalDate.now()));
+        } else {
+            query.where(buy.deadline.goe(LocalDate.now()));
+        }
+
         if ("like".equals(filter)) {
             query.leftJoin(like).on(like.buy.eq(buy));
             query.groupBy(buy.buyId, product.productName, product.productImg,
@@ -359,6 +404,45 @@ public class QBuyRepositoryImpl implements QBuyRepository{
         return query.orderBy(orderBy)
                 .limit(limit + 1L)
                 .fetch();
+    }
+
+    private List<GetBuyListResponseDto.ProductDto> executeMainQuery(User u, BooleanBuilder conditions, String filter,
+                                                                    OrderSpecifier[] orderBy, BooleanBuilder cursorCondition,
+                                                                    int limit, boolean expired) {
+        JPAQuery<GetBuyListResponseDto.ProductDto> query = jpaQueryFactory
+                .select(Projections.constructor(GetBuyListResponseDto.ProductDto.class,
+                        buy.buyId,
+                        product.productName,
+                        product.productImg,
+                        product.originalPrice,
+                        product.salePrice,
+                        product.discountPercent,
+                        buy.skeleton,
+                        buy.nowCount,
+                        buy.deadline,
+                        getUserLikeExpression(u)
+                ))
+                .from(buy)
+                .innerJoin(buy.product, product);
+
+        if (expired) {
+            query.where(conditions.and(buy.deadline.lt(LocalDate.now())));
+        } else {
+            query.where(conditions.and(buy.deadline.goe(LocalDate.now())));
+        }
+
+        if ("like".equals(filter)) {
+            query.leftJoin(like).on(like.buy.eq(buy));
+            query.groupBy(buy.buyId, product.productName, product.productImg,
+                    product.originalPrice, product.salePrice, product.discountPercent,
+                    buy.skeleton, buy.nowCount, buy.deadline);
+        }
+
+        query.where(cursorCondition)
+                .orderBy(orderBy)
+                .limit(limit + 1L);
+
+        return query.fetch();
     }
 
     private Map<Long, Long> fetchReviewCounts(List<Long> buyIds) {

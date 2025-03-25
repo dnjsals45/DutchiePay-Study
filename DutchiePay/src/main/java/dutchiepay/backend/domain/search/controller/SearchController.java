@@ -35,7 +35,7 @@ public class SearchController {
                                                                 @RequestParam("keyword") String keyword,
                                                                 @RequestParam("filter") String filter,
                                                                 @RequestParam("end") int end,
-                                                                @RequestParam(value="cursor", required = false) Long cursor,
+                                                                @RequestParam(value="cursor", required = false) String cursor,
                                                                 @RequestParam("limit") int limit) {
         return ResponseEntity.ok(searchService.commerceSearch(userDetails == null? null: userDetails.getUser(),
                                                                 filter, keyword, end, cursor, limit));

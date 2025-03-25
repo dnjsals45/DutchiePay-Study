@@ -80,7 +80,7 @@ public class CommerceService {
         return buyRepository.getBuyPageByBuyId(user, buyId);
     }
 
-    public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, Long cursor, int limit) {
+    public GetBuyListResponseDto getBuyList(User user, String filter, String category, int end, String cursor, int limit) {
         return buyRepository.getBuyList(user, filter, category, null, end, cursor, limit);
     }
 
