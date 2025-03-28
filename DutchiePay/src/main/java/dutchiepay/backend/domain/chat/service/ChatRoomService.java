@@ -4,6 +4,7 @@ import dutchiepay.backend.domain.chat.dto.*;
 import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
 import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.domain.chat.repository.ChatRoomRepository;
+import dutchiepay.backend.domain.chat.repository.MessageJdbcRepository;
 import dutchiepay.backend.domain.chat.repository.MessageRepository;
 import dutchiepay.backend.domain.community.service.MartService;
 import dutchiepay.backend.domain.community.service.PurchaseService;
@@ -36,6 +37,7 @@ public class ChatRoomService {
     private final MartService martService;
     private final PurchaseService purchaseService;
     private final RedisMessageService redisMessageService;
+    private final MessageJdbcRepository messageJdbcRepository;
 
     private static final String CHAT_ROOM_PREFIX = "/sub/chat/";
 
@@ -315,5 +317,87 @@ public class ChatRoomService {
         }
 
         userChatroomService.updateLastMessageToAllSubscribers(userIds, Long.parseLong(chatRoomId), messageId);
+    }
+
+    @Transactional
+    public void addChatRoom(int chatRoomSize) {
+        List<ChatRoom> chatRooms = new ArrayList<>();
+        for (int i = 0; i < chatRoomSize; i++) {
+            chatRooms.add(ChatRoom.builder()
+                    .chatRoomName("ChatRoom_" + i)
+                    .type("group")
+                    .postId((long) i)
+                    .maxPartInc(100)
+                    .nowPartInc(0)
+                    .build());
+        }
+        chatRoomRepository.saveAll(chatRooms);
+    }
+
+    @Transactional
+    public void additionMessage(Long chatRoomNumber, int messageSize, String date) {
+
+        List<Message> messages = new ArrayList<>();
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomNumber)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_CHAT));
+
+        for (int i = 0; i < messageSize; i++) {
+            messages.add(Message.builder()
+                    .chatroom(chatRoom)
+                    .type("text")
+                    .senderId((long) i)
+                    .content("Test message " + i)
+                    .date(date)
+                    .time("오후 1:15")
+                    .unreadCount(0)
+                    .build());
+        }
+
+        messageJdbcRepository.batchInsert(messages);
+
+        List<Message> savedMessages = messageRepository.findAllByChatroomChatroomIdAndDate(chatRoomNumber, date);
+
+        LocalDate messageDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyyMMdd"));
+        LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
+
+        if (messageDate.isBefore(sevenDaysAgo)) {
+            return;
+        }
+
+        for (Message message : savedMessages) {
+            redisMessageService.saveMessage(
+                    String.valueOf(message.getChatroom().getChatroomId()),
+                    message
+            );
+        }
+    }
+
+    public GetMessageListResponseDto getChatRoomMessagesFromRedis(Long chatRoomId, String cursor, Long limit) {
+        String cursorDate;
+        Long cursorMessageId = null;
+
+        if (cursor == null) {
+            cursorDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        } else {
+            cursorDate = cursor.substring(0, 8);
+            cursorMessageId = Long.parseLong(cursor.substring(8)) != 0 ? Long.parseLong(cursor.substring(8)) : null;
+        }
+
+        return redisMessageService.getMessageFromMemory(chatRoomId, cursorDate, cursorMessageId, limit);
+    }
+
+    public GetMessageListResponseDto getChatRoomMessagesFromDB(Long chatRoomId, String cursor, Long limit) {
+        String cursorDate;
+        Long cursorMessageId = null;
+
+        if (cursor == null) {
+            cursorDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        } else {
+            cursorDate = cursor.substring(0, 8);
+            cursorMessageId = Long.parseLong(cursor.substring(8)) != 0 ? Long.parseLong(cursor.substring(8)) : null;
+        }
+
+        return chatRoomRepository.findChatRoomMessages(chatRoomId, cursorDate, cursorMessageId, limit);
     }
 }

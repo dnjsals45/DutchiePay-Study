@@ -17,4 +17,6 @@ public interface MessageRepository extends JpaRepository<Message, Long>, QMessag
     void discountUnreadMessageCount(Long lastMessageId, Long chatRoomId);
 
     List<Message> findAllByChatroom(ChatRoom chatRoom);
+
+    List<Message> findAllByChatroomChatroomIdAndDate(Long chatRoomNumber, String date);
 }

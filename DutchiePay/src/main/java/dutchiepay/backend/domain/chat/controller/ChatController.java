@@ -76,4 +76,38 @@ public class ChatController {
                                                  @RequestParam(value = "limit") Long limit) {
         return ResponseEntity.ok(chatroomService.getChatRoomMessages(chatRoomId, cursor, limit));
     }
+
+    @Operation(summary = "채팅방 메시지 목록 조회")
+    @GetMapping("/message/caching")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> getChatRoomMessagesFromRedis(@RequestParam(value = "chatRoomId") Long chatRoomId,
+                                                          @RequestParam(value = "cursor", required = false) String cursor,
+                                                          @RequestParam(value = "limit") Long limit) {
+        return ResponseEntity.ok(chatroomService.getChatRoomMessagesFromRedis(chatRoomId, cursor, limit));
+    }
+
+    @Operation(summary = "채팅방 메시지 목록 조회")
+    @GetMapping("/message/db")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> getChatRoomMessagesFromDB(@RequestParam(value = "chatRoomId") Long chatRoomId,
+                                                       @RequestParam(value = "cursor", required = false) String cursor,
+                                                       @RequestParam(value = "limit") Long limit) {
+        return ResponseEntity.ok(chatroomService.getChatRoomMessagesFromDB(chatRoomId, cursor, limit));
+    }
+
+    @Operation(summary = "더미데이터 생성(채팅)")
+    @GetMapping("/addition/chatRoom")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> additionData(int chatRoomSize) {
+        chatroomService.addChatRoom(chatRoomSize);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "더미데이터 생성(메시지)")
+    @GetMapping("/addition/message")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> additionData(Long chatRoomNumber, int messageSize, String date) {
+        chatroomService.additionMessage(chatRoomNumber, messageSize, date);
+        return ResponseEntity.ok().build();
+    }
 }
