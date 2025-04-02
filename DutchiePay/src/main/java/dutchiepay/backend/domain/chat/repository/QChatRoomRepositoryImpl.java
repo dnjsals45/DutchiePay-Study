@@ -4,10 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dutchiepay.backend.domain.chat.dto.GetMessageListResponseDto;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
-import dutchiepay.backend.domain.chat.exception.ChatErrorCode;
-import dutchiepay.backend.domain.chat.exception.ChatException;
 import dutchiepay.backend.entity.QMessage;
-import dutchiepay.backend.entity.QUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -40,7 +37,7 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
                 .from(message)
                 .where(message.chatroom.chatroomId.eq(chatRoomId))
                 .where(message.date.loe(cursorDate).and(message.messageId.loe(cursorMessageId)))
-                .orderBy(message.messageId.desc())
+                .orderBy(message.date.desc(), message.messageId.desc())
                 .limit(limit + 1)
                 .fetch();
 
@@ -53,17 +50,12 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
                     .build();
         }
 
-
         int count = 0;
         for (Tuple t : tuple) {
-            if (count >= limit) {
-                break;
-            }
+            if (count >= limit) break;
 
             String date = t.get(message.date);
-            String formatDate = date.replace("년 ", "-")
-                    .replace("월 ", "-")
-                    .replace("일", "");
+            String formatDate = date.replace("년 ", "-").replace("월 ", "-").replace("일", "");
 
             MessageResponse dto = MessageResponse.builder()
                     .messageId(t.get(message.messageId))
@@ -80,7 +72,25 @@ public class QChatRoomRepositoryImpl implements QChatRoomRepository {
 
         Collections.reverse(result);
 
-        String nextCursor = tuple.size() > limit ? tuple.get(limit.intValue()).get(message.date) + tuple.get(limit.intValue()).get(message.messageId) : null;
+        String nextCursor = null;
+
+        if (tuple.size() > limit) {
+            Tuple next = tuple.get(limit.intValue());
+            nextCursor = next.get(message.date) + next.get(message.messageId);
+        } else {
+            Long countRemain = jpaQueryFactory
+                    .select(message.count())
+                    .from(message)
+                    .where(message.chatroom.chatroomId.eq(chatRoomId))
+                    .where(message.date.lt(cursorDate))
+                    .fetchOne();
+
+            if (countRemain != null && countRemain > 0) {
+                LocalDate prevDate = LocalDate.parse(cursorDate, DateTimeFormatter.ofPattern("yyyyMMdd")).minusDays(1);
+                nextCursor = prevDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + Long.MAX_VALUE;
+            }
+        }
+
         return GetMessageListResponseDto.builder()
                 .messages(result)
                 .cursor(nextCursor)

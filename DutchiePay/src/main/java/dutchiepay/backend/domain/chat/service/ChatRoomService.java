@@ -261,6 +261,7 @@ public class ChatRoomService {
         return userChatroomService.getChatRoomUsers(chatRoomId);
     }
 
+    @Transactional(readOnly = true)
     public GetMessageListResponseDto getChatRoomMessages(Long chatRoomId, String cursor, Long limit) {
         String cursorDate;
         Long cursorMessageId = null;
@@ -277,8 +278,7 @@ public class ChatRoomService {
                 DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         long daysDifference = ChronoUnit.DAYS.between(requestDate, currentDate);
-
-        if (daysDifference <= 7) {
+        if (daysDifference < 7) {
             GetMessageListResponseDto redisMessages =
                     redisMessageService.getMessageFromMemory(chatRoomId, cursorDate, cursorMessageId, limit);
 
@@ -373,6 +373,7 @@ public class ChatRoomService {
         }
     }
 
+    @Transactional(readOnly = true)
     public GetMessageListResponseDto getChatRoomMessagesFromRedis(Long chatRoomId, String cursor, Long limit) {
         String cursorDate;
         Long cursorMessageId = null;
@@ -387,6 +388,7 @@ public class ChatRoomService {
         return redisMessageService.getMessageFromMemory(chatRoomId, cursorDate, cursorMessageId, limit);
     }
 
+    @Transactional(readOnly = true)
     public GetMessageListResponseDto getChatRoomMessagesFromDB(Long chatRoomId, String cursor, Long limit) {
         String cursorDate;
         Long cursorMessageId = null;
