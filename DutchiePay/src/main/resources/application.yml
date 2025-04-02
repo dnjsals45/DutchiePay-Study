@@ -1,5 +1,10 @@
 spring.config.activate.on-profile: local
 
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
 host:
   backend: ${BACKEND_HOST}
   frontend: ${FRONTEND_HOST}
@@ -130,12 +135,19 @@ ssh:
   database-port: ${SSH_DB_PORT}
   database-host: ${SSH_DB_HOST}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 ---
 spring.config.activate.on-profile: prod
 
 host:
   backend: ${BACKEND_HOST}
   frontend: ${FRONTEND_HOST}
+
 
 spring:
   security:
@@ -192,14 +204,12 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none # 필요 시 create으로 변경 (컬럼 타입명 변경 등)
-    show-sql: true
     properties:
       hibernate:
         jdbc:
           batch_size: 1000
         order_updates: true
         order_inserts: true
-        show_sql: true
   cors:
     allowed-origins: ${CORS_ORIGIN}
   data:
@@ -254,3 +264,20 @@ payment:
   portone:
     secret: ${PORTONE_API_SECRET}
     store-id: ${PORTONE_STORE_ID}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
