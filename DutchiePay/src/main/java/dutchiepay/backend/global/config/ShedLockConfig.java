@@ -1,17 +1,26 @@
 package dutchiepay.backend.global.config;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+import javax.sql.DataSource;
+
+@EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT5M")
 @Configuration
-@EnableSchedulerLock(defaultLockAtMostFor = "10m")
 public class ShedLockConfig {
     @Bean
-    public LockProvider lockProvider(RedisConnectionFactory connectionFactory) {
-        return new RedisLockProvider(connectionFactory);
+    public LockProvider lockProvider(DataSource dataSource) {
+        return new JdbcTemplateLockProvider(
+                JdbcTemplateLockProvider.Configuration.builder()
+                        .withJdbcTemplate(new JdbcTemplate(dataSource))
+                        .usingDbTime()
+                        .build()
+        );
     }
 }

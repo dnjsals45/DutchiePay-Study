@@ -83,14 +83,14 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
 
     // p6spy
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+//    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // shedlock
     implementation 'net.javacrumbs.shedlock:shedlock-spring:6.3.1'
-    implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:6.3.1'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.3.1'
 }
 
 tasks.named('test') {

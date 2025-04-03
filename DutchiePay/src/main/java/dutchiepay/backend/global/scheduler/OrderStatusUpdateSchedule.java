@@ -7,6 +7,7 @@ import dutchiepay.backend.entity.Buy;
 import dutchiepay.backend.entity.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +33,11 @@ public class OrderStatusUpdateSchedule {
     private static final String FAILED = "공구실패";
     private static final String EXCHANGE_REQUESTED = "교환요청";
 
-    @Scheduled(cron = "0 5 0 * * ?")
+    @Scheduled(cron = "0 */10 * * * *")
+    @SchedulerLock(name = "orderStatusUpdate", lockAtMostFor = "PT5M", lockAtLeastFor = "PT1M")
     @Transactional
     public void orderStatusUpdate() {
-        log.info("주문 상태 업데이트 스케쥴링 시작");
+        log.warn("주문 상태 업데이트 스케쥴링 시작");
         LocalDate now = LocalDate.now();
 
         updateInProgressOrders(now);
@@ -43,7 +45,7 @@ public class OrderStatusUpdateSchedule {
         updateShippingOrders(now);
         updateCompletedOrders(now);
 
-        log.info("주문 상태 업데이트 스케쥴링 종료");
+        log.warn("주문 상태 업데이트 스케쥴링 종료");
     }
 
     private void updateInProgressOrders(LocalDate now) {
