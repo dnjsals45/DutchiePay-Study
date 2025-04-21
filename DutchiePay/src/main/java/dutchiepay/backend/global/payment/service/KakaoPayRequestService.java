@@ -10,6 +10,7 @@ import dutchiepay.backend.global.payment.exception.PaymentErrorCode;
 import dutchiepay.backend.global.payment.exception.PaymentErrorException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,10 @@ import java.util.Random;
 @RequiredArgsConstructor
 @Slf4j
 public class KakaoPayRequestService {
+
+    @Qualifier("kakaoRestTemplate")
+    private final RestTemplate kakaoRestTemplate;
+
     private final OrderRepository ordersRepository;
     private final BuyRepository buyRepository;
 
@@ -84,7 +89,7 @@ public class KakaoPayRequestService {
                 .build();
 
         HttpEntity<KakaoPayReadyRequest> requestEntity = new HttpEntity<>(body, httpHeaders);
-        ResponseEntity<ReadyResponseDto> response = new RestTemplate().postForEntity(
+        ResponseEntity<ReadyResponseDto> response = kakaoRestTemplate.postForEntity(
                 "https://open-api.kakaopay.com/online/v1/payment/ready",
                 requestEntity,
                 ReadyResponseDto.class
@@ -117,7 +122,7 @@ public class KakaoPayRequestService {
 
         HttpEntity<KakaoPayApproveRequest> entityMap = new HttpEntity<>(approveRequest, headers);
         try {
-            ResponseEntity<ApproveResponseDto> response = new RestTemplate().postForEntity(
+            ResponseEntity<ApproveResponseDto> response = kakaoRestTemplate.postForEntity(
                     "https://open-api.kakaopay.com/online/v1/payment/approve",
                     entityMap,
                     ApproveResponseDto.class
@@ -145,7 +150,7 @@ public class KakaoPayRequestService {
         HttpEntity<KakaoPayCancelRequest> entityMap = new HttpEntity<>(cancelRequest, headers);
 
         try {
-            new RestTemplate().postForEntity(
+            kakaoRestTemplate.postForEntity(
                     "https://open-api.kakaopay.com/online/v1/payment/cancel",
                     entityMap,
                     CancelResponseDto.class
@@ -171,7 +176,7 @@ public class KakaoPayRequestService {
         HttpEntity<KakaoPayCheckStatusRequest> entityMap = new HttpEntity<>(request, headers);
 
         try {
-            ResponseEntity<KakaoPayCheckStatusResponse> response = new RestTemplate().postForEntity(
+            ResponseEntity<KakaoPayCheckStatusResponse> response = kakaoRestTemplate.postForEntity(
                     "https://open-api.kakaopay.com/online/v1/payment/order",
                     entityMap,
                     KakaoPayCheckStatusResponse.class
@@ -194,5 +199,32 @@ public class KakaoPayRequestService {
         } while (ordersRepository.existsByOrderNum(orderNum)); // 중복 체크
 
         return orderNum;
+    }
+
+    public void readTimeOutTest() {
+        try {
+            String slowUrl = "https://httpstat.us/200?sleep=15000";
+
+            ResponseEntity<String> response = kakaoRestTemplate.getForEntity(slowUrl, String.class);
+            System.out.println("응답 성공: " + response.getBody());
+
+        } catch (Exception e) {
+            System.out.println("Read Timeout: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+        }
+    }
+
+
+    public void connectionTimeOutTest() {
+        try {
+            String unreachableUrl = "http://10.255.255.1:8080";
+
+            ResponseEntity<String> response = kakaoRestTemplate.getForEntity(unreachableUrl, String.class);
+            System.out.println("응답 성공: " + response.getBody());
+
+        } catch (Exception e) {
+            System.out.println("Connection Timeout: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+        }
     }
 }

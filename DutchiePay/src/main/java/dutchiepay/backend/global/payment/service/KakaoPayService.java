@@ -119,4 +119,12 @@ public class KakaoPayService {
                     frontendHost
             );
     }
+
+    public void readTimeOutTest() {
+        kakaoPayRequestService.readTimeOutTest();
+    }
+
+    public void connectionTimeOutTest() {
+        kakaoPayRequestService.connectionTimeOutTest();
+    }
 }

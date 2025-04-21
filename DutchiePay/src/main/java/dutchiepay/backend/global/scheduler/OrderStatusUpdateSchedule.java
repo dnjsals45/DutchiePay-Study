@@ -33,7 +33,7 @@ public class OrderStatusUpdateSchedule {
     private static final String FAILED = "공구실패";
     private static final String EXCHANGE_REQUESTED = "교환요청";
 
-    @Scheduled(cron = "0 */10 * * * *")
+    @Scheduled(cron = "0 5 0 * * *")
     @SchedulerLock(name = "orderStatusUpdate", lockAtMostFor = "PT5M", lockAtLeastFor = "PT1M")
     @Transactional
     public void orderStatusUpdate() {

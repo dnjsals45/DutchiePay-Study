@@ -356,21 +356,21 @@ public class ChatRoomService {
 
         messageJdbcRepository.batchInsert(messages);
 
-        List<Message> savedMessages = messageRepository.findAllByChatroomChatroomIdAndDate(chatRoomNumber, date);
+//        List<Message> savedMessages = messageRepository.findAllByChatroomChatroomIdAndDate(chatRoomNumber, date);
+//
+//        LocalDate messageDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyyMMdd"));
+//        LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
 
-        LocalDate messageDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyyMMdd"));
-        LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
+//        if (messageDate.isBefore(sevenDaysAgo)) {
+//            return;
+//        }
 
-        if (messageDate.isBefore(sevenDaysAgo)) {
-            return;
-        }
-
-        for (Message message : savedMessages) {
-            redisMessageService.saveMessage(
-                    String.valueOf(message.getChatroom().getChatroomId()),
-                    message
-            );
-        }
+//        for (Message message : savedMessages) {
+//            redisMessageService.saveMessage(
+//                    String.valueOf(message.getChatroom().getChatroomId()),
+//                    message
+//            );
+//        }
     }
 
     @Transactional(readOnly = true)

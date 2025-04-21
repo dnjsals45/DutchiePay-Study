@@ -89,4 +89,17 @@ public class PaymentController {
                 HttpStatusCode.valueOf(200));
     }
 
+    @GetMapping("/kakao/readTimeOut")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> readTimeOutTest() {
+        kakaoPayService.readTimeOutTest();
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/kakao/connectionTimeOut")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> connectionTimeOutTest() {
+        kakaoPayService.connectionTimeOutTest();
+        return ResponseEntity.ok().build();
+    }
 }
