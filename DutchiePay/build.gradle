@@ -95,6 +95,9 @@ dependencies {
     // spring retry
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework:spring-aspects'
+
+    // wireMock
+    implementation 'org.wiremock.integrations:wiremock-spring-boot:3.6.0'
 }
 
 tasks.named('test') {
