@@ -16,9 +16,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -122,15 +126,27 @@ public class KakaoPayRequestService {
 
         HttpEntity<KakaoPayApproveRequest> entityMap = new HttpEntity<>(approveRequest, headers);
         try {
-            ResponseEntity<ApproveResponseDto> response = kakaoRestTemplate.postForEntity(
+            return sendApproveRequest(entityMap).getBody();
+        } catch (HttpStatusCodeException ex) {
+            return null;
+        }
+    }
+
+    @Retryable(
+            retryFor = { ResourceAccessException.class }, // 연결 불가/시간 초과 시 재시도
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000)
+    )
+    public ResponseEntity<ApproveResponseDto> sendApproveRequest(HttpEntity<KakaoPayApproveRequest> entityMap) {
+        try {
+            return kakaoRestTemplate.postForEntity(
                     "https://open-api.kakaopay.com/online/v1/payment/approve",
                     entityMap,
                     ApproveResponseDto.class
             );
-
-            return response.getBody();
-        } catch (HttpStatusCodeException ex) {
-            return null;
+        } catch (HttpStatusCodeException e) {
+            log.error("카카오페이 결제 승인 실패 - 응답 코드: {}", e.getStatusCode());
+            throw new PaymentErrorException(PaymentErrorCode.INVALID_KAKAO_APPROVE_RESPONSE);
         }
     }
 
@@ -201,6 +217,14 @@ public class KakaoPayRequestService {
         return orderNum;
     }
 
+    @Retryable (
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000, multiplier = 2, maxDelay = 10000),
+            retryFor = {
+                    ResourceAccessException.class,
+                    HttpServerErrorException.class
+            }
+    )
     public void readTimeOutTest() {
         try {
             String slowUrl = "https://httpstat.us/200?sleep=15000";
