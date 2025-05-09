@@ -2,6 +2,9 @@ package dutchiepay.backend.global.scheduler;
 
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.domain.chat.repository.MessageJdbcRepository;
+import dutchiepay.backend.entity.ChatRoom;
+import dutchiepay.backend.entity.Message;
+import dutchiepay.backend.global.scheduler.service.AsyncMessageTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -20,8 +23,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class ChatMessageScheduler {
+    private final AsyncMessageTaskService asyncMessageTaskService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final MessageJdbcRepository messageJdbcRepository;
 
     private static final String CHAT_KEY_PREFIX = "chat:";
     private static final String MESSAGES_SUFFIX = ":messages:";
@@ -29,10 +32,8 @@ public class ChatMessageScheduler {
 
     @Scheduled(cron = "0 0 3 * * ?")
     @SchedulerLock(name = "syncMessageToDB", lockAtMostFor = "PT5M", lockAtLeastFor = "PT1M")
-    @Transactional
-    public void syncMessageToDB() {
-        log.info("채팅 메시지 동기화 스케쥴링 시작");
-        String pattern = CHAT_KEY_PREFIX + "*" + MESSAGES_SUFFIX + "*";
+    public void syncAllMessagesToDB() {
+        String pattern = "chat:*:messages:*";
         Set<String> keys = redisTemplate.keys(pattern);
 
         if (keys == null || keys.isEmpty()) {
@@ -41,26 +42,12 @@ public class ChatMessageScheduler {
         }
 
         for (String key : keys) {
-            log.info("동기화할 채팅방 키: {}", key);
-            syncMessageFromKey(key);
+            try {
+                asyncMessageTaskService.syncMessageFromKey(key);
+            } catch (Exception e) {
+                log.error("키 [{}] 동기화 중 오류 발생", key, e);
+            }
         }
-        log.info("채팅 메시지 동기화 스케쥴링 종료");
-    }
-
-    private void syncMessageFromKey(String key) {
-        Set<Object> messages = redisTemplate.opsForZSet().range(key, 0, -1);
-
-        if (messages == null || messages.isEmpty()) {
-            return;
-        }
-
-        List<MessageResponse> messageResponseList = new ArrayList<>();
-        for (Object obj : messages) {
-            MessageResponse mr = (MessageResponse) obj;
-            messageResponseList.add(mr);
-        }
-
-        messageJdbcRepository.syncMessage(messageResponseList, Long.parseLong(key.split(":")[1]));
     }
 
     @Scheduled(cron = "0 0 4 * * ?")
@@ -78,17 +65,27 @@ public class ChatMessageScheduler {
         LocalDate cutoffDate = LocalDate.now().minusDays(RETENTION_DAYS);
 
         for (String key : keys) {
-            deleteIfOldMessage(key, cutoffDate);
+            try {
+                deleteIfOldMessageAndHash(key, cutoffDate);
+            } catch (Exception e) {
+                log.warn("삭제 도중 오류 발생 - key: {}", key, e);
+            }
         }
-        log.info("Redis 메시지 정리 스케줄링 종료");
+        log.info("🧹 Redis 메시지 정리 스케줄링 종료");
     }
 
-    private void deleteIfOldMessage(String key, LocalDate cutoffDate) {
+    private void deleteIfOldMessageAndHash(String key, LocalDate cutoffDate) {
         String dateStr = key.substring(key.lastIndexOf(":") + 1);
         LocalDate messageDate = LocalDate.parse(dateStr, DateTimeFormatter.BASIC_ISO_DATE);
 
         if (messageDate.isBefore(cutoffDate)) {
             redisTemplate.delete(key);
+            log.info("삭제된 메시지 키: {}", key);
+
+            String chatRoomId = key.split(":")[1];
+            String hashKey = "read_count:" + chatRoomId;
+            redisTemplate.delete(hashKey);
+            log.info("삭제된 읽음 해시 키: {}", hashKey);
         }
     }
 }

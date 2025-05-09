@@ -1,5 +1,6 @@
 package dutchiepay.backend.domain.chat.repository;
 
+import dutchiepay.backend.domain.chat.DateTimeUtil;
 import dutchiepay.backend.domain.chat.dto.MessageResponse;
 import dutchiepay.backend.entity.Message;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -56,38 +58,32 @@ public class MessageJdbcRepository {
         }
     }
 
-    @Transactional
-    public void syncMessage(List<MessageResponse> messageResponseList, Long chatRoomId) {
-        String sql = """
-            INSERT INTO message (
-                message_id, chatroom_id, sender_id, type, content, unread_count, 
-                date, time, created_at, updated_at, deleted_at
-            )
-            VALUES (
-                ?, ?, ?, ?, ?, ?,
-                ?, ?, NOW(), NOW(), NULL
-            )
-            ON DUPLICATE KEY UPDATE
-                sender_id = VALUES(sender_id),
-                chatroom_id = VALUES(chatroom_id),
-                type = VALUES(type),
-                content = VALUES(content),
-                unread_count = VALUES(unread_count),
-                date = VALUES(date),
-                time = VALUES(time),
-                updated_at = NOW()
-        """;
+    public void upsertMessages(List<Message> messages, Long chatRoomId) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO message (message_id, chatroom_id, sender_id, type, content, unread_count, date, time, created_at, updated_at, deleted_at) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now(), NULL) " +
+                        "ON DUPLICATE KEY UPDATE " +
+                        "unread_count = VALUES(unread_count)",
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        Message msg = messages.get(i);
+                        ps.setLong(1, msg.getMessageId());
+                        ps.setLong(2, chatRoomId);
+                        ps.setLong(3, msg.getSenderId());
+                        ps.setString(4, msg.getType());
+                        ps.setString(5, msg.getContent());
+                        ps.setInt(6, msg.getUnreadCount());
+                        ps.setString(7, msg.getDate());
+                        ps.setString(8, msg.getTime());
 
-        int size = messageResponseList.size();
-        jdbcTemplate.batchUpdate(sql, messageResponseList, size, (ps, message) -> {
-            ps.setLong(1, message.getMessageId());
-            ps.setLong(2, chatRoomId);
-            ps.setLong(3, message.getSenderId());
-            ps.setString(4, message.getType());
-            ps.setString(5, message.getContent());
-            ps.setInt(6, message.getUnreadCount());
-            ps.setString(7, message.getDate());
-            ps.setString(8, message.getTime());
-        });
+                        LocalDateTime createdAt = DateTimeUtil.toLocalDateTime(msg.getDate(), msg.getTime());
+                        ps.setTimestamp(9, Timestamp.valueOf(createdAt));
+                    }
+
+                    public int getBatchSize() {
+                        return messages.size();
+                    }
+                }
+        );
     }
 }

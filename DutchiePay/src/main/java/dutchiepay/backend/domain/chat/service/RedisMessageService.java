@@ -26,8 +26,13 @@ public class RedisMessageService {
     private static final String MESSAGES_SUFFIX = ":messages:";
 
     public void saveMessage(String chatRoomId, Message message) {
-        String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + message.getDate().replaceAll("[^0-9]", "");
-        redisTemplate.opsForZSet().add(redisKey, MessageResponse.of(message), message.getMessageId());
+        String zsetKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + message.getDate().replaceAll("[^0-9]", "");
+        String hashKey = "read_count:" + chatRoomId;
+        String messageIdField = String.valueOf(message.getMessageId());
+
+        redisTemplate.opsForZSet().add(zsetKey, MessageResponse.of(message), message.getMessageId());
+
+        redisTemplate.opsForHash().put(hashKey, messageIdField, message.getUnreadCount());
     }
 
     public GetMessageListResponseDto getMessageFromMemory(Long chatRoomId, String cursorDate, Long cursorMessageId, Long limit) {
@@ -35,6 +40,8 @@ public class RedisMessageService {
         String nextCursor;
         Long remainingLimit = limit;
         String currentDate = cursorDate;
+
+        String hashKey = "read_count:" + chatRoomId;
 
         LocalDate currentLocalDate = LocalDate.now();
         LocalDate sevenDaysAgo = currentLocalDate.minusDays(7);
@@ -45,25 +52,17 @@ public class RedisMessageService {
                 break;
             }
 
-            String redisKey = CHAT_KEY_PREFIX + chatRoomId + MESSAGES_SUFFIX + currentDate;
+            String redisKey = "chat:" + chatRoomId + ":messages:" + currentDate;
 
             Set<Object> messages;
             if (cursorMessageId == null) {
-                messages = redisTemplate.opsForZSet()
-                        .reverseRange(redisKey, 0, remainingLimit);
+                messages = redisTemplate.opsForZSet().reverseRange(redisKey, 0, remainingLimit);
             } else {
-                messages = redisTemplate.opsForZSet()
-                        .reverseRangeByScore(redisKey,
-                                0,
-                                cursorMessageId,
-                                0,
-                                remainingLimit + 1L);
+                messages = redisTemplate.opsForZSet().reverseRangeByScore(redisKey, 0, cursorMessageId, 0, remainingLimit + 1L);
             }
 
             if (messages == null || messages.isEmpty()) {
-                LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
-                LocalDate previousDate = date.minusDays(1);
-                currentDate = previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                currentDate = targetDate.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
                 cursorMessageId = null;
                 continue;
             }
@@ -72,7 +71,13 @@ public class RedisMessageService {
             for (Object obj : messages) {
                 if (count < remainingLimit) {
                     MessageResponse mr = (MessageResponse) obj;
-                    MessageResponse mr2 = MessageResponse.builder()
+
+                    Integer rawUnread = (Integer) redisTemplate.opsForHash().get(hashKey, String.valueOf(mr.getMessageId()));
+                    int unreadCount = rawUnread != null ? rawUnread : 0;
+
+                    mr.setUnreadCount(unreadCount);
+
+                    MessageResponse formatted = MessageResponse.builder()
                             .messageId(mr.getMessageId())
                             .content(mr.getContent())
                             .date(LocalDate.parse(mr.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd"))
@@ -80,16 +85,15 @@ public class RedisMessageService {
                             .time(mr.getTime())
                             .senderId(mr.getSenderId())
                             .type(mr.getType())
-                            .unreadCount(mr.getUnreadCount())
+                            .unreadCount(unreadCount)
                             .build();
 
-                    totalDataList.add(mr2);
+                    totalDataList.add(formatted);
                 } else {
                     MessageResponse lastMessage = (MessageResponse) obj;
                     nextCursor = currentDate + lastMessage.getMessageId();
 
                     Collections.reverse(totalDataList);
-
                     return GetMessageListResponseDto.builder()
                             .messages(totalDataList)
                             .cursor(nextCursor)
@@ -100,46 +104,68 @@ public class RedisMessageService {
 
             remainingLimit -= messages.size();
             if (remainingLimit > 0) {
-                LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
-                LocalDate previousDate = date.minusDays(1);
-                currentDate = previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                currentDate = targetDate.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
                 cursorMessageId = null;
             }
         }
 
-        LocalDate date = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
-        LocalDate previousDate = date.minusDays(1);
+        String finalCursor = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyyMMdd"))
+                .minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "00";
 
         Collections.reverse(totalDataList);
-
         return GetMessageListResponseDto.builder()
                 .messages(totalDataList)
-                .cursor(previousDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "00")
+                .cursor(finalCursor)
                 .build();
     }
 
+//    public void decreaseUnreadCountWithCursor(Long chatRoomId, Long cursorId) {
+//        String pattern = "chat:" + chatRoomId + ":messages:*";
+//        Set<String> keys = redisTemplate.keys(pattern);
+//
+//        if (keys == null || keys.isEmpty()) {
+//            return;
+//        }
+//
+//        for (String key : keys) {
+//            Set<Object> messages = redisTemplate.opsForZSet().rangeByScore(key, cursorId, Double.MAX_VALUE);
+//
+//            if (messages != null) {
+//                for (Object obj : messages) {
+//                    MessageResponse mr = (MessageResponse) obj;
+//                    if (mr.getMessageId() > cursorId && mr.getUnreadCount() > 0) {
+//                        redisTemplate.opsForZSet().remove(key, mr);
+//                        mr.setUnreadCount(mr.getUnreadCount() - 1);
+//                        redisTemplate.opsForZSet().add(key, mr, mr.getMessageId());
+//                    }
+//                }
+//            } else {
+//                break;
+//            }
+//        }
+//    }
     public void decreaseUnreadCountWithCursor(Long chatRoomId, Long cursorId) {
-        String pattern = "chat:" + chatRoomId + ":messages:*";
+        String pattern = CHAT_KEY_PREFIX + chatRoomId + ":messages:*";
         Set<String> keys = redisTemplate.keys(pattern);
+        String hashKey = "read_count:" + chatRoomId;
 
-        if (keys == null || keys.isEmpty()) {
-            return;
-        }
+        if (keys == null || keys.isEmpty()) return;
 
         for (String key : keys) {
-            Set<Object> messages = redisTemplate.opsForZSet().rangeByScore(key, cursorId, Double.MAX_VALUE);
+            Set<Object> messages = redisTemplate.opsForZSet().rangeByScore(key, cursorId + 1, Double.MAX_VALUE);
 
-            if (messages != null) {
-                for (Object obj : messages) {
-                    MessageResponse mr = (MessageResponse) obj;
-                    if (mr.getMessageId() > cursorId && mr.getUnreadCount() > 0) {
-                        redisTemplate.opsForZSet().remove(key, mr);
-                        mr.setUnreadCount(mr.getUnreadCount() - 1);
-                        redisTemplate.opsForZSet().add(key, mr, mr.getMessageId());
-                    }
+            if (messages == null || messages.isEmpty()) continue;
+
+            for (Object obj : messages) {
+                MessageResponse mr = (MessageResponse) obj;
+
+                String messageId = String.valueOf(mr.getMessageId());
+
+                Long updatedCount = redisTemplate.opsForHash().increment(hashKey, messageId, -1);
+
+                if (updatedCount != null && updatedCount < 0) {
+                    redisTemplate.opsForHash().put(hashKey, messageId, 0);
                 }
-            } else {
-                break;
             }
         }
     }
